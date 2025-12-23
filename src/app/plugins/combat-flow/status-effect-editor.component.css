@@ -1,0 +1,213 @@
+/* 全体のコンテナとフォントサイズ調整 */
+.container {
+  padding: 12px;
+  box-sizing: border-box;
+  height: 100%;
+  overflow-y: auto;
+  background-color: transparent;
+  color: #333;
+  font-size: 13px;
+}
+
+/* フォームセクション間のマージン調整 */
+.form-section {
+  margin-bottom: 16px;
+}
+
+h4 {
+  margin: 0 0 8px 0;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 4px;
+  color: #333;
+  font-size: 1.1em;
+}
+
+/* フォームグループのレイアウトとマージン調整 */
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-group > label {
+  display: block;
+  font-weight: bold;
+  margin-bottom: 4px;
+  font-size: 0.95em;
+  color: #555;
+}
+
+/* フォームコントロールの共通スタイル調整 */
+input[type="text"],
+input[type="number"],
+textarea,
+select {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-sizing: border-box;
+  font-size: 1em;
+}
+
+textarea {
+  resize: vertical;
+}
+
+/* --- フォーム行レイアウト --- */
+.form-row {
+  display: flex;
+  align-items: flex-end;
+  gap: 12px;
+}
+
+.form-row .form-group {
+  margin-bottom: 0;
+}
+
+.form-row .icon-group {
+  flex: 1;
+}
+
+.form-row .target-param-group {
+  flex: 1;
+}
+
+.form-row .value-group {
+  width: 100px;
+  flex-shrink: 0;
+}
+
+.icon-group .input-with-preview {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-preview {  
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  min-width: 32px;
+  text-align: center;
+  font-size: 20px;
+  line-height: 1.2;
+  background-color: #fff;
+}
+
+/* --- 持続時間 --- */
+.duration-group .input-with-checkbox {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.duration-group input[type="number"] {
+  width: 100px;
+}
+
+.duration-group input[type="number"]:disabled {
+  background-color: #eee;
+  color: #999;
+}
+
+/* --- チェックボックス・ラジオボタン共通 --- */
+.checkbox-label, .radio-label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  white-space: nowrap;
+  cursor: pointer;
+  font-weight: normal;
+}
+
+/* --- 視覚効果 --- */
+.checkbox-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 狭いパネルでも崩れないよう2列に */
+  gap: 8px;
+  background-color: rgba(0, 0, 0, 0.03);
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #eee;
+}
+
+.color-effects-row {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.color-control {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.color-control input[type="color"] {
+  width: 40px;
+  height: 24px;
+  padding: 0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.color-control input[type="color"]:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+/* --- 機械的効果 --- */
+.radio-group {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.form-label-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.sub-label {
+  font-size: 0.85em;
+}
+
+/* --- フッター --- */
+.footer-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 24px;
+}
+
+button {
+  padding: 8px 16px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+button:hover {
+  background-color: #e0e0e0;
+}
+
+button.primary {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+button.primary:hover {
+  background-color: #0056b3;
+}
+
+hr {
+  border: 0;
+  border-top: 1px solid #eee;
+  margin: 16px 0;
+}

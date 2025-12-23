@@ -1,0 +1,25 @@
+<div class="container">
+  <div class="selector-container">
+    <label for="character-selector">監視するキャラクターを選択してください (複数選択可):</label>
+    <select id="character-selector" multiple [(ngModel)]="selectedCharacterIdentifiers" (ngModelChange)="onSelectionChange()">
+      <option *ngFor="let char of gameCharacters$ | async" [value]="char.identifier">
+        {{ char.name }}
+      </option>
+    </select>
+  </div>
+
+  <div class="viewer-area">
+    <div *ngIf="characterViewModels.length === 0" class="placeholder">
+      キャラクターを選択すると、ここに画像が表示されます。
+    </div>
+    <div *ngFor="let vm of characterViewModels" class="char-card">
+      <ng-container *ngIf="vm.image$ | async as imageFile">
+        <div class="image-container">
+          <img *ngIf="imageFile?.url" [src]="imageFile.url | safe: 'url'" alt="{{ vm.name }}'s image">
+          <div *ngIf="!imageFile?.url" class="no-image">画像なし</div>
+        </div>
+      </ng-container>
+      <p class="char-name">{{ vm.name }}</p>
+    </div>
+  </div>
+</div>

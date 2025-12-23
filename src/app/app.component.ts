@@ -39,6 +39,12 @@ import { PanelOption, PanelService } from 'service/panel.service';
 import { PointerDeviceService } from 'service/pointer-device.service';
 import { SaveDataService } from 'service/save-data.service';
 
+// ----- MODIFICATION START (kunyatta) for PluginSystem -----
+import { PluginService } from './plugins/service/plugin.service';
+import { PluginUiService } from './plugins/service/plugin-ui.service';
+import { PluginLauncherPanelComponent } from './plugins/plugin-launcher/plugin-launcher-panel.component';
+// ----- MODIFICATION END (kunyatta) for PluginSystem -----
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -60,7 +66,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private chatMessageService: ChatMessageService,
     private appConfigService: AppConfigService,
     private saveDataService: SaveDataService,
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private contextMenuService: ContextMenuService, // ----- MODIFICATION (kunyatta) for PluginSystem -----
+    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    private pluginService: PluginService,
+    private pluginUiService: PluginUiService
+    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
   ) {
 
     this.ngZone.runOutsideAngular(() => {
@@ -190,6 +201,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   ngAfterViewInit() {
     PanelService.defaultParentViewContainerRef = ModalService.defaultParentViewContainerRef = ContextMenuService.defaultParentViewContainerRef = this.modalLayerViewContainerRef;
     setTimeout(() => {
+      // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+      this.pluginService.initializeUiPlugins();
+      // ----- MODIFICATION END (kunyatta) for PluginSystem -----
       this.panelService.open(PeerMenuComponent, { width: 500, height: 450, left: 100 });
       this.panelService.open(ChatWindowComponent, { width: 700, height: 400, left: 100, top: 450 });
     }, 0);
@@ -234,6 +248,45 @@ export class AppComponent implements AfterViewInit, OnDestroy {
       this.panelService.open(component, option);
     }
   }
+
+  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  toolBox(event: Event) {
+    const button = <HTMLElement>event.target;
+    const clientRect = button.getBoundingClientRect();
+    const position = {
+      x: window.pageXOffset + clientRect.left + (this.openPanelCount % 20 + 1) * 5, // 簡易的な位置計算
+      y: window.pageYOffset + clientRect.top + 20
+    };
+
+    let menu = [];
+    menu.push({ name: '機能', action: null, disabled: true });
+    // TODO: 他のメニュー項目
+    menu.push({
+      name: '拡張',
+      materialIcon: 'extension',
+      action: () => this.openPluginLauncherPanel()
+    });
+    this.contextMenuService.open(position, menu, 'ツールボックス');
+  }
+
+  private openPluginLauncherPanel() {
+    const launcherPlugin = this.pluginService.getUIPlugin('plugin-launcher');
+    if (launcherPlugin) {
+      const panelOptions: PanelOption = {
+        title: launcherPlugin.name,
+        width: launcherPlugin.width,
+        height: launcherPlugin.height,
+      };
+      panelOptions.top = (this.openPanelCount % 10 + 1) * 20;
+      panelOptions.left = 100 + (this.openPanelCount % 20 + 1) * 5;
+      this.openPanelCount = this.openPanelCount + 1;
+      this.pluginUiService.open(PluginLauncherPanelComponent, panelOptions);
+    } else {
+      console.warn('Plugin Launcher is not found.');
+    }
+  }
+  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+
 
   async save() {
     if (this.isSaveing) return;

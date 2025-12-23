@@ -1,0 +1,116 @@
+<div class="container">
+
+  <!-- 基本情報セクション -->
+  <div class="form-section">
+    <div class="form-group">
+      <label for="effect-name">名前</label>
+      <input id="effect-name" type="text" [(ngModel)]="formModel.name" placeholder="例: 毒">
+    </div>
+
+    <div class="form-row">
+      <div class="form-group icon-group">
+        <label for="effect-emoji">絵文字</label>
+        <div class="input-with-preview">
+          <input id="effect-emoji" type="text" [(ngModel)]="formModel.emoji" placeholder="例: ☠️" maxlength="2">
+          <span class="icon-preview">{{ formModel.emoji }}</span>
+        </div>
+      </div>
+  
+      <div class="form-group duration-group">
+        <label>持続ラウンド</label>
+        <div class="input-with-checkbox">
+          <input id="effect-duration" type="number" [(ngModel)]="formModel.duration" [disabled]="formModel.isPermanent">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="formModel.isPermanent"> 永遠
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label for="effect-description">説明</label>
+      <textarea id="effect-description" rows="3" [(ngModel)]="formModel.description" placeholder="ツールチップで表示される説明文"></textarea>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 視覚効果セクション -->
+  <div class="form-section">
+    <h4>視覚効果</h4>
+    
+    <!-- フィルター効果 -->
+    <div class="form-group">
+      <label>フィルター効果（複数選択可）</label>
+      <div class="checkbox-grid">
+        <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.filters.inverse"> 反転</label>
+        <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.filters.hollow"> ぼかし</label>
+        <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.filters.blackPaint"> 黒塗り</label>
+        <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.filters.grayscale"> グレースケール</label>
+      </div>
+    </div>
+
+    <!-- カラー効果 -->
+    <div class="form-group">
+      <label>カラー効果</label>
+      <div class="color-effects-row">
+        <div class="color-control">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="uiModel.aura.enabled"> オーラ
+          </label>
+          <input type="color" [(ngModel)]="uiModel.aura.color" [disabled]="!uiModel.aura.enabled">
+        </div>
+        <div class="color-control">
+          <label class="checkbox-label">
+            <input type="checkbox" [(ngModel)]="uiModel.backgroundColor.enabled"> 背景色
+          </label>
+          <input type="color" [(ngModel)]="uiModel.backgroundColor.color" [disabled]="!uiModel.backgroundColor.enabled">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- 機械的な効果セクション -->
+  <div class="form-section">
+    <div class="form-group">
+      <label>効果の種類</label>
+      <div class="radio-group">
+        <label class="radio-label">
+          <input type="radio" name="effectType" [(ngModel)]="uiModel.effectType" value="attributeChange"> ラウンド毎の増減
+        </label>
+        <label class="radio-label">
+          <input type="radio" name="effectType" [(ngModel)]="uiModel.effectType" value="buffDebuff"> 能力値バフ/デバフ
+        </label>
+      </div>
+    </div>
+
+    <div class="form-row">
+      <div class="form-group target-param-group">
+        <div class="form-label-container">
+          <label for="effect-target-param">対象パラメータ名</label>
+          <label class="checkbox-label sub-label">
+            <input type="checkbox" [checked]="!showAllParameters" (change)="showAllParameters = !showAllParameters; onShowAllParametersChange()"> 共通のみ
+          </label>
+        </div>
+        <select id="effect-target-param" [(ngModel)]="uiModel.targetParam">
+          <option value="" disabled>パラメータを選択...</option>
+          <option *ngFor="let param of availableParameters" [value]="param.key">{{ param.name }}</option>
+        </select>
+      </div>
+      <div class="form-group value-group">
+        <label for="effect-value">変化量</label>
+        <input id="effect-value" type="number" [(ngModel)]="uiModel.value" placeholder="例: -5">
+      </div>
+    </div>
+  </div>
+
+  <hr>
+
+  <!-- フッターボタン -->
+  <div class="footer-buttons">
+    <button (click)="cancel()">キャンセル</button>
+    <button class="primary" (click)="save()">保存</button>
+  </div>
+</div>

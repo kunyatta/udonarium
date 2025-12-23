@@ -1,0 +1,166 @@
+.panel-container {
+  padding: 8px;
+}
+
+.button-container {
+  margin-top: 4px;
+  text-align: left;
+}
+
+.button-container .tab-setting {
+  font-size: 12px;
+  padding: 2px 8px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  background-color: #f0f0f0;
+  color: #333;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  transition: background-color 0.2s;
+}
+
+.button-container .tab-setting:hover {
+  background-color: #e0e0e0;
+}
+
+.button-container .tab-setting .material-icons {
+  font-size: 14px;
+  margin-right: 4px;
+}
+
+.standby-message {
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+  padding: 16px;
+}
+
+.combatants-container {
+  display: flex;
+  flex-wrap: nowrap; /* 折り返さないように変更 */
+  gap: 8px;
+  overflow-x: auto; /* 横スクロールを有効にする */
+  /* オーラのはみ出しとスクロールバーのための余白 */
+  padding: 10px; 
+  box-sizing: border-box; /* paddingを幅計算に含める */
+}
+
+.combatant-card {
+  position: relative; /* アイコン配置のため追加 */
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  width: 120px; /* カードの幅を固定 */
+  flex-shrink: 0; /* カードが縮まないようにする */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fff;
+  user-select: none; /* テキスト選択を無効化 */
+  -webkit-user-select: none; /* Safari, Chrome用 */
+}
+
+.character-image {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.character-name {
+  font-weight: bold;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  width: 100%;
+  margin-bottom: 4px; /* パラメータとの間隔 */
+}
+
+.status-icons-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  justify-content: center;
+  margin-bottom: 4px;
+  min-height: 18px; /* アイコンがない時も高さを確保 */
+}
+
+.status-icon {
+  font-size: 16px;
+  color: white;
+  /* text-strokeはアイコンフォントの表示を阻害することがあるため、text-shadowで縁取りを表現します */
+  text-shadow:
+    1px 1px 0 #333,
+    -1px 1px 0 #333,
+    1px -1px 0 #333,
+    -1px -1px 0 #333,
+    1px 0 0 #333,
+    0 1px 0 #333,
+    -1px 0 0 #333,
+    0 -1px 0 #333;
+}
+
+.parameters-container {
+  font-size: 12px;
+  width: 100%;
+  text-align: left;
+}
+
+.parameter-item {
+  display: flex;
+  flex-direction: column; /* 縦並びに変更 */
+  margin-bottom: 2px;
+}
+
+.resource-tag {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.resource-bar-container {
+  width: 100%;
+  height: 6px;
+  background-color: #ccc;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.resource-bar {
+  height: 100%;
+  background-color: #4caf50; /* 緑色 */
+  transition: width 0.3s ease;
+}
+
+.param-name {
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+.param-value {
+  /* 必要に応じてスタイルを追加 */
+}
+
+.is-active {
+  border-color: #ff9800; /* オレンジ色でハイライト */
+  box-shadow: 0 0 5px #ff9800;
+}
+
+.is-acted {
+  background-color: #cccccc; /* より暗いグレーに変更 */
+  filter: grayscale(50%);
+}
+
+.acted-icon {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  color: #4caf50; /* 緑色 */
+  font-size: 22px;
+  background-color: white;
+  border-radius: 50%;
+  line-height: 1;
+}

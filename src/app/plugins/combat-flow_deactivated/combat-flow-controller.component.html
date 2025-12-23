@@ -1,0 +1,280 @@
+<div class="container">
+  <!-- タブヘッダー -->
+  <div class="tab-header">
+    <button (click)="activeTab = 'combat'" [class.active]="activeTab === 'combat'">戦闘</button>
+    <button (click)="activeTab = 'list'" [class.active]="activeTab === 'list'">戦況</button>
+    <button (click)="activeTab = 'settings'" [class.active]="activeTab === 'settings'">管理・設定</button>
+  </div>
+
+  <!-- タブコンテンツ -->
+  <div class="tab-content">
+
+                  <!-- =============================================== -->
+                  <!-- 戦闘タブ                                        -->
+                  <!-- =============================================== -->
+                  <div [hidden]="activeTab !== 'combat'">
+                    <!-- 戦闘開始前のUI -->
+                    <ng-container *ngIf="!(combatStateService.isCombat$ | async)">
+                      <h4>戦闘参加キャラクター選択</h4>                  <p>リストから戦闘に参加するキャラクターをクリックして選択してください。</p>
+                  <div class="select-all-container">
+                    <label class="checkbox-label">
+                      <input type="checkbox" [checked]="combatStateService.isAllSelected$ | async" (change)="combatStateService.toggleAllCharacters()"> 全員選択
+                    </label>
+                  </div>
+                  <div class="character-list-container">
+                    <div *ngIf="(combatStateService.charactersForSelection$ | async)?.length === 0" class="list-placeholder">テーブルにキャラクターがいません。</div>
+                    <div *ngFor="let character of (combatStateService.charactersForSelection$ | async)" class="character-item" [class.selected]="(combatStateService.selection$ | async)[character.identifier]" (click)="combatStateService.toggleCharacterSelection(character.identifier)">
+                      {{ character.name }}
+                    </div>
+                  </div>
+                  <div class="buttons">
+                    <button class="stretch" (click)="apply()" [disabled]="(combatStateService.selectedCharacterCount$ | async) === 0">戦闘開始</button>
+                  </div>
+                </ng-container>
+          
+                <!-- 戦闘中のUI -->
+                <ng-container *ngIf="combatStateService.isCombat$ | async">
+                  <h4 class="title-with-button">戦闘操作
+                            <button class="icon-button-dark" title="最新のダイス結果をコピー" (click)="onDiceCopyButtonClick()">🎲</button>
+                          </h4>
+                  <div class="action-declaration">
+                    <ng-container *ngIf="operationMode === 'statusEffect'">
+                      <span class="actor"
+                            (mouseenter)="highlightCaster = true"
+                            (mouseleave)="highlightCaster = false"
+                            style="cursor: pointer;">{{ selectedCaster?.name || '[誰が]' }}</span> は
+                      <span class="target"
+                            (mouseenter)="highlightTarget = true"
+                            (mouseleave)="highlightTarget = false"
+                            style="cursor: pointer;"
+                            *ngIf="selectedTargets$ | async as targets">{{ targets.length === 1 ? targets[0].name : targets.length > 1 ? targets.length + '体' : '[誰に]' }}</span> に
+                      <span class="effect"
+                            (mouseenter)="highlightAction = true"
+                            (mouseleave)="highlightAction = false"
+                            style="cursor: pointer;">{{ (selectedEffect$ | async)?.name || '[何を]' }}</span> を付与する
+                    </ng-container>
+                    <ng-container *ngIf="operationMode === 'parameter'">
+                      <span class="actor"
+                            (mouseenter)="highlightCaster = true"
+                            (mouseleave)="highlightCaster = false"
+                            style="cursor: pointer;">{{ selectedCaster?.name || '[誰が]' }}</span> は
+                                            <span class="target"
+                                                  (mouseenter)="highlightTarget = true"
+                                                  (mouseleave)="highlightTarget = false"
+                                                  style="cursor: pointer;"
+                                                  *ngIf="selectedTargets$ | async as targets">{{ targets.length === 1 ? targets[0].name : targets.length > 1 ? targets.length + '体' : '[誰に]' }}</span> の
+                      <span class="effect"
+                            (mouseenter)="highlightAction = true"
+                            (mouseleave)="highlightAction = false"
+                            style="cursor: pointer;">{{ selectedParameterDisplayName }}</span> を <span class="actor" style="cursor: pointer;" (mouseenter)="highlightValue = true" (mouseleave)="highlightValue = false">{{(parameterValue >= 0 ? '+' : '') + parameterValue }}</span> する
+                    </ng-container>
+                  </div>
+                  <div class="action-execute-container" [ngClass]="{'highlight-form': highlightCaster}">
+                    <label for="caster-select">術者:</label>
+                    <ng-container *ngIf="viewData$ | async as data">
+                      <select id="caster-select" class="caster-select" [(ngModel)]="selectedCaster" (ngModelChange)="onCasterChange()">
+                        <option *ngFor="let vm of data.viewModels; trackBy: trackByViewModel" [ngValue]="vm.character">{{ vm.character.name }}</option>
+                      </select>
+                    </ng-container>
+                    <!-- モードに応じて実行ボタンを切り替え -->
+                    <button *ngIf="operationMode === 'statusEffect'" class="execute-button" [disabled]="!selectedCaster || (selectedTargetIds$ | async).size === 0 || !(selectedEffect$ | async)" (click)="applyStatusEffect()">実行</button>
+                    <button *ngIf="operationMode === 'parameter'" class="execute-button" [disabled]="!selectedCaster || (selectedTargetIds$ | async).size === 0 || !selectedParameterName || parameterValue === 0" (click)="applyParameterChange()">実行</button>
+                  </div>
+                  <hr>
+                  <div class="selection-container">
+                    <div class="list-column" [ngClass]="{'highlight-form': highlightTarget}">
+                      <h4 class="title-with-button">対象選択 <small>複数選択可能</small>
+                        <button class="icon-button-dark" title="チャットログから対象を自動選択" (click)="onTargetSelectButtonClick()">🎲</button>
+                      </h4>
+                      <div class="character-list-container combatant-list">
+                        <div *ngFor="let vm of combatStateService.viewModels$ | async" class="character-item" [class.selected]="(selectedTargetIds$ | async).has(vm.character.identifier)" (click)="selectTarget(vm.character)">
+                          {{ vm.character.name }}
+                        </div>
+                      </div>
+                    </div>
+                    <div class="list-column" [ngClass]="{'highlight-form': highlightAction}">
+                      <div class="sub-tab-header">
+                        <button (click)="operationMode = 'statusEffect'" [class.active]="operationMode === 'statusEffect'">ステータス</button>
+                        <button (click)="operationMode = 'parameter'" [class.active]="operationMode === 'parameter'">パラメータ</button>
+                      </div>
+                      <div class="sub-tab-content">
+                        <ng-container *ngIf="operationMode === 'statusEffect'">
+                          <h4>ステータス効果</h4>
+                          <div class="status-effect-list-container">
+                            <div *ngIf="(combatStateService.statusEffectTemplates$ | async)?.length === 0" class="list-placeholder">利用可能な効果がありません。</div>
+                            <div *ngFor="let effect of combatStateService.statusEffectTemplates$ | async" class="character-item effect-list-item" [class.selected]="(selectedEffect$ | async)?.identifier === effect.identifier" (click)="toggleSelectedEffect(effect)">
+                              <span class="effect-name-preview">
+                                <span class="status-icon-preview">
+                                  <span *ngIf="effect.emoji">{{ effect.emoji }}</span>
+                                  <i *ngIf="!effect.emoji && effect.icon" class="material-icons">{{ effect.icon }}</i>
+                                </span>
+                                <span>{{ effect.name }}</span>
+                              </span>
+                            </div>
+                          </div>
+                        </ng-container>
+                        <ng-container *ngIf="operationMode === 'parameter'">
+                          <h4>パラメータ選択</h4>
+                          <div class="parameter-list-container">
+                            <div *ngIf="availableParameters.length === 0" class="list-placeholder">対象を選択してください。</div>
+                            <div *ngFor="let param of availableParameters" class="character-item" [class.selected]="selectedParameterName === param.key" (click)="selectParameter(param.key)">
+                              {{ param.name }}
+                            </div>
+                          </div>
+                        </ng-container>
+                      </div>
+                    </div>
+                  </div>
+                  <div class="bottom-container">
+                    <div *ngIf="operationMode === 'statusEffect' && (selectedTargetIds$ | async).size === 1" class="applied-effects-container">
+                      <h5 class="applied-effects-title">{{ (selectedTarget$ | async)?.name }} の効果 (クリックで解除)</h5>
+                      <div *ngIf="(getStatusEffects(selectedTarget$ | async))?.length === 0" class="list-placeholder">付与されている効果はありません。</div>
+                      <div class="applied-effect-list">
+                        <div *ngFor="let effect of getStatusEffects(selectedTarget$ | async)" class="applied-effect-item" (click)="onAppliedEffectClick(effect)" (contextmenu)="onAppliedEffectRightClick($event, effect)" title="左クリック: 減少/解除, 右クリック: 増加">
+                          <!-- 絵文字アイコン -->
+                          <span *ngIf="effect.emoji" class="effect-icon emoji-native">{{ effect.emoji }}</span>
+                          <!-- Material Icon (後方互換) -->
+                          <i *ngIf="!effect.emoji && effect.icon" class="material-icons effect-icon">{{ effect.icon }}</i>
+                          <span class="effect-name">{{ effect.name }}</span>
+                          <span *ngIf="!combatStateService.isPermanentEffect(effect)" class="effect-duration">({{ effect.remainingRounds + 'R' }})</span>
+                        </div>
+                      </div>
+                    </div>
+                    <div *ngIf="operationMode === 'parameter'" class="parameter-input-container" [ngClass]="{'highlight-form': highlightValue}">
+                      <h4 class="title-with-button">変化量<button class="icon-button-dark" title="正負を反転" (click)="toggleParameterSign()"><span class="pm-icon">±</span></button></h4>
+                      <input type="number" class="parameter-value-input" [(ngModel)]="parameterValue">
+                    </div>
+                  </div>
+                </ng-container>
+              </div>
+          
+              <!-- =============================================== -->
+              <!-- 戦況タブ                                      -->
+              <!-- =============================================== -->
+              <div [hidden]="activeTab !== 'list'">
+                <h4>手番操作</h4>
+                <div class="turn-controls-container">
+                  <div class="turn-controls">
+                    <button (click)="prevTurn()" [disabled]="!(combatStateService.isCombat$ | async)">＜ 戻る</button>
+                    <button (click)="nextTurn()" [disabled]="!(combatStateService.isCombat$ | async)">次へ ＞</button>
+                    <button (click)="nextRound()">次ラウンド</button>
+                    <span class="round-display" (click)="resetRound()" title="クリックしてラウンドを1にリセット">R{{ (combatStateService.round$ | async) | number:'2.0-0' }}</span>
+                  </div>
+                  <button *ngIf="combatStateService.isCombat$ | async" class="danger" (click)="endCombat()">戦闘終了</button>
+                </div>
+                <hr>
+          
+                <!-- 戦闘前のUI -->
+                <ng-container *ngIf="!(combatStateService.isCombat$ | async)">
+                  <h4>戦闘参加予定者リスト (順序変更)</h4>
+                  <p>キャラクターをクリックで選択し、ボタンで順序を入れ替えます。</p>
+                  <div class="character-list-container combatant-list">
+                    <div *ngIf="participantManager.participants.length === 0" class="list-placeholder">参加予定のキャラクターがいません。</div>
+                    <div *ngFor="let participant of participantManager.participants" class="character-item" [class.selected]="selectedCharacter?.identifier === participant.identifier" (click)="selectCharacter(participant.identifier)">
+                      {{ participant.name }}
+                    </div>
+                  </div>
+                                      <div class="order-controls" [class.disabled]="!selectedCharacter">
+                                        <button [disabled]="!selectedCharacter" (click)="upTabIndex()">▲ 上へ</button>
+                                        <button [disabled]="!selectedCharacter" (click)="downTabIndex()">▼ 下へ</button>
+                                      </div>                  
+                </ng-container>
+          
+                <ng-container *ngIf="combatStateService.isCombat$ | async">
+                  <h4>戦闘参加者リスト (順序変更)</h4>
+                  <div class="character-list-container combatant-list">
+                    <div *ngFor="let vm of combatStateService.viewModels$ | async" class="character-item" [class.selected]="selectedCharacter?.identifier === vm.character.identifier" (click)="selectCharacter(vm.character.identifier)">
+                      {{ vm.character.name }}
+                    </div>
+                  </div>
+                  <div class="order-controls" [class.disabled]="!selectedCharacter">
+                    <button [disabled]="!selectedCharacter" (click)="upTabIndex()">▲ 上へ</button>
+                    <button [disabled]="!selectedCharacter" (click)="downTabIndex()">▼ 下へ</button>
+                  </div>
+
+                  <hr>
+                  <h4>キャラクターの途中参加</h4>
+                  <div class="buttons">
+                    <button (click)="toggleAddParticipantMode()">
+                      <ng-container *ngIf="!isAddingParticipant">＋ 参加者を追加</ng-container>
+                      <ng-container *ngIf="isAddingParticipant">▲ 追加を実行する</ng-container>
+                    </button>
+                  </div>
+        
+                                      <div *ngIf="isAddingParticipant" class="add-participant-container">
+        
+                                        <div class="character-list-container">
+        
+                                          <div *ngIf="(combatStateService.addableCharacters$ | async)?.length === 0" class="list-placeholder">参加可能なキャラクターがいません</div>
+        
+                                          <div *ngFor="let char of (combatStateService.addableCharacters$ | async)" class="character-item" [class.selected]="(combatStateService.selectedParticipantIdsToAdd$ | async).has(char.identifier)" (click)="combatStateService.toggleParticipantSelectionToAdd(char.identifier)">
+        
+                                            {{ char.name }}
+        
+                                          </div>
+        
+                                        </div>
+        
+                                      </div>                </ng-container>
+              </div>
+          
+              <!-- =============================================== -->
+              <!-- 管理・設定タブ                                  -->
+              <!-- =============================================== -->
+              <div [hidden]="activeTab !== 'settings'">
+                <h4>ステータス効果の管理</h4>
+                <div class="buttons">
+                  <button (click)="openStatusEffectEditor($event)">新規作成</button>
+                </div>
+                <div class="character-list-container status-effect-management-list">
+                  <div *ngIf="(combatStateService.statusEffectTemplates$ | async)?.length === 0" class="list-placeholder">
+                    登録済みの効果がありません。
+                  </div>
+                  <div *ngFor="let effect of combatStateService.statusEffectTemplates$ | async" class="character-item">
+                    <span class="effect-name-preview">
+                      <span class="status-icon-preview">
+                        <span *ngIf="effect.emoji">{{ effect.emoji }}</span>
+                        <i *ngIf="!effect.emoji && effect.icon" class="material-icons">{{ effect.icon }}</i>
+                      </span>
+                      <span>{{ effect.name }}</span>
+                    </span>
+                    <span class="effect-actions">
+                      <button class="icon-button" title="編集" (click)="openStatusEffectEditor($event, effect)"><i class="material-icons">edit</i></button>
+                      <button class="icon-button danger" title="削除" (click)="deleteStatusEffect(effect)"><i class="material-icons">delete</i></button>
+                    </span>
+                  </div>
+                </div>
+                <!-- 開発者向け機能 -->
+                <ng-container *ngIf="!isProduction">
+                  <hr>
+                  <h4>開発者ツール</h4>
+                  <button (click)="exportDictionary()">辞書をエクスポート</button>
+                  <button (click)="importDictionaryClick()">辞書をインポート</button>
+                  <input type="file" #fileInput style="display: none" (change)="onFileSelected($event)" accept=".json">
+                </ng-container>
+                <hr>
+                
+                <h4>表示パラメータ設定</h4>
+                <p>カードに表示するパラメータのタグ名をスペース区切りで入力します。(例: HP MP 敏捷度)</p>
+                <input type="text" class="param-input" [(ngModel)]="displayDataTags" placeholder="例: HP MP 敏捷度">
+                <hr>
+          
+                <h4>チャット送信設定</h4>
+                <p>行動宣言メッセージを送信するチャットタブを選択します。</p>
+                <select class="param-input" [(ngModel)]="messageTargetTabId">
+                  <option *ngFor="let tab of availableChatTabs" [value]="tab.identifier">{{ tab.name }}</option>
+                </select>
+                <hr>
+          
+                <h4>パネル操作</h4>
+                <div class="buttons">
+                  <button (click)="showPanelToAll()">全員に表示</button>
+                  <button (click)="closePanelForAll()">全員閉じる</button>
+                </div>
+                <hr>
+          
+              </div>
+          
+            </div>
+          </div>
+          

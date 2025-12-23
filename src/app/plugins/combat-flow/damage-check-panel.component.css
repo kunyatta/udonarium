@@ -1,0 +1,152 @@
+.container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.header-area {
+  flex-shrink: 0;
+  margin-bottom: 10px;
+  padding-bottom: 5px;
+  border-bottom: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.title-section h3 {
+  margin: 0;
+  font-size: 1.1em;
+  color: #333;
+}
+
+.settings-section {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 0.9em;
+}
+
+.settings-section select {
+  padding: 3px 5px;
+  border-radius: 3px;
+  border: 1px solid #ccc;
+  background-color: white;
+  min-width: 100px;
+}
+
+.character-list-area {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 5px; /* スクロールバーとの隙間 */
+}
+
+.character-card {
+  background-color: rgba(255, 255, 255, 0.9);
+  border: 1px solid #ddd;
+  border-radius: 5px;
+  padding: 5px;
+  margin-bottom: 4px;
+  box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+}
+
+.character-info {
+  margin-bottom: 8px;
+  font-size: 0.95em;
+  color: #333;
+}
+
+.char-name {
+  font-weight: bold;
+  color: #5d4037;
+}
+
+.char-hp-mp {
+  color: #555;
+  font-size: 0.9em;
+}
+
+.char-ref-param {
+  font-style: italic;
+  color: #666;
+  font-size: 0.9em;
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 5px;
+}
+
+.action-button {
+  background-color: #5d4037;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 6px;
+  cursor: pointer;
+  font-size: 0.9em;
+  min-width: 80px;
+  text-align: center;
+  transition: background-color 0.2s ease;
+}
+
+.action-button:hover {
+  background-color: #4e342e;
+}
+
+.action-button:active {
+  background-color: #3e2723;
+}
+
+.custom-input-group {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  background-color: #e9ecef;
+  border: 1px solid #ced4da;
+  border-radius: 4px;
+  padding: 5px;
+}
+
+.custom-input-group input {
+  flex-grow: 1;
+  border: 1px solid #adb5bd;
+  border-radius: 3px;
+  padding: 4px 6px;
+  font-size: 0.9em;
+  background-color: white;
+}
+
+.custom-input-group .action-button {
+  background-color: #388e3c;
+}
+
+.custom-input-group .action-button:hover {
+  background-color: #2e7d32;
+}
+
+.footer-area {
+  flex-shrink: 0;
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid #ccc;
+  text-align: right;
+}
+
+.cancel-button {
+  background-color: #6c757d;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 8px 15px;
+  cursor: pointer;
+  font-size: 0.9em;
+}
+
+.cancel-button:hover {
+  background-color: #5a6268;
+}

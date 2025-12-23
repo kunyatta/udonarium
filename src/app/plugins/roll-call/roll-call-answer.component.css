@@ -1,0 +1,117 @@
+.panel-content {
+  padding: 8px;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  color: #222;
+  background-color: #f0f0f0;
+}
+
+.status-header {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.status-title {
+  font-size: 1.2em;
+  font-weight: bold;
+}
+.status-badge {
+  display: inline-block;
+  font-size: 0.8em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: white;
+}
+.status-badge.running {
+  background-color: #28a745;
+}
+
+.caption {
+  font-size: 10px;
+}
+
+.answer-actions {
+  text-align: center;
+  margin-bottom: 10px;
+}
+.btn-attend {
+  width: 100%;
+  height: 50px;
+  font-size: 1.2em;
+  background-color: #28a745;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+.btn-attend.selected {
+  background-color: #1e7e34;
+  box-shadow: inset 0 3px 5px rgba(0,0,0,0.2);
+}
+
+.vote-buttons button {
+  display: block;
+  width: 100%;
+  margin-bottom: 5px;
+  padding: 8px;
+  background-color: #17a2b8;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+.vote-buttons button.selected {
+  background-color: #117a8b;
+  box-shadow: inset 0 3px 5px rgba(0,0,0,0.2);
+}
+
+.participants-list {
+  flex: 1;
+  overflow-y: auto;
+  border-top: 1px solid #ddd;
+}
+.participant-header {
+  font-weight: bold;
+  padding: 4px;
+  background-color: #e9ecef;
+}
+.participant-row {
+  display: flex;
+  align-items: center;
+  padding: 4px;
+  border-bottom: 1px solid #eee;
+}
+.peer-icon {
+  width: 24px;
+  height: 24px;
+  margin-right: 8px;
+  border-radius: 50%;
+  background-color: #ccc;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.peer-icon img {
+  width: 100%;
+  height: 100%;
+}
+.peer-name {
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.peer-status {
+  width: 80px;
+  text-align: right;
+  font-weight: bold;
+}
+.status-none { color: #999; }
+.status-done { color: #28a745; }
+
+.status-message {
+  text-align: center;
+  font-size: 1.2em;
+  font-weight: bold;
+  padding: 20px;
+}

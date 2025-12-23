@@ -1,0 +1,27 @@
+<!-- Udonarium with Fly MODIFICATION (kunyatta) -->
+<div class="container">
+  <nav class="vertical-menu">
+    <ul>
+      <!-- Loop through registered UIs -->
+      <ng-container *ngFor="let ui of pluginUIs">
+
+        <!-- Case: type is 'panel' -->
+        <li *ngIf="ui.type === 'panel'" (click)="openPluginPanel(ui)">
+          <a>
+            <div><i class="material-icons icon-size">{{ ui.icon || 'open_in_new' }}</i></div>
+            <div>{{ ui.name }}</div>
+          </a>
+        </li>
+
+        <!-- Case: type is 'toggle' -->
+        <li *ngIf="ui.type === 'toggle'" (click)="onToggleButtonClick(ui)" [class.active]="ui.isActive">
+          <a>
+            <div><i class="material-icons icon-size">{{ ui.icon }}</i></div>
+            <div>{{ ui.name }}</div>
+          </a>
+        </li>
+
+      </ng-container>
+    </ul>
+  </nav>
+</div>

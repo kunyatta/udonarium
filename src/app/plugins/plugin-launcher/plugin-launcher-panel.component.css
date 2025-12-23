@@ -1,0 +1,49 @@
+/* Udonarium with Fly MODIFICATION (kunyatta) */
+
+/* Copied from app.component.css for style consistency */
+nav ul {
+  list-style: none;
+  padding: 0px;
+  margin: 0px;
+}
+
+nav ul > li {
+  text-align: center;
+  padding: 5px;
+  color: #444;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+nav ul > li:hover {
+  color: #CCC;
+  background-color: rgba(30, 30, 30, 0.8);
+}
+
+nav ul > li > a {
+  font-size: 8px;
+  user-select: none;
+  display: block; /* Ensure the anchor fills the list item */
+}
+
+nav ul > a,
+nav ul > a:hover,
+nav ul > a:active,
+nav ul > a:visited {
+  text-decoration: none;
+}
+
+.icon-size {
+  font-size: 40px;
+}
+
+/* Style for the active/toggled button */
+nav ul > li.active {
+  color: #CCC;
+  background-color: rgba(80, 80, 80, 0.9);
+}
+
+.vertical-menu div {
+  overflow-y: hidden;
+  text-overflow: ellipsis;
+}

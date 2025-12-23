@@ -1,0 +1,57 @@
+.container {
+  padding: 8px;
+}
+
+h3 {
+  margin-top: 0;
+}
+
+.no-selection {
+  color: #888;
+  font-style: italic;
+}
+
+.image-grid {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 10px;
+  overflow-x: auto; /* 横スクロールバーを表示 */
+}
+
+.image-container {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 4px;
+  width: 120px;
+  text-align: center;
+  background-color: #f9f9f9;
+  flex-shrink: 0; /* 幅不足でも縮まないようにする */
+}
+
+.image-container img {
+  width: 100px;
+  height: 100px;
+  object-fit: cover;
+  border-radius: 4px;
+}
+
+.no-image {
+  width: 100px;
+  height: 100px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #eee;
+  color: #aaa;
+  font-size: 12px;
+  border-radius: 4px;
+  margin: 0 auto;
+}
+
+.name {
+  margin-top: 4px;
+  font-size: 12px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}

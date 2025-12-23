@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { NgModule } from '@angular/core';
+import { APP_INITIALIZER, NgModule } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { BrowserModule } from '@angular/platform-browser';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
@@ -42,7 +42,12 @@ import { MovableDirective } from 'directive/movable.directive';
 import { ResizableDirective } from 'directive/resizable.directive';
 import { RotableDirective } from 'directive/rotable.directive';
 import { TooltipDirective } from 'directive/tooltip.directive';
-import { SafePipe } from 'pipe/safe.pipe';
+
+// ----- MODIFICATION START (kunyatta) for PluginSystem & SharedModule -----
+import { PluginsModule } from './plugins/plugins.module';
+import { PluginService } from './plugins/service/plugin.service';
+import { SharedModule } from './shared.module';
+// ----- MODIFICATION END (kunyatta) for PluginSystem & SharedModule -----
 
 import { AppConfigService } from 'service/app-config.service';
 import { ChatMessageService } from 'service/chat-message.service';
@@ -85,7 +90,6 @@ import { AppComponent } from './app.component';
     PeerMenuComponent,
     RoomSettingComponent,
     UIPanelComponent,
-    SafePipe,
     ChatPaletteComponent,
     TextViewComponent,
     TerrainComponent,
@@ -104,7 +108,11 @@ import { AppComponent } from './app.component';
     BrowserModule,
     BrowserAnimationsModule,
     CommonModule,
-    FormsModule
+    FormsModule,
+    // ----- MODIFICATION START (kunyatta) for PluginSystem & SharedModule -----
+    PluginsModule,
+    SharedModule,
+    // ----- MODIFICATION END (kunyatta) for PluginSystem & SharedModule -----
   ],
   providers: [
     AppConfigService,
@@ -115,6 +123,14 @@ import { AppComponent } from './app.component';
     PanelService,
     PointerDeviceService,
     TabletopService,
+    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    {
+      provide: APP_INITIALIZER,
+      useFactory: (pluginService: PluginService) => () => pluginService.initialize(),
+      deps: [PluginService],
+      multi: true,
+    },
+    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
   ],
   bootstrap: [AppComponent]
 })

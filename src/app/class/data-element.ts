@@ -59,4 +59,19 @@ export class DataElement extends ObjectNode {
     }
     return null;
   }
+
+  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  getFirstElementByNameUnsensitive(name: string, replacePattern: string|RegExp = null, replacement=''): DataElement {
+    for (let child of this.children) {
+      if (child instanceof DataElement) {
+        let normalizeName = StringUtil.cr(StringUtil.toHalfWidth(name.replace(/[―ー—‐]/g, '-')).toLowerCase()).replace(/[\s\r\n]+/, ' ').trim();
+        if (replacePattern != null) normalizeName = normalizeName.replace(replacePattern, replacement);
+        if (StringUtil.cr(StringUtil.toHalfWidth(child.getAttribute('name').replace(/[―ー—‐]/g, '-')).toLowerCase()).replace(/[\s\r\n]+/, ' ').trim() === normalizeName) return child;
+        let match = child.getFirstElementByNameUnsensitive(name, replacePattern, replacement);
+        if (match) return match;
+      }
+    }
+    return null;
+  }
+  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
 }

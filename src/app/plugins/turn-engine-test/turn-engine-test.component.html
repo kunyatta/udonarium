@@ -1,0 +1,51 @@
+<div style="padding: 10px; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; font-size: 14px;">
+  <h3>ターンエンジンテスト</h3>
+
+  <div style="margin-bottom: 15px;">
+    <strong>状態:</strong>
+    <p>プレイ中: {{ isPlaying ? 'はい' : 'いいえ' }}</p>
+    <p>現在の手番: {{ currentIndex }}</p>
+    <p>ラウンド: {{ round }}</p>
+  </div>
+
+  <div style="margin-bottom: 15px;">
+    <h4>操作</h4>
+    <button (click)="startTurn()" [disabled]="isPlaying" style="margin-right: 5px;">開始</button>
+    <button (click)="nextTurn()" [disabled]="!isPlaying" style="margin-right: 5px;">次へ</button>
+    <button (click)="stopTurn()" [disabled]="!isPlaying" style="margin-right: 5px;">停止</button>
+    <button (click)="resetTurn()">リセット</button>
+  </div>
+
+  <div style="margin-bottom: 15px;">
+    <h4>参加者追加 (ID直接入力)</h4>
+    <input type="text" [(ngModel)]="participantInput" placeholder="参加者ID" style="margin-right: 5px; padding: 5px;">
+    <button (click)="addParticipant()" [disabled]="!participantInput">追加</button>
+  </div>
+
+  <div style="margin-bottom: 15px;">
+    <h4>参加者追加 (キャラクターから)</h4>
+    <div *ngIf="characters.length === 0" style="color: gray;">ボードにキャラクターがいません</div>
+    <div style="max-height: 150px; overflow-y: auto; border: 1px solid #ccc; padding: 5px;">
+      <div *ngFor="let char of characters" style="display: flex; justify-content: space-between; align-items: center; padding: 3px 0;">
+        <span>{{ char.name }}</span>
+        <button (click)="addCharacterToParticipant(char)">追加</button>
+      </div>
+    </div>
+  </div>
+
+
+  <div style="margin-top: 20px;">
+    <h4>参加者リスト ({{ participantIds.length }})</h4>
+    <div *ngIf="participantIds.length === 0" style="color: gray;">参加者はいません</div>
+    <ul style="list-style-type: none; padding: 0;">
+      <li *ngFor="let id of participantIds; let i = index" 
+          [style.font-weight]="i === currentIndex ? 'bold' : 'normal'"
+          [style.background-color]="i === currentIndex && isPlaying ? '#e3f2fd' : 'transparent'"
+          style="display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px dotted #eee;">
+        <span style="flex-grow: 1;">{{ i + 1 }}. {{ getCharacterName(id) }}</span>
+        <span style="font-size: 0.8em; color: #666; margin-right: 10px;">{{ id }}</span>
+        <button (click)="removeParticipant(id)" style="background-color: #f44336; color: white; border: none; padding: 3px 8px; cursor: pointer;">削除</button>
+      </li>
+    </ul>
+  </div>
+</div>

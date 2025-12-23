@@ -1,0 +1,59 @@
+<div class="panel-container">
+  <ng-container *ngIf="!(isCombat$ | async)">
+    <div class="standby-message">
+      まだ戦闘は発生していません。
+    </div>
+  </ng-container>
+  <ng-container *ngIf="isCombat$ | async">
+    <h4 class="round-indicator">Round {{ (round$ | async) | number:'2.0-0' }}</h4>
+    <div class="combatants-container">
+      <div *ngFor="let vm of (viewModels$ | async); let i = index" 
+           class="combatant-card" 
+           [class.active]="vm.isCurrentTurn"
+           [class.has-acted]="vm.combatant.hasActed"
+           [ngStyle]="getCombinedCardNgStyle(vm.activeStatusEffects)"
+           (click)="onClickCharacter(vm.combatant)"
+           (dblclick)="onDoubleClickCharacter(vm.combatant)"
+           (contextmenu)="onRightClickCharacter($event, vm.combatant)">
+
+        <div *ngIf="vm.combatant.hasActed" class="acted-icon">
+          <i class="material-icons">check_circle</i>
+        </div>
+
+        <img [src]="(vm.image$ | async)?.url" class="character-image" draggable="false">
+        <div class="combatant-name">{{ vm.character.name }}</div>
+        
+        <div class="status-icons-container">
+          <ng-container *ngFor="let effect of vm.activeStatusEffects">
+            <span class="status-icon" [title]="effect.name + '\n' + effect.description">
+              {{ effect.emoji }}
+              <span *ngIf="!effect.isPermanent" class="remaining-rounds">{{ effect.remainingRounds }}</span>
+            </span>
+          </ng-container>
+        </div>
+
+        <div class="parameters-container">
+          <div *ngFor="let param of vm.parameters" class="parameter-item">
+            <ng-container [ngSwitch]="getParameterType(param)">
+              <!-- リソース（バー表示） -->
+              <ng-container *ngSwitchCase="'numberResource'">
+                <div class="resource-tag">
+                  <span class="param-name">{{ param.name }}:</span>
+                  <span class="param-value">{{ param.currentValue }} / {{ param.value }}</span>
+                </div>
+                <div class="resource-bar-container">
+                  <div class="resource-bar" [style.width.%]="getResourcePercentage(param)"></div>
+                </div>
+              </ng-container>
+              <!-- 通常のパラメータ -->
+              <ng-container *ngSwitchDefault>
+                <span class="param-name">{{ param.name }}:</span>
+                <span class="param-value">{{ param.value }}</span>
+              </ng-container>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>

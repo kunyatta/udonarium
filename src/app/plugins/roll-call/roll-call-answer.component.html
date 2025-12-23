@@ -1,0 +1,50 @@
+<div class="panel-content">
+  
+  <!-- 進行中画面 -->
+  <!-- isRunningの判定はUI要素の操作可否で制御するため、パネル自体は常に表示 -->
+  <div class="status-header">
+    <div class="status-title">{{ voteTitle }}</div>
+    <div class="status-badge running" *ngIf="isRunning">進行中</div>
+    <div class="status-badge" *ngIf="!isRunning">待機中</div> <!-- isRunningがfalseなら待機中と表示 -->
+  </div>
+  
+  <div class="answer-actions" *ngIf="isRunning"> <!-- 進行中のみ回答ボタンを表示 -->
+    <!-- 点呼モード: 準備完了ボタンのみ -->
+    <ng-container *ngIf="voteType === 'roll-call'">
+      <div class="caption">準備が出来たら下のボタンを押してください。</div>
+      <button class="btn-attend" (click)="answer(1)" [class.selected]="getPeerAnswerState(myPeer.peerId) === 1">準備完了</button>
+    </ng-container>
+
+    <!-- 投票モード: 選択肢ボタン -->
+    <ng-container *ngIf="voteType === 'poll'">
+      <div class="vote-buttons">
+        <button *ngFor="let choice of voteChoices; let i = index" 
+                (click)="answer(i + 1)" 
+                [class.selected]="getPeerAnswerState(myPeer.peerId) === (i + 1)">
+          {{ choice }}
+        </button>
+      </div>
+    </ng-container>
+  </div>
+
+  <hr>
+
+  <div class="participants-list">
+    <div class="participant-header">回答状況</div>
+    <div class="participant-row" *ngFor="let peer of peers">
+      <div class="peer-icon">
+        <img *ngIf="peer.image" [src]="peer.image.url | safe: 'resourceUrl'">
+        <span *ngIf="!peer.image" class="no-icon">?</span>
+      </div>
+      <div class="peer-name">{{ peer.name }}</div>
+      <div class="peer-status">
+        <span class="status-text" 
+          [class.status-none]="getPeerAnswerState(peer.peerId) === 0"
+          [class.status-done]="getPeerAnswerState(peer.peerId) > 0">
+          {{ getAnswerText(getPeerAnswerState(peer.peerId)) }}
+        </span>
+      </div>
+    </div>
+  </div>
+
+</div>

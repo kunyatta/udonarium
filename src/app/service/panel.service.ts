@@ -19,6 +19,10 @@ export class PanelService {
   static defaultParentViewContainerRef: ViewContainerRef;
   static UIPanelComponentClass: { new(...args: any[]): any } = null;
 
+  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  static onPanelOpen: (panelRef: ComponentRef<any>, childComponentType: any) => void = null;
+  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+
   private panelComponentRef: ComponentRef<any>
   title: string = '無名のパネル';
   left: number = 0;
@@ -69,6 +73,12 @@ export class PanelService {
         if (panelComponentRef && panelOnChanges?.ngOnChanges != null) panelOnChanges?.ngOnChanges({});
       });
     }
+
+    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    if (PanelService.onPanelOpen) {
+      PanelService.onPanelOpen(panelComponentRef, childComponent);
+    }
+    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
 
     return <T>bodyComponentRef.instance;
   }

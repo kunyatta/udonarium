@@ -1,0 +1,149 @@
+:host {
+  display: block;
+}
+.panel-container {
+  padding: 8px;
+  width: fit-content;
+}
+.standby-message {
+  font-size: 12px;
+  color: #888;
+  text-align: center;
+  padding: 16px;
+}
+.combatants-container {
+  display: flex;
+  flex-wrap: nowrap;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 10px; 
+  box-sizing: border-box;
+  width: fit-content;
+}
+.combatant-card {
+  position: relative;
+  border: 2px solid #ccc;
+  border-radius: 4px;
+  padding: 8px;
+  width: 120px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: #fff;
+  user-select: none;
+  -webkit-user-select: none;
+  transition: all 0.2s ease-in-out;
+}
+
+/* アクティブ（手番）カードのスタイル */
+.combatant-card.active {
+  border-color: #ffc107;
+  box-shadow: 0 0 10px rgba(255, 193, 7, 0.6);
+  transform: scale(1.05);
+  z-index: 1;
+}
+
+/* 行動済みカードのスタイル */
+.combatant-card.has-acted {
+  filter: grayscale(50%);
+  background-color: #cccccc;
+}
+
+.acted-icon {
+  position: absolute;
+  top: 2px;
+  right: 2px;
+  color: #4caf50; /* 緑色 */
+  font-size: 22px;
+  background-color: white;
+  border-radius: 50%;
+  line-height: 1;
+}
+
+.character-image {
+  width: 80px;
+  height: 80px;
+  object-fit: contain;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.combatant-name {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin-bottom: 4px;
+  text-align: center;
+  width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status-icons-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px;
+  justify-content: center;
+  margin-bottom: 4px;
+  min-height: 18px;
+}
+
+.status-icon {
+  font-size: 16px;
+  color: white;
+  text-shadow: 1px 1px 0 #333, -1px 1px 0 #333, 1px -1px 0 #333, -1px -1px 0 #333;
+}
+
+.parameters-container {
+  font-size: 12px;
+  width: 100%;
+  text-align: left;
+}
+
+.parameter-item {
+  display: flex;
+  flex-direction: column;
+  margin-bottom: 2px;
+}
+
+.resource-tag {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.resource-bar-container {
+  width: 100%;
+  height: 6px;
+  background-color: #ccc;
+  border-radius: 3px;
+  overflow: hidden;
+  margin-top: 2px;
+}
+
+.resource-bar {
+  height: 100%;
+  background-color: #4caf50; /* 緑色 */
+  transition: width 0.3s ease;
+}
+
+.param-name {
+  font-weight: bold;
+  margin-right: 4px;
+}
+
+.round-indicator {
+  padding: 6px 10px;
+  border: 1px solid #666;
+  background-color: #333;
+  color: #eee;
+  border-radius: 4px;
+  font-size: 1em;
+  font-weight: bold;
+  line-height: 1;
+  text-align: center;
+  height: fit-content;
+  margin-top: auto;
+  margin-bottom: auto;
+}
