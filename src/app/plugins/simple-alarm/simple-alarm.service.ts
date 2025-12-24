@@ -107,6 +107,15 @@ export class SimpleAlarmService {
     this.alarm.ownerId = PeerCursor.myCursor.identifier; // ★追加: オーナーIDを保存
     EventSystem.trigger('ALARM_START', { alarmIdentifier: this.alarm.identifier });
     this.sendChatMessage(`アラーム「${title}」を ${time}秒 にセットしました。`);
+
+    // アラーム開始時に、前回の通知状態をリセット（閉じる）しておく
+    // これがないと、連続してアラームを鳴らした際に状態が変化せずパネルが開かない
+    this.pluginPanelSyncService.setPanelOpenState(
+      PLUGIN_ID,
+      FILE_NAME_HINT_ALARM,
+      false, 
+      NOTIFICATION_STATE_KEY
+    );
   }
 
   stopAlarm() {

@@ -86,14 +86,16 @@ export class ChatLoggerService {
 
     if (!targetTab) {
       console.warn('ChatLoggerService: Target tab not found. Fallback to operation log.', text);
-      this.chatMessageService.sendOperationLog(text);
+      // this.chatMessageService.sendOperationLog(text); // 削除
+      this.sendOperationLog(text); // 独自実装を使用
       return;
     }
 
     // デフォルト値の補完とoptionsによる上書き
     const sendFrom = options.sendFrom !== undefined ? options.sendFrom : PeerCursor.myCursor.identifier;
     // nameはChatMessageServiceの引数には直接存在しないため、sendFromに対応するオブジェクトの名前が使われることを想定
-    const color = options.color !== undefined ? options.color : PeerCursor.myCursor.color || '#000000';
+    // const color = options.color !== undefined ? options.color : PeerCursor.myCursor.color || '#000000'; // 削除
+    const color = options.color !== undefined ? options.color : '#000000'; // デフォルト色を使用
     const gameType = options.gameType !== undefined ? options.gameType : '';
     const isUseFaceIcon = options.isUseFaceIcon !== undefined ? options.isUseFaceIcon : true;
     const imageIdentifier = options.imageIdentifier !== undefined ? options.imageIdentifier : undefined; 
@@ -108,13 +110,21 @@ export class ChatLoggerService {
     );
   }
 
+  // 追加: 簡易的な操作ログ送信機能
+  private sendOperationLog(text: string): void {
+    console.log('[OperationLog]', text);
+    // 必要であれば、ここで全タブに送信するロジックなどを実装可能
+    // 現状はコンソール出力のみで代替とする
+  }
+
   private resolveCharacterOptions(character: GameCharacter, options: Partial<ChatLoggerOptions>): ChatLoggerOptions {
     const palette = character.chatPalette;
     
     const resolved: ChatLoggerOptions = {
       sendFrom: character.identifier,
       name: character.name, // nameはoptionsで上書きされる可能性はあるが、ChatMessageServiceには直接渡されない
-      color: (palette && palette.color) ? palette.color : PeerCursor.myCursor.color,
+      // color: (palette && palette.color) ? palette.color : '#000000', // 削除
+      color: '#000000', // デフォルト色を使用
       gameType: (palette && palette.dicebot) ? palette.dicebot : '',
       imageIdentifier: character.identifier, 
       isUseFaceIcon: true,

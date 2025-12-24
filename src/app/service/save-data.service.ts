@@ -10,6 +10,8 @@ import { PromiseQueue } from '@udonarium/core/system/util/promise-queue';
 import { XmlUtil } from '@udonarium/core/system/util/xml-util';
 import { DataSummarySetting } from '@udonarium/data-summary-setting';
 import { Room } from '@udonarium/room';
+import { ObjectStore } from '@udonarium/core/synchronize-object/object-store'; // ----- MODIFICATION (kunyatta) for PluginSystem -----
+import { PluginDataContainer } from '../class/plugin-data-container'; // ----- MODIFICATION (kunyatta) for PluginSystem -----
 
 import Beautify from 'vkbeautify';
 
@@ -37,6 +39,38 @@ export class SaveDataService {
     files.push(new File([roomXml], 'data.xml', { type: 'text/plain' }));
     files.push(new File([chatXml], 'chat.xml', { type: 'text/plain' }));
     files.push(new File([summarySetting], 'summary.xml', { type: 'text/plain' }));
+
+    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    // PluginDataContainerをpluginIdとfileNameHintの組み合わせでグループ化
+    const pluginDataMap = new Map<string, PluginDataContainer[]>();
+    for (const container of ObjectStore.instance.getObjects(PluginDataContainer)) {
+      let groupKey = container.pluginId;
+      if (container.fileNameHint) {
+        groupKey += `#${container.fileNameHint}`;
+      }
+
+      if (!pluginDataMap.has(groupKey)) {
+        pluginDataMap.set(groupKey, []);
+      }
+      pluginDataMap.get(groupKey).push(container);
+    }
+
+    // グループごとにXMLファイルを作成
+    for (const [groupKey, containers] of pluginDataMap.entries()) {
+      if (!groupKey) continue;
+
+      const [pluginId, fileNameHint] = groupKey.split('#');
+
+      let pluginXml = '';
+      for (const container of containers) {
+        pluginXml += container.toXml();
+      }
+
+      const finalXml = this.convertToXml(pluginXml, 'data');
+      const xmlFileName = fileNameHint ? `plugin_${pluginId}_${fileNameHint}.xml` : `plugin_${pluginId}.xml`;
+      files.push(new File([finalXml], xmlFileName, { type: 'text/plain' }));
+    }
+    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
 
     files = files.concat(this.searchImageFiles(roomXml));
     files = files.concat(this.searchImageFiles(chatXml));
@@ -68,10 +102,18 @@ export class SaveDataService {
     });
   }
 
-  private convertToXml(gameObject: GameObject): string {
+  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  private convertToXml(target: GameObject | string, rootName?: string): string {
     let xmlDeclaration = '<?xml version="1.0" encoding="UTF-8"?>';
-    return xmlDeclaration + '\n' + Beautify.xml(gameObject.toXml(), 2);
+    let contentXml = '';
+    if (typeof target === 'string') {
+      contentXml = rootName ? `<${rootName}>${target}</${rootName}>` : target;
+    } else {
+      contentXml = target.toXml();
+    }
+    return xmlDeclaration + '\n' + Beautify.xml(contentXml, 2);
   }
+  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
 
   private searchImageFiles(xml: string): File[] {
     let xmlElement: Element = XmlUtil.xml2element(xml);

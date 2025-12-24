@@ -1,0 +1,11 @@
+<div class="container">
+  <div class="icon-container">
+    <i class="material-icons">alarm_on</i>
+  </div>
+  <div class="message-container">
+    <p>{{ displayMessage }}</p>
+  </div>
+  <div class="button-container">
+    <button (click)="closePanel()">閉じる</button>
+  </div>
+</div>

@@ -7,6 +7,7 @@ import { AudioStorage } from './audio-storage';
 import { FileReaderUtil } from './file-reader-util';
 import { ImageStorage } from './image-storage';
 import { MimeType } from './mime-type';
+import { ObjectSerializer } from '../synchronize-object/object-serializer'; // ----- MODIFICATION (kunyatta) for PluginDataIndependence -----
 
 type MetaData = { percent: number, currentFile: string };
 type UpdateCallback = (metadata: MetaData) => void;
@@ -115,7 +116,28 @@ export class FileArchiver {
     console.log(file.name + ' type:' + file.type);
     try {
       let xmlElement: Element = XmlUtil.xml2element(await FileReaderUtil.readAsTextAsync(file));
-      if (xmlElement) EventSystem.trigger('XML_LOADED', { xmlElement: xmlElement });
+      // ----- MODIFICATION START (kunyatta) for PluginDataIndependence -----
+      if (xmlElement) {
+        // chat.xmlが読み込まれた場合、GM以外のユーザーに確認を促すため、CONFIRM_XML_LOADイベントを発行する
+        // (withFlyの fly_chat.xml に相当)
+        if (file.name === 'chat.xml') {
+          EventSystem.trigger('CONFIRM_XML_LOAD', { xmlElement: xmlElement });
+        } else if (file.name.startsWith('plugin_')) {
+          // plugin_*.xmlが読み込まれた場合、XML_LOADEDイベントを発行する代わりに、その場でPluginDataContainerをパースしてObjectStoreに復元する。
+          if (xmlElement.tagName.toLowerCase() === 'data') {
+            for (let i = 0; i < xmlElement.children.length; i++) {
+              const element = xmlElement.children[i];
+              // 各要素をGameObjectとしてパースし、ObjectStoreに復元
+              ObjectSerializer.instance.parseXml(element);
+            }
+          }
+          // このファイルについては、復元処理をここで行ったため、Udonarium本体に処理を委譲する。XML_LOADED イベントは発行しない。
+        } else {
+          EventSystem.trigger('XML_LOADED', { xmlElement: xmlElement });
+        }
+      }
+      // if (xmlElement) EventSystem.trigger('XML_LOADED', { xmlElement: xmlElement });
+      // ----- MODIFICATION END (kunyatta) for PluginDataIndependence -----
     } catch (reason) {
       console.warn(reason);
     }

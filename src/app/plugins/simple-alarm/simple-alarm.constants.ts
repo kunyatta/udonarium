@@ -1,4 +1,3 @@
-// UdonariumWithFly/src/app/plugins/simple-alarm/simple-alarm.constants.ts (新規作成)
 export const PLUGIN_ID = 'simple-alarm';
 export const FILE_NAME_HINT_ALARM = 'alarm-state'; // アラームの状態を保存するコンテナのファイル名ヒント
 export const NOTIFICATION_STATE_KEY = 'isAlarmNotificationOpen'; // 通知パネルの開閉状態を保存するキー
