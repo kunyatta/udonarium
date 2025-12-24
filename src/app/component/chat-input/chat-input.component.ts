@@ -24,6 +24,10 @@ export class ChatInputComponent implements OnInit, OnDestroy {
 
   @Input() onlyCharacters: boolean = false;
   @Input() chatTabidentifier: string = '';
+  
+  // ----- MODIFICATION START (kunyatta) for ColorSupport -----
+  @Input() showColorPicker: boolean = false;
+  // ----- MODIFICATION END (kunyatta) for ColorSupport -----
 
   @Input('gameType') _gameType: string = '';
   @Output() gameTypeChange = new EventEmitter<string>();
@@ -59,6 +63,25 @@ export class ChatInputComponent implements OnInit, OnDestroy {
       image = object.image;
     }
     return image ? image : ImageFile.Empty;
+  }
+
+  get sendFromColor(): string {
+    let object = ObjectStore.instance.get(this.sendFrom);
+    if (object instanceof GameCharacter) {
+      return object.chatPalette ? object.chatPalette.color : '#000000';
+    } else if (object instanceof PeerCursor) {
+      return object.color;
+    }
+    return '#000000';
+  }
+
+  set sendFromColor(color: string) {
+    let object = ObjectStore.instance.get(this.sendFrom);
+    if (object instanceof GameCharacter && object.chatPalette) {
+      object.chatPalette.color = color;
+    } else if (object instanceof PeerCursor) {
+      object.color = color;
+    }
   }
 
   private shouldUpdateCharacterList: boolean = true;

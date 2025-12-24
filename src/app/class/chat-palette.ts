@@ -16,6 +16,9 @@ export interface PaletteVariable {
 @SyncObject('chat-palette')
 export class ChatPalette extends ObjectNode {
   @SyncVar() dicebot: string = '';
+  // ----- MODIFICATION START (kunyatta) for ColorSupport -----
+  @SyncVar() color: string = '#000000';
+  // ----- MODIFICATION END (kunyatta) for ColorSupport -----
   //TODO: キャラシ項目のコピー
 
   get paletteLines(): PaletteLine[] {

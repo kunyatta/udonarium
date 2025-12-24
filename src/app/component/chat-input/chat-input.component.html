@@ -4,6 +4,7 @@
   </div>
   <div class="table-cell">
     <div>
+      <input *ngIf="showColorPicker" type="color" [(ngModel)]="sendFromColor" style="width: 2em; height: 2em; vertical-align: middle; cursor: pointer; border: none; background: none;" />
       <select style="width: 12em;" [(ngModel)]="sendFrom">
         <option *ngIf="!onlyCharacters" value="{{myPeer?.identifier}}">{{myPeer?.name}}（あなた）</option>
         <option *ngFor="let gameCharacter of gameCharacters" value="{{gameCharacter.identifier}}">{{gameCharacter.name}}

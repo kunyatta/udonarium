@@ -17,7 +17,10 @@
   </div>
 </div>
 <ng-template #visible>
-  <span>{{chatMessage.text}}</span>
+  <!-- ----- MODIFICATION START (kunyatta) for ColorSupport ----- -->
+  <!-- <span>{{chatMessage.text}}</span> -->
+  <span [style.color]="chatMessage.color">{{chatMessage.text}}</span>
+  <!-- ----- MODIFICATION END (kunyatta) for ColorSupport ----- -->
   <button *ngIf="chatMessage.isSecret" (click)="discloseMessage()">結果を公開</button>
 </ng-template>
 <ng-template #secret>

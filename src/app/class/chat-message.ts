@@ -16,6 +16,9 @@ export interface ChatMessageContext {
   tag?: string;
   dicebot?: string;
   imageIdentifier?: string;
+  // ----- MODIFICATION START (kunyatta) for ColorSupport -----
+  color?: string;
+  // ----- MODIFICATION END (kunyatta) for ColorSupport -----
 }
 
 @SyncObject('chat')
@@ -27,6 +30,9 @@ export class ChatMessage extends ObjectNode implements ChatMessageContext {
   @SyncVar() tag: string;
   @SyncVar() dicebot: string;
   @SyncVar() imageIdentifier: string;
+  // ----- MODIFICATION START (kunyatta) for ColorSupport -----
+  @SyncVar() color: string;
+  // ----- MODIFICATION END (kunyatta) for ColorSupport -----
 
   get tabIdentifier(): string { return this.parent.identifier; }
   get text(): string { return <string>this.value }

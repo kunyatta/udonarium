@@ -106,15 +106,26 @@ export class ChatLoggerService {
       text,           // text
       gameType,       // gameType
       sendFrom,       // sendFrom
-      sendTo          // sendTo
+      sendTo,         // sendTo
+      color           // color
     );
   }
 
   // 追加: 簡易的な操作ログ送信機能
-  private sendOperationLog(text: string): void {
+  public sendOperationLog(text: string): void {
     console.log('[OperationLog]', text);
-    // 必要であれば、ここで全タブに送信するロジックなどを実装可能
-    // 現状はコンソール出力のみで代替とする
+    
+    // 強制的にデフォルトタブ（または先頭タブ）を取得して送信を試みる
+    const targetTab = this.resolveTargetTab();
+    if (targetTab) {
+      this.chatMessageService.sendMessage(
+        targetTab,
+        text,
+        '',       // gameType
+        'System', // sendFrom
+        undefined // sendTo
+      );
+    }
   }
 
   private resolveCharacterOptions(character: GameCharacter, options: Partial<ChatLoggerOptions>): ChatLoggerOptions {

@@ -74,7 +74,9 @@ export class ChatMessageService {
     return Math.floor(this.timeOffset + (performance.now() - this.performanceOffset));
   }
 
-  sendMessage(chatTab: ChatTab, text: string, gameType: string, sendFrom: string, sendTo?: string): ChatMessage {
+  // ----- MODIFICATION START (kunyatta) for ColorSupport -----
+  // sendMessage(chatTab: ChatTab, text: string, gameType: string, sendFrom: string, sendTo?: string): ChatMessage {
+  sendMessage(chatTab: ChatTab, text: string, gameType: string, sendFrom: string, sendTo?: string, color?: string): ChatMessage {
     let chatMessage: ChatMessageContext = {
       from: Network.peer.userId,
       to: this.findId(sendTo),
@@ -83,7 +85,9 @@ export class ChatMessageService {
       timestamp: this.calcTimeStamp(chatTab),
       tag: gameType,
       text: text,
+      color: color ? color : this.findColor(sendFrom)
     };
+  // ----- MODIFICATION END (kunyatta) for ColorSupport -----
 
     return chatTab.addMessage(chatMessage);
   }
@@ -125,6 +129,18 @@ export class ChatMessageService {
     }
     return identifier;
   }
+
+  // ----- MODIFICATION START (kunyatta) for ColorSupport -----
+  private findColor(identifier: string): string {
+    let object = ObjectStore.instance.get(identifier);
+    if (object instanceof GameCharacter) {
+      return object.chatPalette ? object.chatPalette.color : '#000000';
+    } else if (object instanceof PeerCursor) {
+      return object.color ? object.color : '#000000';
+    }
+    return '#000000';
+  }
+  // ----- MODIFICATION END (kunyatta) for ColorSupport -----
 
   private calcTimeStamp(chatTab: ChatTab): number {
     let now = this.getTime();
