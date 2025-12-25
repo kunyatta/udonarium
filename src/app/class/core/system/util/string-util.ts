@@ -9,13 +9,6 @@ export namespace StringUtil {
     return str.replace(/[！-～]/g, c => String.fromCharCode(c.charCodeAt(0) - 0xFEE0));
   }
 
-  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
-  export function cr(str: string): string {
-    // 暫定実装: 必要に応じて実装を修正する
-    return str.replace(/\r\n|\r/g, '\n');
-  }
-  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
-
   export function equals(str1: string, str2: string, option: CompareOption = CompareOption.None): boolean {
     return str1.length === str2.length && (str1 === str2 || normalize(str1, option) === normalize(str2, option));
   }

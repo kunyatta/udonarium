@@ -64,9 +64,20 @@ export class DataElement extends ObjectNode {
   getFirstElementByNameUnsensitive(name: string, replacePattern: string|RegExp = null, replacement=''): DataElement {
     for (let child of this.children) {
       if (child instanceof DataElement) {
-        let normalizeName = StringUtil.cr(StringUtil.toHalfWidth(name.replace(/[―ー—‐]/g, '-')).toLowerCase()).replace(/[\s\r\n]+/, ' ').trim();
+        // StringUtil.cr への依存を排除し、ローカルで正規化を行う
+        const normalize = (str: string) => {
+          return StringUtil.toHalfWidth(str.replace(/[―ー—‐]/g, '-'))
+            .toLowerCase()
+            .replace(/[\r\n]+/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+        };
+
+        let normalizeName = normalize(name);
         if (replacePattern != null) normalizeName = normalizeName.replace(replacePattern, replacement);
-        if (StringUtil.cr(StringUtil.toHalfWidth(child.getAttribute('name').replace(/[―ー—‐]/g, '-')).toLowerCase()).replace(/[\s\r\n]+/, ' ').trim() === normalizeName) return child;
+        
+        if (normalize(child.getAttribute('name')) === normalizeName) return child;
+        
         let match = child.getFirstElementByNameUnsensitive(name, replacePattern, replacement);
         if (match) return match;
       }
