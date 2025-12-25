@@ -43,7 +43,9 @@ import { SaveDataService } from 'service/save-data.service';
 import { PluginService } from './plugins/service/plugin.service';
 import { PluginUiService } from './plugins/service/plugin-ui.service';
 import { PluginLauncherPanelComponent } from './plugins/plugin-launcher/plugin-launcher-panel.component';
-// ----- MODIFICATION END (kunyatta) for PluginSystem -----
+// ----- MODIFICATION START (kunyatta) for UserPersistence -----
+import { UserPersistenceService } from './plugins/service/user-persistence.service';
+// ----- MODIFICATION END (kunyatta) for UserPersistence -----
 
 @Component({
   selector: 'app-root',
@@ -70,8 +72,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private contextMenuService: ContextMenuService, // ----- MODIFICATION (kunyatta) for PluginSystem -----
     // ----- MODIFICATION START (kunyatta) for PluginSystem -----
     private pluginService: PluginService,
-    private pluginUiService: PluginUiService
+    private pluginUiService: PluginUiService,
     // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+    // ----- MODIFICATION START (kunyatta) for UserPersistence -----
+    private userPersistenceService: UserPersistenceService
+    // ----- MODIFICATION END (kunyatta) for UserPersistence -----
   ) {
 
     this.ngZone.runOutsideAngular(() => {
@@ -147,8 +152,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     AudioStorage.instance.get(PresetSound.selectionStart).isHidden = true;
 
     PeerCursor.createMyCursor();
-    PeerCursor.myCursor.name = 'プレイヤー';
-    PeerCursor.myCursor.imageIdentifier = noneIconImage.identifier;
+    // ----- MODIFICATION START (kunyatta) for UserPersistence -----
+    this.userPersistenceService.initialize();
+    // PeerCursor.myCursor.name = 'プレイヤー';
+    // PeerCursor.myCursor.imageIdentifier = noneIconImage.identifier;
+    // ----- MODIFICATION END (kunyatta) for UserPersistence -----
 
     EventSystem.register(this)
       .on('UPDATE_GAME_OBJECT', event => { this.lazyNgZoneUpdate(event.isSendFromSelf); })

@@ -64,3 +64,29 @@
   background-color: #555;
   color: #CCC;
 }
+
+/* ----- MODIFICATION START (kunyatta) for ColorSupport ----- */
+.color-picker {
+  width: 24px;
+  height: 18px;
+  vertical-align: middle;
+  cursor: pointer;
+  border: #000 1px solid;
+  background-color: 240,240,240;
+  padding: 0px 2px;
+}
+/* ----- MODIFICATION END (kunyatta) for ColorSupport ----- */
+
+/* ----- MODIFICATION START (kunyatta) for CSS Separation ----- */
+.select-send-from {
+  width: 12em;
+}
+
+.select-send-to {
+  width: 10em;
+}
+
+.select-dice-bot {
+  width: 12em;
+}
+/* ----- MODIFICATION END (kunyatta) for CSS Separation ----- */

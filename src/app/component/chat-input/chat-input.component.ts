@@ -65,6 +65,7 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     return image ? image : ImageFile.Empty;
   }
 
+  // ----- MODIFICATION START (kunyatta) for ColorSupport -----
   get sendFromColor(): string {
     let object = ObjectStore.instance.get(this.sendFrom);
     if (object instanceof GameCharacter) {
@@ -83,6 +84,7 @@ export class ChatInputComponent implements OnInit, OnDestroy {
       object.color = color;
     }
   }
+  // ----- MODIFICATION END (kunyatta) for ColorSupport -----
 
   private shouldUpdateCharacterList: boolean = true;
   private _gameCharacters: GameCharacter[] = [];
@@ -115,6 +117,7 @@ export class ChatInputComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     EventSystem.register(this)
+      // ----- MODIFICATION START (kunyatta) for PluginSystem -----
       .on('MESSAGE_ADDED', event => {
         if (event.data.tabIdentifier !== this.chatTabidentifier) return;
         let message = ObjectStore.instance.get<ChatMessage>(event.data.messageIdentifier);
@@ -126,6 +129,7 @@ export class ChatInputComponent implements OnInit, OnDestroy {
           this.updateWritingPeerNames();
         }
       })
+      // ----- MODIFICATION END (kunyatta) for PluginSystem -----
       .on(`UPDATE_GAME_OBJECT/aliasName/${GameCharacter.aliasName}`, event => {
         this.shouldUpdateCharacterList = true;
         if (event.data.identifier !== this.sendFrom) return;
@@ -190,7 +194,8 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     this.calcFitHeight();
   }
 
-  sendChat(event: Partial<KeyboardEvent>) {
+  // sendChat(event: KeyboardEvent) {
+  sendChat(event: Partial<KeyboardEvent>) { // ----- MODIFICATION (kunyatta) -----
     if (event) event.preventDefault();
 
     if (!this.text.length) return;

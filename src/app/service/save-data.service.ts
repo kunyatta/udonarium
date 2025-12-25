@@ -103,6 +103,12 @@ export class SaveDataService {
   }
 
   // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  /*
+  private convertToXml(gameObject: GameObject): string {
+    let xmlDeclaration = '<?xml version="1.0" encoding="UTF-8"?>';
+    return xmlDeclaration + '\n' + Beautify.xml(gameObject.toXml(), 2);
+  }
+  */
   private convertToXml(target: GameObject | string, rootName?: string): string {
     let xmlDeclaration = '<?xml version="1.0" encoding="UTF-8"?>';
     let contentXml = '';

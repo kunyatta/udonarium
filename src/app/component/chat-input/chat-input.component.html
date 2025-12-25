@@ -4,26 +4,43 @@
   </div>
   <div class="table-cell">
     <div>
-      <input *ngIf="showColorPicker" type="color" [(ngModel)]="sendFromColor" style="width: 2em; height: 2em; vertical-align: middle; cursor: pointer; border: none; background: none;" />
-      <select style="width: 12em;" [(ngModel)]="sendFrom">
+      <!-- ----- MODIFICATION START (kunyatta) for ColorSupport ----- -->
+      <input *ngIf="showColorPicker" type="color" [(ngModel)]="sendFromColor" class="color-picker" />
+      <!-- ----- MODIFICATION END (kunyatta) for ColorSupport ----- -->
+      <!-- ----- MODIFICATION START (kunyatta) for CSS Separation ----- -->
+      <!-- <select style="width: 12em;" [(ngModel)]="sendFrom"> -->
+      <select class="select-send-from" [(ngModel)]="sendFrom">
+      <!-- ----- MODIFICATION END (kunyatta) for CSS Separation ----- -->
         <option *ngIf="!onlyCharacters" value="{{myPeer?.identifier}}">{{myPeer?.name}}（あなた）</option>
         <option *ngFor="let gameCharacter of gameCharacters" value="{{gameCharacter.identifier}}">{{gameCharacter.name}}
         </option>
       </select> ＞
-      <select style="width: 10em;" [(ngModel)]="sendTo">
+      <!-- ----- MODIFICATION START (kunyatta) for CSS Separation ----- -->
+      <!-- <select style="width: 10em;" [(ngModel)]="sendTo"> -->
+      <select class="select-send-to" [(ngModel)]="sendTo">
+      <!-- ----- MODIFICATION END (kunyatta) for CSS Separation ----- -->
         <option value="">全員</option>
         <option *ngFor="let peer of otherPeers" value="{{peer.identifier}}">{{peer.name}}
           <ng-container *ngIf="peer === myPeer">（あなた）</ng-container>
         </option>
       </select>
       <ng-container *ngIf="0 < diceBotInfos.length">
-        <select #select style="width: 12em;" (change)="loadDiceBot(select.value)" [(ngModel)]="gameType"
+        <!-- ----- MODIFICATION START (kunyatta) for CSS Separation ----- -->
+        <!-- <select #select style="width: 12em;" (change)="loadDiceBot(select.value)" [(ngModel)]="gameType" -->
+        <select #select class="select-dice-bot" (change)="loadDiceBot(select.value)" [(ngModel)]="gameType"
           [ngModelOptions]="{standalone: true}">
+        <!-- ----- MODIFICATION END (kunyatta) for CSS Separation ----- -->
+          <!-- ----- MODIFICATION START (kunyatta) for PluginSystem ----- -->
+          <!-- <option *ngFor="let diceBotInfo of diceBotInfos" value="{{diceBotInfo.id}}">{{diceBotInfo.name}}</option> -->
           <option *ngFor="let diceBotInfo of diceBotInfos" value="{{diceBotInfo.id}}">{{diceBotInfo.name === "DiceBot" ? "ダイスボット指定なし" : diceBotInfo.name}}</option>
+          <!-- ----- MODIFICATION END (kunyatta) for PluginSystem ----- -->
         </select>
       </ng-container>
       <ng-container *ngIf="diceBotInfos.length < 1">
-        <select style="width: 12em;" disabled>
+        <!-- ----- MODIFICATION START (kunyatta) for CSS Separation ----- -->
+        <!-- <select style="width: 12em;" disabled> -->
+        <select class="select-dice-bot" disabled>
+        <!-- ----- MODIFICATION END (kunyatta) for CSS Separation ----- -->
           <option value="">ダイスボット読込中...</option>
         </select>
       </ng-container>
