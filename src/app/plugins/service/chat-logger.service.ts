@@ -94,7 +94,6 @@ export class ChatLoggerService {
     // デフォルト値の補完とoptionsによる上書き
     const sendFrom = options.sendFrom !== undefined ? options.sendFrom : PeerCursor.myCursor.identifier;
     // nameはChatMessageServiceの引数には直接存在しないため、sendFromに対応するオブジェクトの名前が使われることを想定
-    // const color = options.color !== undefined ? options.color : PeerCursor.myCursor.color || '#000000'; // 削除
     const color = options.color !== undefined ? options.color : '#000000'; // デフォルト色を使用
     const gameType = options.gameType !== undefined ? options.gameType : '';
     const isUseFaceIcon = options.isUseFaceIcon !== undefined ? options.isUseFaceIcon : true;
@@ -134,8 +133,7 @@ export class ChatLoggerService {
     const resolved: ChatLoggerOptions = {
       sendFrom: character.identifier,
       name: character.name, // nameはoptionsで上書きされる可能性はあるが、ChatMessageServiceには直接渡されない
-      // color: (palette && palette.color) ? palette.color : '#000000', // 削除
-      color: '#000000', // デフォルト色を使用
+      color: (palette && palette.color) ? palette.color : '#000000',
       gameType: (palette && palette.dicebot) ? palette.dicebot : '',
       imageIdentifier: character.identifier, 
       isUseFaceIcon: true,

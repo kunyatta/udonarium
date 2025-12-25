@@ -958,7 +958,7 @@ export class CombatStateService {
     );
 
     if (bcdiceMessage) {
-      const match = bcdiceMessage.value.toString().match(/→\s*(\d+)$/);
+      const match = bcdiceMessage.value.toString().match(/[＞>→]\s*(\d+)$/);
       if (match && match[1]) {
         return parseInt(match[1], 10);
       }

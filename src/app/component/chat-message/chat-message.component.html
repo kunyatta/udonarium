@@ -6,7 +6,10 @@
     </div>
     <div class="body">
       <div class="title">
-        <span class="msg-name">{{chatMessage.name}}</span>
+        <!-- ----- MODIFICATION START (kunyatta) for ColorSupport ----- -->
+        <!-- <span class="msg-name" [style.color]="chatMessage.color">{{chatMessage.name}}</span> -->
+        <span class="msg-name" [style.color]="chatMessage.color">{{chatMessage.name}}</span>
+        <!-- ----- MODIFICATION END (kunyatta) for ColorSupport ----- -->
         <span class='tip msg-from'>{{chatMessage.from}}</span>
         <span class='tip msg-timestamp'>{{chatMessage.timestamp | date:'y/M/d H:mm'}}</span>
       </div>
@@ -18,7 +21,7 @@
 </div>
 <ng-template #visible>
   <!-- ----- MODIFICATION START (kunyatta) for ColorSupport ----- -->
-  <!-- <span>{{chatMessage.text}}</span> -->
+  <!-- <span [style.color]="chatMessage.color">{{chatMessage.text}}</span> -->
   <span [style.color]="chatMessage.color">{{chatMessage.text}}</span>
   <!-- ----- MODIFICATION END (kunyatta) for ColorSupport ----- -->
   <button *ngIf="chatMessage.isSecret" (click)="discloseMessage()">結果を公開</button>

@@ -160,6 +160,10 @@ export class CombatLogService {
       this.chatLoggerService.sendCharacterMessage(character, text, options);
     } else {
       // 直近の決定事項である「システムではなくPLの発言として残す」意図を反映
+      // プレイヤー（PeerCursor）の色を設定する
+      if (PeerCursor.myCursor && PeerCursor.myCursor.color) {
+        options.color = PeerCursor.myCursor.color;
+      }
       this.chatLoggerService.sendMessage(text, options); 
     }
   }
