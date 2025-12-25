@@ -46,6 +46,9 @@ import { PluginLauncherPanelComponent } from './plugins/plugin-launcher/plugin-l
 // ----- MODIFICATION START (kunyatta) for UserPersistence -----
 import { UserPersistenceService } from './plugins/service/user-persistence.service';
 // ----- MODIFICATION END (kunyatta) for UserPersistence -----
+// ----- MODIFICATION START (kunyatta) for PluginSystem -----
+import { PluginOverlayService } from './plugins/service/plugin-overlay.service';
+// ----- MODIFICATION END (kunyatta) for PluginSystem -----
 
 @Component({
   selector: 'app-root',
@@ -55,6 +58,9 @@ import { UserPersistenceService } from './plugins/service/user-persistence.servi
 export class AppComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('modalLayer', { read: ViewContainerRef, static: true }) modalLayerViewContainerRef: ViewContainerRef;
+  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  @ViewChild('pluginOverlayLayer', { read: ViewContainerRef, static: true }) pluginOverlayLayerRef: ViewContainerRef;
+  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
   private immediateUpdateTimer: NodeJS.Timeout = null;
   private lazyUpdateTimer: NodeJS.Timeout = null;
   private openPanelCount: number = 0;
@@ -73,6 +79,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     // ----- MODIFICATION START (kunyatta) for PluginSystem -----
     private pluginService: PluginService,
     private pluginUiService: PluginUiService,
+    private pluginOverlayService: PluginOverlayService,
     // ----- MODIFICATION END (kunyatta) for PluginSystem -----
     // ----- MODIFICATION START (kunyatta) for UserPersistence -----
     private userPersistenceService: UserPersistenceService
@@ -208,6 +215,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   ngAfterViewInit() {
     PanelService.defaultParentViewContainerRef = ModalService.defaultParentViewContainerRef = ContextMenuService.defaultParentViewContainerRef = this.modalLayerViewContainerRef;
+    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    PluginOverlayService.defaultParentViewContainerRef = this.pluginOverlayLayerRef;
+    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
     setTimeout(() => {
       // ----- MODIFICATION START (kunyatta) for PluginSystem -----
       this.pluginService.initializeUiPlugins();

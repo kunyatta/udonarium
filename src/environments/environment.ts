@@ -6,6 +6,7 @@ import { TurnEngineTestModule } from '../app/plugins/turn-engine-test/turn-engin
 import { SimpleAlarmModule } from '../app/plugins/simple-alarm/simple-alarm.module';
 import { RollCallModule } from '../app/plugins/roll-call/roll-call.module';
 import { ChatLogManagerModule } from '../app/plugins/chat-log-manager/chat-log-manager.module';
+import { OverlayTestPluginModule } from '../app/plugins/overlay-test-plugin/overlay-test-plugin.module';
 // import { CombatFlowModule } from '../app/plugins/combat-flow/combat-flow.module';
 
 export const environment = {
@@ -18,6 +19,7 @@ export const environment = {
     CharacterImageViewerModule,
     HelloWorldModule,
     AutoLayoutTestModule,
-    TurnEngineTestModule
+    TurnEngineTestModule,
+    OverlayTestPluginModule
   ]
 };

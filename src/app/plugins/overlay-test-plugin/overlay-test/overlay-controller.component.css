@@ -1,0 +1,26 @@
+.controller-panel {
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.section {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+label {
+  font-size: 12px;
+  font-weight: bold;
+}
+
+button {
+  padding: 8px;
+  cursor: pointer;
+}
+
+input[type="range"] {
+  width: 100%;
+}

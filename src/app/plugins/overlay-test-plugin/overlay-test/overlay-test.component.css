@@ -1,0 +1,26 @@
+.test-overlay {
+  position: absolute;
+  width: 200px;
+  height: 150px;
+  background-color: rgb(255, 0, 0); /* 透過なしの赤 */
+  border: 2px solid white;
+  border-radius: 8px;
+  color: white;
+  pointer-events: auto; /* クリックを受け付ける */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  transition: all 0.3s ease-out; /* 位置や透明度の変化を滑らかに */
+  transform: translate(-50%, -50%); /* 指定座標を中央にする */
+}
+
+.content {
+  text-align: center;
+}
+
+button {
+  margin-top: 10px;
+  padding: 5px 10px;
+  cursor: pointer;
+}
