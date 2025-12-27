@@ -1,6 +1,8 @@
 import { Inject, Injectable, Injector } from '@angular/core';
 import { IPlugin, IPluginWithUI, PLUGIN_TOKEN } from '../i-plugin';
 
+import { PluginOverlayService } from './plugin-overlay.service';
+
 @Injectable({
   providedIn: 'root'
 })
@@ -8,7 +10,8 @@ export class PluginService {
 
   constructor(
     @Inject(PLUGIN_TOKEN) private plugins: IPlugin[],
-    private injector: Injector
+    private injector: Injector,
+    private pluginOverlayService: PluginOverlayService
   ) { }
 
   /**
@@ -17,6 +20,9 @@ export class PluginService {
    */
   initialize() {
     console.log('PluginService: Initializing non-UI plugins...');
+    // オーバーレイ基盤の初期化
+    this.pluginOverlayService.initialize();
+
     for (const plugin of this.plugins) {
       if (plugin.initialize) {
         try {

@@ -14,6 +14,7 @@ import { SharedModule } from '../shared.module';
 import { DependencyResolverService } from './service/dependency-resolver.service';
 import { UiDependencyResolverService } from './service/ui-dependency-resolver.service';
 import { PluginsComponentsModule } from './components/plugins-components.module';
+import { ChatListenerService } from './service/chat-listener.service';
 
 @NgModule({
   declarations: [
@@ -40,7 +41,7 @@ import { PluginsComponentsModule } from './components/plugins-components.module'
     ReactiveImageService,
     DependencyResolverService,
     UiDependencyResolverService,
+    ChatListenerService,
   ]
 })
 export class PluginsModule { }
-

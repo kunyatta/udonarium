@@ -7,7 +7,7 @@ import { SimpleAlarmModule } from '../app/plugins/simple-alarm/simple-alarm.modu
 import { RollCallModule } from '../app/plugins/roll-call/roll-call.module';
 import { ChatLogManagerModule } from '../app/plugins/chat-log-manager/chat-log-manager.module';
 import { OverlayTestPluginModule } from '../app/plugins/overlay-test-plugin/overlay-test-plugin.module';
-// import { CombatFlowModule } from '../app/plugins/combat-flow/combat-flow.module';
+import { CutInModule } from '../app/plugins/cut-in/cut-in.module';
 
 export const environment = {
   production: false,
@@ -16,6 +16,7 @@ export const environment = {
     ChatLogManagerModule,
     RollCallModule,
     SimpleAlarmModule,
+    CutInModule,
     CharacterImageViewerModule,
     HelloWorldModule,
     AutoLayoutTestModule,

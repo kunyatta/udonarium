@@ -1,0 +1,30 @@
+<div class="overlay-content-wrapper" [ngStyle]="wrapperStyle" [class.has-frame]="hasFrame">
+  
+  <!-- 演出ロジック専用の要素（Angularのバインドを持たせない） -->
+  <div #effectTarget class="effect-target">
+    
+    <ng-container [ngSwitch]="overlayObject?.type">
+      
+      <ng-container *ngSwitchCase="'standing'">
+        <img *ngIf="imageUrl" [src]="imageUrl" draggable="false">
+        <div *ngIf="!imageUrl" style="color: red; background: white; padding: 10px;">IMAGE NOT SET</div>
+      </ng-container>
+
+      <ng-container *ngSwitchDefault>
+        <div class="generic-content">
+          {{ overlayObject?.label || 'No Label' }}
+        </div>
+      </ng-container>
+
+    </ng-container>
+
+  </div>
+
+  <!-- デバッグ表示 -->
+  <div *ngIf="!isProduction" class="debug-info">
+    Type: {{ overlayObject?.type }}<br>
+    Op: {{ overlayObject?.opacity }}<br>
+    IsMine: {{ overlayObject?.isMine }}<br>
+    Queue: {{ overlayObject?.taskQueue?.children?.length }}
+  </div>
+</div>

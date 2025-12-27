@@ -1,0 +1,118 @@
+<div class="plugin-container h-100">
+  <div class="main-content">
+    <!-- 左カラム: リスト -->
+    <div class="left-panel">
+      <div class="p-2 border-bottom">
+        <button class="btn btn-xs btn-primary btn-block" (click)="createNew()">＋ 新規追加</button>
+      </div>
+      <div class="list-group list-group-flush overflow-auto flex-grow-1">
+        <button *ngFor="let item of cutIns" 
+                class="list-group-item list-group-item-action"
+                [class.active]="selectedIdentifier === item.identifier"
+                (click)="select(item.identifier)">
+          {{ item.name || '(名称未設定)' }}
+        </button>
+        <div *ngIf="cutIns.length === 0" class="p-3 text-muted small text-center">
+          データがありません
+        </div>
+      </div>
+    </div>
+
+    <!-- 右カラム: 編集・実行 -->
+    <div class="right-panel">
+      <ng-container *ngIf="editingCutIn; else noSelection">
+        <div class="d-flex justify-content-between align-items-start mb-3">
+          <h6 class="mb-0">
+            <span class="badge badge-secondary mr-1">{{ editingCutIn.identifier ? '編集' : '新規' }}</span>
+            {{ editingCutIn.name }}
+          </h6>
+          <div class="btn-group">
+            <button class="btn btn-sm btn-success" (click)="play()" title="全体に再生">▶ 再生</button>
+            <button class="btn btn-sm btn-info" (click)="playLocal()" title="自分だけ見る">👁</button>
+          </div>
+        </div>
+
+        <!-- プレビュー -->
+        <div class="preview-area mb-3 text-center border rounded bg-dark p-2" (click)="openImageSelecter()" title="画像を変更">
+          <img [src]="getImageUrl(editingCutIn.imageIdentifier)" class="img-fluid mw-100 mh-100" *ngIf="editingCutIn.imageIdentifier">
+          <div class="text-white small p-4" *ngIf="!editingCutIn.imageIdentifier">クリックして画像を選択</div>
+        </div>
+
+        <!-- 編集フォーム -->
+        <div class="form-row mb-2">
+          <div class="col-8">
+            <label class="small mb-0">名前</label>
+            <input type="text" class="form-control form-control-sm" [(ngModel)]="editingCutIn.name">
+          </div>
+          <div class="col-4">
+            <label class="small mb-0">秒数</label>
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="editingCutIn.duration" min="1">
+          </div>
+        </div>
+
+        <div class="form-group mb-2">
+          <label class="small mb-0">起動キーワード</label>
+          <input type="text" class="form-control form-control-sm font-weight-bold" [(ngModel)]="editingCutIn.keyword" placeholder="@必殺技 など">
+        </div>
+
+        <div class="section-title small mt-3 mb-1 border-bottom">大きさ</div>
+        <div class="form-group mb-2">
+          <div class="d-flex align-items-center mb-1">
+            <div class="custom-control custom-radio custom-control-inline mr-2">
+              <input type="radio" id="modeScale" name="sizeMode" class="custom-control-input" value="scale" [(ngModel)]="sizeMode">
+              <label class="custom-control-label small" for="modeScale">拡大率で指定</label>
+            </div>
+            <div class="custom-control custom-radio custom-control-inline">
+              <input type="radio" id="modeRatio" name="sizeMode" class="custom-control-input" value="ratio" [(ngModel)]="sizeMode">
+              <label class="custom-control-label small" for="modeRatio">比率で指定</label>
+            </div>
+          </div>
+
+          <div *ngIf="sizeMode === 'scale'" class="form-row align-items-center">
+            <div class="col-4 small">拡大率</div>
+            <div class="col-8">
+              <div class="input-group input-group-sm">
+                <input type="number" class="form-control" [(ngModel)]="editingCutIn.scale" min="0.1" step="0.1">
+                <div class="input-group-append"><span class="input-group-text">倍</span></div>
+              </div>
+            </div>
+          </div>
+
+          <div *ngIf="sizeMode === 'ratio'" class="form-row align-items-center">
+            <div class="col-4 small">比率</div>
+            <div class="col-8">
+              <div class="input-group input-group-sm">
+                <input type="number" class="form-control" [(ngModel)]="editingCutIn.width" min="1" max="100">
+                <div class="input-group-append"><span class="input-group-text">%</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-title small mt-3 mb-1 border-bottom">表示位置</div>
+        <div class="form-row mb-2">
+          <div class="col-6">
+            <label class="small mb-0">X (%)</label>
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="editingCutIn.left" min="0" max="100">
+          </div>
+          <div class="col-6">
+            <label class="small mb-0">Y (%)</label>
+            <input type="number" class="form-control form-control-sm" [(ngModel)]="editingCutIn.top" min="0" max="100">
+          </div>
+        </div>
+
+        <div class="d-flex justify-content-between mt-4">
+          <button class="btn btn-sm btn-outline-danger" (click)="delete()">削除</button>
+          <button class="btn btn-sm btn-primary px-4" (click)="save()">保存</button>
+        </div>
+      </ng-container>
+
+      <ng-template #noSelection>
+        <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted">
+          <i class="material-icons display-4 mb-2">touch_app</i>
+          <p>項目を選択するか、新規作成してください</p>
+        </div>
+      </ng-template>
+    </div>
+  </div>
+</div>
