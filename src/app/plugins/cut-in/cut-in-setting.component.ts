@@ -1,6 +1,6 @@
 import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CutInService } from './cut-in.service';
-import { CutIn } from './cut-in.model';
+import { CutIn, DEFAULT_CUT_IN } from './cut-in.model';
 import { PluginUiService } from '../service/plugin-ui.service';
 import { FileSelecterComponent } from '../../component/file-selecter/file-selecter.component';
 import { ImageStorage } from '@udonarium/core/file-storage/image-storage';
@@ -26,7 +26,7 @@ export class CutInSettingComponent implements OnInit {
     if (!this.editingCutIn) return;
     if (value === 'ratio') {
       this.editingCutIn.scale = 1.0;
-      if (this.editingCutIn.width === 0) this.editingCutIn.width = 30; // デフォルト
+      if (this.editingCutIn.width === 0) this.editingCutIn.width = DEFAULT_CUT_IN.width;
     } else {
       this.editingCutIn.width = 0;
     }
@@ -51,30 +51,76 @@ export class CutInSettingComponent implements OnInit {
     return this.cutInService.cutIns;
   }
 
+  get audios() {
+    return AudioStorage.instance.audios.filter(audio => !audio.isHidden);
+  }
+
   select(identifier: string) {
     this.selectedIdentifier = identifier;
     const found = this.cutInService.getCutInById(identifier);
     this.editingCutIn = found ? { ...found } : null;
+    
+    // Restore video URL for display
+    if (this.editingCutIn?.type === 'video' && this.editingCutIn.videoIdentifier) {
+      this._videoUrl = `https://www.youtube.com/watch?v=${this.editingCutIn.videoIdentifier}`;
+    } else {
+      this._videoUrl = '';
+    }
+
     this.changeDetector.markForCheck();
   }
 
   createNew() {
     this.selectedIdentifier = null;
     this.editingCutIn = {
-      identifier: '',
-      name: '新規カットイン',
-      imageIdentifier: '',
-      duration: 5,
-      left: 50,
-      top: 50,
-      width: 30,
-      height: 0,
-      opacity: 1.0,
-      scale: 1.0,
-      keyword: '',
-      audioIdentifier: ''
+      ...DEFAULT_CUT_IN,
+      identifier: ''
     };
+    this.videoUrl = ''; // Reset video URL
     this.changeDetector.markForCheck();
+  }
+
+  // Helper property for UI binding
+  get cutInType(): 'image' | 'video' {
+    return this.editingCutIn?.type || 'image';
+  }
+  
+  set cutInType(type: 'image' | 'video') {
+    if (this.editingCutIn) {
+      this.editingCutIn.type = type;
+      this.changeDetector.markForCheck();
+    }
+  }
+
+  // YouTube URL Management
+  _videoUrl: string = '';
+  get videoUrl(): string {
+    return this._videoUrl;
+  }
+  set videoUrl(url: string) {
+    this._videoUrl = url;
+    if (this.editingCutIn) {
+      const videoId = this.extractYouTubeId(url);
+      console.log('[CutInSetting] URL Input:', url, '-> ID:', videoId);
+      if (videoId) {
+        this.editingCutIn.videoIdentifier = videoId;
+      }
+      this.changeDetector.markForCheck(); // Force UI update
+    }
+  }
+
+  private extractYouTubeId(url: string): string | null {
+    if (!url) return null;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const match = url.match(regExp);
+    return (match && match[2].length === 11) ? match[2] : null;
+  }
+
+  getVideoThumbnailUrl(): string {
+    if (this.editingCutIn?.videoIdentifier) {
+      return `https://img.youtube.com/vi/${this.editingCutIn.videoIdentifier}/hqdefault.jpg`;
+    }
+    return '';
   }
 
   save() {
@@ -89,12 +135,12 @@ export class CutInSettingComponent implements OnInit {
 
     if (this.editingCutIn.identifier) {
       this.cutInService.updateCutIn(this.editingCutIn);
+      this.select(this.editingCutIn.identifier); // Reload to ensure consistency
     } else {
       const newCutIn = { ...this.editingCutIn, identifier: crypto.randomUUID() };
       this.cutInService.addCutIn(newCutIn);
-      this.selectedIdentifier = newCutIn.identifier;
+      this.select(newCutIn.identifier); // Switch to edit mode
     }
-    this.changeDetector.markForCheck();
   }
 
   delete() {

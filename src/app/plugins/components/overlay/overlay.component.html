@@ -1,10 +1,31 @@
-<div class="overlay-content-wrapper" [ngStyle]="wrapperStyle" [class.has-frame]="hasFrame">
+<div class="overlay-content-wrapper" [ngStyle]="wrapperStyle" [class.has-frame]="hasFrame" (click)="closeLocal()">
   
   <!-- 演出ロジック専用の要素（Angularのバインドを持たせない） -->
   <div #effectTarget class="effect-target">
     
     <ng-container [ngSwitch]="overlayObject?.type">
       
+      <!-- Video (YouTube) -->
+      <ng-container *ngSwitchCase="'video'">
+        <youtube-player 
+          *ngIf="videoId && isVisible"
+          [videoId]="videoId"
+          [width]="videoWidth"
+          [height]="videoHeight"
+          [playerVars]="{ autoplay: 1, rel: 0, controls: 0, loop: 0 }">
+        </youtube-player>
+        <!-- Click surface to catch events on top of the iframe -->
+        <div class="video-click-surface"></div>
+        <div *ngIf="!videoId" style="color: red; background: white; padding: 10px;">VIDEO ID NOT SET</div>
+      </ng-container>
+
+      <!-- Image (New Standard) -->
+      <ng-container *ngSwitchCase="'image'">
+        <img *ngIf="imageUrl" [src]="imageUrl" draggable="false">
+        <div *ngIf="!imageUrl" style="color: red; background: white; padding: 10px;">IMAGE NOT SET</div>
+      </ng-container>
+
+      <!-- Standing (Backward Compatibility) -->
       <ng-container *ngSwitchCase="'standing'">
         <img *ngIf="imageUrl" [src]="imageUrl" draggable="false">
         <div *ngIf="!imageUrl" style="color: red; background: white; padding: 10px;">IMAGE NOT SET</div>

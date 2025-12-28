@@ -15,6 +15,7 @@ import { DependencyResolverService } from './service/dependency-resolver.service
 import { UiDependencyResolverService } from './service/ui-dependency-resolver.service';
 import { PluginsComponentsModule } from './components/plugins-components.module';
 import { ChatListenerService } from './service/chat-listener.service';
+import { PluginMapperService } from './service/plugin-mapper.service';
 
 @NgModule({
   declarations: [
@@ -42,6 +43,7 @@ import { ChatListenerService } from './service/chat-listener.service';
     DependencyResolverService,
     UiDependencyResolverService,
     ChatListenerService,
+    PluginMapperService,
   ]
 })
 export class PluginsModule { }

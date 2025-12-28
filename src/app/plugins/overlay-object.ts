@@ -15,11 +15,17 @@ export class OverlayObject extends ObjectNode {
   @SyncVar() opacity: number = 1.0;
   @SyncVar() scale: number = 1.0;
   @SyncVar() zIndex: number = 2000000;
-  @SyncVar() type: string = 'generic';
+  @SyncVar() type: string = 'generic'; // 'image' | 'video' | 'text' | 'generic'
   @SyncVar() label: string = '';
-  @SyncVar() imageIdentifier: string = '';
+  @SyncVar() imageIdentifier: string = ''; // Deprecated: Use sourceIdentifier instead
   @SyncVar() imageName: string = '';
   @SyncVar() ownerPeerId: string = '';
+
+  // New Properties for Media Support
+  @SyncVar() sourceIdentifier: string = ''; // Image Identifier or YouTube Video ID
+  @SyncVar() sourceType: string = 'udonarium-image'; // 'udonarium-image' | 'youtube-video' | 'direct-text'
+  @SyncVar() isLocal: boolean = false; // If true, this object is not synced via P2P (conceptually)
+  @SyncVar() expirationTime: number = 0; // Timestamp when this object should be destroyed
 
   /**
    * 自分がこのオブジェクトの所有者（作成者）であるかどうか。

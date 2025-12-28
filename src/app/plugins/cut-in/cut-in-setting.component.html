@@ -1,18 +1,18 @@
-<div class="plugin-container h-100">
-  <div class="main-content">
+<div class="layout-container">
+  <div class="layout-body">
     <!-- 左カラム: リスト -->
     <div class="left-panel">
-      <div class="p-2 border-bottom">
-        <button class="btn btn-xs btn-primary btn-block" (click)="createNew()">＋ 新規追加</button>
+      <div class="panel-header">
+        <button class="btn btn-xs btn-primary full-width-btn" (click)="createNew()">＋ 新規追加</button>
       </div>
-      <div class="list-group list-group-flush overflow-auto flex-grow-1">
+      <div class="custom-list flex-grow-1">
         <button *ngFor="let item of cutIns" 
-                class="list-group-item list-group-item-action"
+                class="custom-list-item"
                 [class.active]="selectedIdentifier === item.identifier"
                 (click)="select(item.identifier)">
           {{ item.name || '(名称未設定)' }}
         </button>
-        <div *ngIf="cutIns.length === 0" class="p-3 text-muted small text-center">
+        <div *ngIf="cutIns.length === 0" class="empty-message">
           データがありません
         </div>
       </div>
@@ -21,8 +21,8 @@
     <!-- 右カラム: 編集・実行 -->
     <div class="right-panel">
       <ng-container *ngIf="editingCutIn; else noSelection">
-        <div class="d-flex justify-content-between align-items-start mb-3">
-          <h6 class="mb-0">
+        <div class="header-row">
+          <h6 class="title">
             <span class="badge badge-secondary mr-1">{{ editingCutIn.identifier ? '編集' : '新規' }}</span>
             {{ editingCutIn.name }}
           </h6>
@@ -32,84 +32,154 @@
           </div>
         </div>
 
-        <!-- プレビュー -->
-        <div class="preview-area mb-3 text-center border rounded bg-dark p-2" (click)="openImageSelecter()" title="画像を変更">
-          <img [src]="getImageUrl(editingCutIn.imageIdentifier)" class="img-fluid mw-100 mh-100" *ngIf="editingCutIn.imageIdentifier">
-          <div class="text-white small p-4" *ngIf="!editingCutIn.imageIdentifier">クリックして画像を選択</div>
+        <!-- タイプ選択 -->
+        <div class="form-group">
+          <div class="radio-group">
+            <input type="radio" id="typeImage" name="cutInType" value="image" [(ngModel)]="cutInType">
+            <label for="typeImage">画像 (Image)</label>
+            
+            <input type="radio" id="typeVideo" name="cutInType" value="video" [(ngModel)]="cutInType">
+            <label for="typeVideo">動画 (YouTube)</label>
+          </div>
+        </div>
+
+        <!-- プレビュー (画像) -->
+        <div *ngIf="cutInType === 'image'" class="preview-area" (click)="openImageSelecter()" title="画像を変更">
+          <img [src]="getImageUrl(editingCutIn.imageIdentifier)" class="img-fluid" *ngIf="editingCutIn.imageIdentifier">
+          <div class="preview-placeholder" *ngIf="!editingCutIn.imageIdentifier">クリックして画像を選択</div>
+        </div>
+
+        <!-- プレビュー (動画) -->
+        <div *ngIf="cutInType === 'video'" class="preview-area">
+          <img [src]="getVideoThumbnailUrl()" class="img-fluid" *ngIf="editingCutIn.videoIdentifier">
+          <div class="preview-placeholder" *ngIf="!editingCutIn.videoIdentifier">URLを入力してください</div>
         </div>
 
         <!-- 編集フォーム -->
-        <div class="form-row mb-2">
-          <div class="col-8">
-            <label class="small mb-0">名前</label>
-            <input type="text" class="form-control form-control-sm" [(ngModel)]="editingCutIn.name">
+        <div class="form-section">
+          <div class="flex-row" *ngIf="cutInType === 'video'">
+            <div class="flex-label small">URL</div>
+            <div class="flex-controls column-direction">
+              <input type="text" class="form-control" [(ngModel)]="videoUrl" placeholder="https://www.youtube.com/watch?v=...">
+              <div class="text-right">
+                <a href="https://www.youtube.com/terms" target="_blank" class="small-link">YouTube 利用規約</a>
+              </div>
+            </div>
           </div>
-          <div class="col-4">
-            <label class="small mb-0">秒数</label>
-            <input type="number" class="form-control form-control-sm" [(ngModel)]="editingCutIn.duration" min="1">
+          
+          <div class="flex-row">
+            <div class="flex-label small">名前</div>
+            <div class="flex-controls">
+              <input type="text" class="form-control" [(ngModel)]="editingCutIn.name">
+            </div>
+          </div>
+          
+          <div class="flex-row">
+            <div class="flex-label small">秒数</div>
+            <div class="flex-controls">
+              <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.duration" min="0">
+              <span class="small-label ml-1" style="margin-left: 4px;">(0=無制限)</span>
+            </div>
           </div>
         </div>
 
-        <div class="form-group mb-2">
-          <label class="small mb-0">起動キーワード</label>
-          <input type="text" class="form-control form-control-sm font-weight-bold" [(ngModel)]="editingCutIn.keyword" placeholder="@必殺技 など">
+        <div class="form-group">
+          <label class="small-label">起動キーワード</label>
+          <input type="text" class="form-control bold-text" [(ngModel)]="editingCutIn.keyword" placeholder="@必殺技 など">
         </div>
 
-        <div class="section-title small mt-3 mb-1 border-bottom">大きさ</div>
-        <div class="form-group mb-2">
-          <div class="d-flex align-items-center mb-1">
-            <div class="custom-control custom-radio custom-control-inline mr-2">
-              <input type="radio" id="modeScale" name="sizeMode" class="custom-control-input" value="scale" [(ngModel)]="sizeMode">
-              <label class="custom-control-label small" for="modeScale">拡大率で指定</label>
-            </div>
-            <div class="custom-control custom-radio custom-control-inline">
-              <input type="radio" id="modeRatio" name="sizeMode" class="custom-control-input" value="ratio" [(ngModel)]="sizeMode">
-              <label class="custom-control-label small" for="modeRatio">比率で指定</label>
-            </div>
+        <div class="section-divider">音声設定</div>
+        <div class="form-group">
+          <label class="small-label">音源</label>
+          <select class="form-control" [(ngModel)]="editingCutIn.audioIdentifier">
+            <option value="">(なし)</option>
+            <option *ngFor="let audio of audios" [value]="audio.identifier">{{ audio.name }}</option>
+          </select>
+        </div>
+
+        <div class="form-group" *ngIf="editingCutIn.audioIdentifier">
+          <div class="radio-group mb-1">
+            <input type="radio" id="audioModeSE" name="audioMode" value="se" [(ngModel)]="editingCutIn.audioMode">
+            <label for="audioModeSE">SEとして再生</label>
+            
+            <input type="radio" id="audioModeBGM" name="audioMode" value="bgm" [(ngModel)]="editingCutIn.audioMode">
+            <label for="audioModeBGM">BGMとして再生</label>
           </div>
 
-          <div *ngIf="sizeMode === 'scale'" class="form-row align-items-center">
-            <div class="col-4 small">拡大率</div>
-            <div class="col-8">
-              <div class="input-group input-group-sm">
+          <div class="checkbox-row small">
+            <label *ngIf="editingCutIn.audioMode === 'se'" class="mr-3">
+              <input type="checkbox" [(ngModel)]="editingCutIn.isLoop"> ループ再生
+            </label>
+            <label>
+              <input type="checkbox" [(ngModel)]="editingCutIn.stopJukebox"> 既存BGMを停止
+            </label>
+          </div>
+        </div>
+
+        <div class="section-divider">大きさ</div>
+        <div class="form-group">
+          <div class="radio-group mb-1">
+            <input type="radio" id="modeScale" name="sizeMode" value="scale" [(ngModel)]="sizeMode">
+            <label for="modeScale">拡大率で指定</label>
+            
+            <input type="radio" id="modeRatio" name="sizeMode" value="ratio" [(ngModel)]="sizeMode">
+            <label for="modeRatio">比率で指定</label>
+          </div>
+
+          <div *ngIf="sizeMode === 'scale'" class="flex-row align-items-center mb-1">
+            <div class="flex-label small">拡大率</div>
+            <div class="flex-controls">
+              <input type="range" class="custom-range flex-grow-1 mr-2" min="0.1" max="3.0" step="0.1" [(ngModel)]="editingCutIn.scale">
+              <div class="input-with-unit">
                 <input type="number" class="form-control" [(ngModel)]="editingCutIn.scale" min="0.1" step="0.1">
-                <div class="input-group-append"><span class="input-group-text">倍</span></div>
+                <span class="unit-text">倍</span>
               </div>
             </div>
           </div>
 
-          <div *ngIf="sizeMode === 'ratio'" class="form-row align-items-center">
-            <div class="col-4 small">比率</div>
-            <div class="col-8">
-              <div class="input-group input-group-sm">
+          <div *ngIf="sizeMode === 'ratio'" class="flex-row align-items-center mb-1">
+            <div class="flex-label small">幅(%)</div>
+            <div class="flex-controls">
+              <input type="range" class="custom-range flex-grow-1 mr-2" min="1" max="100" step="1" [(ngModel)]="editingCutIn.width">
+              <div class="input-with-unit">
                 <input type="number" class="form-control" [(ngModel)]="editingCutIn.width" min="1" max="100">
-                <div class="input-group-append"><span class="input-group-text">%</span></div>
+                <span class="unit-text">%</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="section-title small mt-3 mb-1 border-bottom">表示位置</div>
-        <div class="form-row mb-2">
-          <div class="col-6">
-            <label class="small mb-0">X (%)</label>
-            <input type="number" class="form-control form-control-sm" [(ngModel)]="editingCutIn.left" min="0" max="100">
+        <div class="section-divider">表示位置</div>
+        <div class="form-group">
+          <div class="flex-row align-items-center mb-1">
+            <div class="flex-label small">X (%)</div>
+            <div class="flex-controls">
+              <input type="range" class="custom-range flex-grow-1 mr-2" min="0" max="100" step="1" [(ngModel)]="editingCutIn.left">
+              <div class="input-with-unit no-unit">
+                <input type="number" class="form-control" [(ngModel)]="editingCutIn.left" min="0" max="100">
+              </div>
+            </div>
           </div>
-          <div class="col-6">
-            <label class="small mb-0">Y (%)</label>
-            <input type="number" class="form-control form-control-sm" [(ngModel)]="editingCutIn.top" min="0" max="100">
+          <div class="flex-row align-items-center">
+            <div class="flex-label small">Y (%)</div>
+            <div class="flex-controls">
+              <input type="range" class="custom-range flex-grow-1 mr-2" min="0" max="100" step="1" [(ngModel)]="editingCutIn.top">
+              <div class="input-with-unit no-unit">
+                <input type="number" class="form-control" [(ngModel)]="editingCutIn.top" min="0" max="100">
+              </div>
+            </div>
           </div>
         </div>
 
-        <div class="d-flex justify-content-between mt-4">
+        <div class="footer-actions">
           <button class="btn btn-sm btn-outline-danger" (click)="delete()">削除</button>
           <button class="btn btn-sm btn-primary px-4" (click)="save()">保存</button>
         </div>
       </ng-container>
 
       <ng-template #noSelection>
-        <div class="h-100 d-flex flex-column align-items-center justify-content-center text-muted">
-          <i class="material-icons display-4 mb-2">touch_app</i>
+        <div class="empty-state">
+          <i class="material-icons large-icon">touch_app</i>
           <p>項目を選択するか、新規作成してください</p>
         </div>
       </ng-template>

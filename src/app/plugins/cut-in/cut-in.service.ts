@@ -6,13 +6,20 @@ import { PluginDataObserverService } from '../service/plugin-data-observer.servi
 import { CutIn } from './cut-in.model';
 import { ChatListenerService } from '../service/chat-listener.service';
 import { CutInPlaybackService } from './cut-in-playback.service';
+import { PluginMapperService, MappingOptions } from '../service/plugin-mapper.service';
+import { DataElement } from '@udonarium/data-element';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CutInService {
-  private readonly PLUGIN_ID = 'cut-in-plugin';
-  private readonly FILE_NAME_HINT = 'plugin_cutin';
+  private readonly PLUGIN_ID = 'cut-in';
+
+  private readonly MAPPING_OPTIONS: MappingOptions = {
+    tagMap: { 'cutIns': 'cut-in-list' },
+    arrayItemNames: { 'cutIns': 'cut-in' },
+    attrProps: ['identifier']
+  };
 
   private container: PluginDataContainer | null = null;
   private _cutIns: CutIn[] = [];
@@ -21,7 +28,8 @@ export class CutInService {
     private pluginHelper: PluginHelperService,
     private observerService: PluginDataObserverService,
     private chatListenerService: ChatListenerService,
-    private playbackService: CutInPlaybackService
+    private playbackService: CutInPlaybackService,
+    private mapperService: PluginMapperService
   ) {
     this.initialize();
   }
@@ -35,7 +43,7 @@ export class CutInService {
     this.observerService.observe(
       this,
       this.PLUGIN_ID,
-      this.FILE_NAME_HINT,
+      '',
       container => {
         this.container = container;
         this.loadFromContainer();
@@ -44,29 +52,56 @@ export class CutInService {
   }
 
   private loadFromContainer() {
-    if (!this.container || !this.container.data) {
+    if (!this.container) {
       this._cutIns = [];
       this.updateChatListeners();
       return;
     }
 
-    try {
-      this._cutIns = JSON.parse(this.container.data);
-      console.log('[CutInService] Loaded cut-ins:', this._cutIns.length);
-      this.updateChatListeners();
-    } catch (e) {
-      console.error('[CutInService] Failed to parse cut-in data:', e);
-      this._cutIns = [];
-      this.updateChatListeners();
+    // childrenから 'cut-in-list' を探す
+    const listElement = this.container.children.find(child => child instanceof DataElement && child.name === 'cut-in-list') as DataElement;
+    
+    if (listElement) {
+      const result = this.mapperService.fromElement<{ cutIns: CutIn[] }>(listElement, this.MAPPING_OPTIONS);
+      this._cutIns = result.cutIns || [];
+      console.log('[CutInService] Loaded cut-ins (XML):', this._cutIns.length);
+    } else {
+      // 後方互換性：古いJSON形式があれば読み込む
+      if (this.container.data) {
+        try {
+          this._cutIns = JSON.parse(this.container.data);
+          console.log('[CutInService] Loaded cut-ins (Legacy JSON):', this._cutIns.length);
+          // 即座にXML形式へ変換保存を試みる
+          this.saveToContainer();
+        } catch (e) {
+          console.error('[CutInService] Failed to parse legacy JSON:', e);
+          this._cutIns = [];
+        }
+      } else {
+        this._cutIns = [];
+      }
     }
+    this.updateChatListeners();
   }
 
   private saveToContainer() {
     if (!this.container) {
-      this.container = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID, this.FILE_NAME_HINT);
+      this.container = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID);
     }
 
-    this.container.data = JSON.stringify(this._cutIns);
+    // 既存のXML構造をクリア
+    const oldList = this.container.children.find(child => child instanceof DataElement && child.name === 'cut-in-list');
+    if (oldList) {
+      this.container.removeChild(oldList);
+    }
+
+    // データをXML(DataElement)化して追加
+    const listElement = this.mapperService.toElement('cutIns', this._cutIns, this.MAPPING_OPTIONS);
+    this.container.appendChild(listElement);
+
+    // 古いJSONデータフィールドをクリア
+    this.container.data = '';
+    
     this.container.update();
     this.updateChatListeners();
   }
