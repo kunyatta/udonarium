@@ -12,7 +12,7 @@ export class CutInPlugin implements IPluginWithUI {
   readonly type: 'panel' = 'panel';
   readonly icon: string = 'image'; 
   readonly component = CutInSettingComponent;
-  readonly width: number = 400;
+  readonly width: number = 500;
   readonly height: number = 600;
   readonly isSingleton: boolean = true;
 
