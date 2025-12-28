@@ -10,7 +10,7 @@ export class CutInPlugin implements IPluginWithUI {
   // IPluginWithUI properties
   readonly name: string = 'カットイン';
   readonly type: 'panel' = 'panel';
-  readonly icon: string = 'image'; 
+  readonly icon: string = 'burst_mode'; 
   readonly component = CutInSettingComponent;
   readonly width: number = 500;
   readonly height: number = 600;
