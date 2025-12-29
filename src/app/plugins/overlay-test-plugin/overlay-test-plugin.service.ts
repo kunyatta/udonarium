@@ -35,6 +35,7 @@ export class OverlayTestPlugin implements IPluginWithUI {
   createTestOverlay(type: string, label: string) {
     const obj = this.pluginOverlayService.createOverlay(type);
     obj.label = label;
+    obj.isDebug = true; // テスト用なのでデバッグ情報を表示
     // テスト用に少しランダムな位置に配置
     obj.left = 30 + Math.random() * 40;
     obj.top = 30 + Math.random() * 40;

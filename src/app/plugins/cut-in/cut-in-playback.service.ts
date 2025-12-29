@@ -115,12 +115,11 @@ export class CutInPlaybackService {
     
     // メディアソースの設定
     if (cutIn.type === 'video' && cutIn.videoIdentifier) {
-      overlay.sourceIdentifier = cutIn.videoIdentifier;
+      overlay.videoIdentifier = cutIn.videoIdentifier;
       overlay.sourceType = 'youtube-video';
     } else {
       // 画像の場合 (デフォルト)
-      overlay.sourceIdentifier = cutIn.imageIdentifier;
-      overlay.imageIdentifier = cutIn.imageIdentifier; // 互換性のため維持
+      overlay.imageIdentifier = cutIn.imageIdentifier;
       overlay.sourceType = 'udonarium-image';
     }
     

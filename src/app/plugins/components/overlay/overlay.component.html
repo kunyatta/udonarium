@@ -16,19 +16,19 @@
         </youtube-player>
         <!-- Click surface to catch events on top of the iframe -->
         <div class="video-click-surface"></div>
-        <div *ngIf="!videoId" style="color: red; background: white; padding: 10px;">VIDEO ID NOT SET</div>
+        <div *ngIf="!videoId && overlayObject?.isDebug" style="color: red; background: white; padding: 10px;">VIDEO ID NOT SET</div>
       </ng-container>
 
       <!-- Image (New Standard) -->
       <ng-container *ngSwitchCase="'image'">
         <img *ngIf="imageUrl" [src]="imageUrl" draggable="false">
-        <div *ngIf="!imageUrl" style="color: red; background: white; padding: 10px;">IMAGE NOT SET</div>
+        <div *ngIf="!imageUrl && overlayObject?.isDebug" style="color: red; background: white; padding: 10px;">IMAGE NOT SET</div>
       </ng-container>
 
       <!-- Standing (Backward Compatibility) -->
       <ng-container *ngSwitchCase="'standing'">
         <img *ngIf="imageUrl" [src]="imageUrl" draggable="false">
-        <div *ngIf="!imageUrl" style="color: red; background: white; padding: 10px;">IMAGE NOT SET</div>
+        <div *ngIf="!imageUrl && overlayObject?.isDebug" style="color: red; background: white; padding: 10px;">IMAGE NOT SET</div>
       </ng-container>
 
       <ng-container *ngSwitchDefault>
@@ -42,7 +42,7 @@
   </div>
 
   <!-- デバッグ表示 -->
-  <div *ngIf="!isProduction" class="debug-info">
+  <div *ngIf="overlayObject?.isDebug" class="debug-info">
     Type: {{ overlayObject?.type }}<br>
     Op: {{ overlayObject?.opacity }}<br>
     IsMine: {{ overlayObject?.isMine }}

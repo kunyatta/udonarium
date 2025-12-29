@@ -39,8 +39,8 @@ export class PluginOverlayService {
         }
       })
       .on('XML_LOADED', () => {
-        // ルームデータ読込時は一旦全てクリアして再同期
-        this.clear();
+        // ルームデータ読込時はコンポーネントを再同期
+        // this.clear() は行わない（GameObjectは既にObjectStoreにあるため）
         this.syncComponents();
       });
 

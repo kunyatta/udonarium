@@ -1,26 +1,85 @@
-.controller-panel {
+.panel-container {
   padding: 10px;
+  color: #eee;
+  background: #333;
+  height: 100%;
+  overflow-y: auto;
+}
+
+h3, h4 {
+  margin: 5px 0;
+  border-bottom: 1px solid #555;
+}
+
+.control-group {
   display: flex;
-  flex-direction: column;
-  gap: 15px;
+  gap: 5px;
+  flex-wrap: wrap;
 }
 
 .section {
+  background: #444;
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 4px;
+}
+
+.input-row {
   display: flex;
-  flex-direction: column;
-  gap: 5px;
+  justify-content: space-between;
+  margin-bottom: 5px;
 }
 
 label {
   font-size: 12px;
-  font-weight: bold;
+  display: flex;
+  flex-direction: column;
+  width: 48%;
+}
+
+input, select {
+  background: #222;
+  color: white;
+  border: 1px solid #555;
+  padding: 2px;
+  margin-top: 2px;
 }
 
 button {
-  padding: 8px;
+  padding: 5px 10px;
   cursor: pointer;
+  background: #555;
+  color: white;
+  border: none;
+  border-radius: 3px;
 }
 
-input[type="range"] {
+button:hover {
+  background: #666;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.action-btn {
   width: 100%;
+  margin-top: 5px;
+  padding: 8px;
+  font-weight: bold;
+}
+
+.action-btn.primary {
+  background: #007acc;
+}
+
+.action-btn.primary:hover {
+  background: #0098ff;
+}
+
+.placeholder {
+  text-align: center;
+  color: #888;
+  padding: 20px;
 }

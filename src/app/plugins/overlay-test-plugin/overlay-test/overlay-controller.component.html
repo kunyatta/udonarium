@@ -1,51 +1,57 @@
-<div class="controller-panel">
-  <div class="section">
-    <p>演出生成</p>
-    <button (click)="createStanding('立ち絵 A')">立ち絵 A 作成</button>
-    <button (click)="createStanding('立ち絵 B')">立ち絵 B 作成</button>
-    <button (click)="destroyAll()" class="danger">全て削除</button>
+<div class="panel-container">
+  <h3>Overlay Sandbox</h3>
+  
+  <div class="control-group">
+    <button (click)="createStanding('TestChar')">Create New Object</button>
+    <button (click)="destroyAll()">Clear All</button>
+    <button (click)="selectImage()" [disabled]="!targetObject">Set Image</button>
   </div>
 
   <hr>
 
-  <div class="section" *ngIf="targetObject">
-    <p>操作対象: {{targetObject.label}}</p>
-    
-    <label>コンテンツ</label>
-    <div class="button-group">
-      <button (click)="selectImage()">画像を選択</button>
+  <div *ngIf="targetObject">
+    <div class="section">
+      <h4>1. Initial State (Start)</h4>
+      <div class="input-row">
+        <label>X (%): <input type="number" [(ngModel)]="initial.x"></label>
+        <label>Y (%): <input type="number" [(ngModel)]="initial.y"></label>
+      </div>
+      <div class="input-row">
+        <label>Opacity: <input type="number" step="0.1" max="1" min="0" [(ngModel)]="initial.opacity"></label>
+        <label>Scale: <input type="number" step="0.1" [(ngModel)]="initial.scale"></label>
+      </div>
+      <button (click)="setInitialState()" class="action-btn">Set Initial Position (Jump)</button>
     </div>
 
-    <label>演出指示</label>
-    <div class="button-group grid">
-      <button (click)="addEffect('fade-in')">Fade In</button>
-      <button (click)="addEffect('fade-out')">Fade Out</button>
-      <button (click)="addEffect('slide-in-left')">Slide In</button>
-      <button (click)="addEffect('shake')">Shake</button>
+    <div class="section">
+      <h4>2. Animation Settings</h4>
+      <div class="input-row">
+        <label>Duration (ms): <input type="number" step="100" [(ngModel)]="anim.duration"></label>
+      </div>
+      <div class="input-row">
+        <label>Easing: 
+          <select [(ngModel)]="anim.easing">
+            <option *ngFor="let e of easings" [value]="e">{{e}}</option>
+          </select>
+        </label>
+      </div>
     </div>
 
-    <hr>
-
-    <label>位置 (X: {{targetObject.left}}%, Y: {{targetObject.top}}%)</label>
-    <input type="range" min="0" max="100" [(ngModel)]="targetObject.left" (change)="targetObject.update()">
-    <input type="range" min="0" max="100" [(ngModel)]="targetObject.top" (change)="targetObject.update()">
-
-    <label>不透明度 ({{targetObject.opacity}})</label>
-    <input type="range" min="0" max="1" step="0.1" [(ngModel)]="targetObject.opacity" (change)="targetObject.update()">
-
-    <label>拡大率 ({{targetObject.scale}})</label>
-    <input type="range" min="0.1" max="3.0" step="0.1" [(ngModel)]="targetObject.scale" (change)="targetObject.update()">
-
-    <hr>
-    <p>フィッティング枠 (0 = 無制限)</p>
-    <label>幅 ({{targetObject.width}}%)</label>
-    <input type="range" min="0" max="100" [(ngModel)]="targetObject.width" (change)="targetObject.update()">
-    
-    <label>高さ ({{targetObject.height}}%)</label>
-    <input type="range" min="0" max="100" [(ngModel)]="targetObject.height" (change)="targetObject.update()">
+    <div class="section">
+      <h4>3. Target State (End)</h4>
+      <div class="input-row">
+        <label>X (%): <input type="number" [(ngModel)]="target.x"></label>
+        <label>Y (%): <input type="number" [(ngModel)]="target.y"></label>
+      </div>
+      <div class="input-row">
+        <label>Opacity: <input type="number" step="0.1" max="1" min="0" [(ngModel)]="target.opacity"></label>
+        <label>Scale: <input type="number" step="0.1" [(ngModel)]="target.scale"></label>
+      </div>
+      <button (click)="playAnimation()" class="action-btn primary">Play Animation (Go!)</button>
+    </div>
   </div>
-
-  <div class="info" *ngIf="!targetObject">
-    <p>オブジェクトを作成してテストを開始してください。</p>
+  
+  <div *ngIf="!targetObject" class="placeholder">
+    Create an object first.
   </div>
 </div>

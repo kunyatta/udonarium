@@ -31,6 +31,15 @@ export class OverlayComponent implements OnInit, OnDestroy {
   @HostBinding('style.z-index') get hostZIndex() { return this.overlayObject?.zIndex || 2000000; }
   @HostBinding('style.pointer-events') get pointerEvents() { return this.isVisible ? 'auto' : 'none'; }
   @HostBinding('style.display') get display() { return this.isVisible ? 'block' : 'none'; }
+  @HostBinding('style.opacity') get hostOpacity() { return this.overlayObject?.opacity ?? 1; }
+  @HostBinding('style.transform') get hostTransform() {
+    const scale = this.overlayObject?.scale ?? 1;
+    return `translate(-50%, -50%) scale(${scale})`;
+  }
+  @HostBinding('style.transition') get hostTransition() {
+    if (!this.overlayObject) return 'none';
+    return `all ${this.overlayObject.transitionDuration}ms ${this.overlayObject.transitionEasing}`;
+  }
 
   constructor(
     private changeDetector: ChangeDetectorRef
@@ -46,11 +55,8 @@ export class OverlayComponent implements OnInit, OnDestroy {
     if (!this.overlayObject) return { display: 'none' };
     
     return {
-      'opacity': this.overlayObject.opacity,
-      'transform': `translate(-50%, -50%) scale(${this.overlayObject.scale})`, // Fix centering
       'width': this.overlayObject.width > 0 ? this.overlayObject.width + 'vw' : 'auto',
-      'height': this.overlayObject.height > 0 ? this.overlayObject.height + 'vh' : 'auto',
-      'transition': `all ${this.overlayObject.transitionDuration}ms ${this.overlayObject.transitionEasing}`
+      'height': this.overlayObject.height > 0 ? this.overlayObject.height + 'vh' : 'auto'
     };
   }
 
@@ -60,7 +66,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
 
   get videoId(): string | undefined {
     if (this.overlayObject?.type !== 'video') return undefined;
-    return this.overlayObject?.sourceIdentifier;
+    return this.overlayObject?.videoIdentifier;
   }
 
   get videoWidth(): number | undefined {
@@ -78,9 +84,9 @@ export class OverlayComponent implements OnInit, OnDestroy {
   get imageUrl(): string {
     if (!this.overlayObject) return '';
     
-    // 0. SourceIdentifierによる解決 (新規)
-    if (this.overlayObject.sourceIdentifier && this.overlayObject.type !== 'video') {
-       const file = ImageStorage.instance.get(this.overlayObject.sourceIdentifier);
+    // 0. imageIdentifierによる解決 (標準)
+    if (this.overlayObject.imageIdentifier && this.overlayObject.type !== 'video') {
+       const file = ImageStorage.instance.get(this.overlayObject.imageIdentifier);
        if (file) return file.url;
     }
     
