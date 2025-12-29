@@ -69,6 +69,9 @@ export class SaveDataService {
       const finalXml = this.convertToXml(pluginXml, 'data');
       const xmlFileName = fileNameHint ? `plugin_${pluginId}_${fileNameHint}.xml` : `plugin_${pluginId}.xml`;
       files.push(new File([finalXml], xmlFileName, { type: 'text/plain' }));
+
+      // プラグインデータ内で使用されている画像も収集する
+      files = files.concat(this.searchImageFiles(finalXml));
     }
     // ----- MODIFICATION END (kunyatta) for PluginSystem -----
 

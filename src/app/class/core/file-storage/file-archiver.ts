@@ -82,6 +82,15 @@ export class FileArchiver {
     if (!files) return;
     let loadFiles: File[] = files instanceof FileList ? toArrayOfFileList(files) : files;
 
+    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    // data.xmlを最優先で読み込み、部屋の初期化(Room.parseInnerXml)を完了させてからプラグインデータを読み込む
+    loadFiles.sort((a, b) => {
+      if (a.name === 'data.xml') return -1;
+      if (b.name === 'data.xml') return 1;
+      return 0;
+    });
+    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+
     for (let file of loadFiles) {
       await this.handleImage(file);
       await this.handleAudio(file);
@@ -116,28 +125,18 @@ export class FileArchiver {
     console.log(file.name + ' type:' + file.type);
     try {
       let xmlElement: Element = XmlUtil.xml2element(await FileReaderUtil.readAsTextAsync(file));
-      // ----- MODIFICATION START (kunyatta) for PluginDataIndependence -----
-      if (xmlElement) {
-        // chat.xmlが読み込まれた場合、GM以外のユーザーに確認を促すため、CONFIRM_XML_LOADイベントを発行する
-        // (withFlyの fly_chat.xml に相当)
-        if (file.name === 'chat.xml') {
-          EventSystem.trigger('CONFIRM_XML_LOAD', { xmlElement: xmlElement });
-        } else if (file.name.startsWith('plugin_')) {
-          // plugin_*.xmlが読み込まれた場合、XML_LOADEDイベントを発行する代わりに、その場でPluginDataContainerをパースしてObjectStoreに復元する。
-          if (xmlElement.tagName.toLowerCase() === 'data') {
-            for (let i = 0; i < xmlElement.children.length; i++) {
-              const element = xmlElement.children[i];
-              // 各要素をGameObjectとしてパースし、ObjectStoreに復元
-              ObjectSerializer.instance.parseXml(element);
-            }
-          }
-          // このファイルについては、復元処理をここで行ったため、Udonarium本体に処理を委譲する。XML_LOADED イベントは発行しない。
-        } else {
-          EventSystem.trigger('XML_LOADED', { xmlElement: xmlElement });
+      // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+      if (!xmlElement) return;
+
+      if (file.name.startsWith('plugin_') && xmlElement.tagName.toLowerCase() === 'data') {
+        // plugin_*.xmlが読み込まれた場合、その場でPluginDataContainerをパースしてObjectStoreに復元する。
+        for (let i = 0; i < xmlElement.children.length; i++) {
+          ObjectSerializer.instance.parseXml(xmlElement.children[i]);
         }
+      } else {
+        EventSystem.trigger('XML_LOADED', { xmlElement: xmlElement });
       }
-      // if (xmlElement) EventSystem.trigger('XML_LOADED', { xmlElement: xmlElement });
-      // ----- MODIFICATION END (kunyatta) for PluginDataIndependence -----
+      // ----- MODIFICATION END (kunyatta) for PluginSystem -----
     } catch (reason) {
       console.warn(reason);
     }

@@ -29,9 +29,6 @@ export class Room extends GameObject implements InnerXml {
     objects = objects.concat(ObjectStore.instance.getObjects(CardStack));
     objects = objects.concat(ObjectStore.instance.getObjects(Card).filter((obj) => { return obj.parent === null }));
     objects = objects.concat(ObjectStore.instance.getObjects(DiceSymbol));
-    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
-    objects = objects.concat(ObjectStore.instance.getObjects(PluginDataContainer));
-    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
     for (let object of objects) {
       xml += object.toXml();
     }

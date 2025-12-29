@@ -18,7 +18,7 @@ export class CutInService {
   private readonly MAPPING_OPTIONS: MappingOptions = {
     tagMap: { 'cutIns': 'cut-in-list' },
     arrayItemNames: { 'cutIns': 'cut-in' },
-    attrProps: ['identifier']
+    attrProps: ['identifier', 'imageIdentifier']
   };
 
   private container: PluginDataContainer | null = null;
@@ -43,7 +43,7 @@ export class CutInService {
     this.observerService.observe(
       this,
       this.PLUGIN_ID,
-      '',
+      'default',
       container => {
         this.container = container;
         this.loadFromContainer();
@@ -86,7 +86,7 @@ export class CutInService {
 
   private saveToContainer() {
     if (!this.container) {
-      this.container = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID);
+      this.container = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID, 'default');
     }
 
     // 既存のXML構造をクリア
