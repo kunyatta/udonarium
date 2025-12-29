@@ -25,12 +25,6 @@
         <div *ngIf="!imageUrl && overlayObject?.isDebug" style="color: red; background: white; padding: 10px;">IMAGE NOT SET</div>
       </ng-container>
 
-      <!-- Standing (Backward Compatibility) -->
-      <ng-container *ngSwitchCase="'standing'">
-        <img *ngIf="imageUrl" [src]="imageUrl" draggable="false">
-        <div *ngIf="!imageUrl && overlayObject?.isDebug" style="color: red; background: white; padding: 10px;">IMAGE NOT SET</div>
-      </ng-container>
-
       <ng-container *ngSwitchDefault>
         <div class="generic-content">
           {{ overlayObject?.label || 'No Label' }}

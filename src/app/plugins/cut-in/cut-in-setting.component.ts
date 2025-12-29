@@ -40,6 +40,94 @@ export class CutInSettingComponent implements OnInit {
     private changeDetector: ChangeDetectorRef
   ) {}
 
+  readonly easings = [
+    'linear', 'ease', 'ease-in', 'ease-out', 'ease-in-out',
+    'cubic-bezier(0.175, 0.885, 0.32, 1.275)', // backOut
+    'cubic-bezier(0.6, -0.28, 0.735, 0.045)', // backIn
+  ];
+
+  setQuickInEffect(effect: string) {
+    if (!this.editingCutIn) return;
+    
+    // 現在の目標状態をベースにする
+    this.editingCutIn.startLeft = this.editingCutIn.left;
+    this.editingCutIn.startTop = this.editingCutIn.top;
+    this.editingCutIn.startOpacity = this.editingCutIn.opacity;
+    this.editingCutIn.startScale = this.editingCutIn.scale;
+
+    switch (effect) {
+      case 'fade':
+        this.editingCutIn.startOpacity = 0;
+        break;
+      case 'slide-left':
+        this.editingCutIn.startLeft = this.editingCutIn.left - 20;
+        this.editingCutIn.startOpacity = 0;
+        break;
+      case 'slide-right':
+        this.editingCutIn.startLeft = this.editingCutIn.left + 20;
+        this.editingCutIn.startOpacity = 0;
+        break;
+      case 'slide-up':
+        this.editingCutIn.startTop = this.editingCutIn.top + 20;
+        this.editingCutIn.startOpacity = 0;
+        break;
+      case 'slide-down':
+        this.editingCutIn.startTop = this.editingCutIn.top - 20;
+        this.editingCutIn.startOpacity = 0;
+        break;
+      case 'zoom-in':
+        this.editingCutIn.startScale = 0;
+        this.editingCutIn.startOpacity = 0;
+        break;
+      case 'zoom-out':
+        this.editingCutIn.startScale = 2.0;
+        this.editingCutIn.startOpacity = 0;
+        break;
+    }
+    this.changeDetector.markForCheck();
+  }
+
+  setQuickOutEffect(effect: string) {
+    if (!this.editingCutIn) return;
+    
+    // 現在の目標状態（登場後の状態）をベースにする
+    this.editingCutIn.endLeft = this.editingCutIn.left;
+    this.editingCutIn.endTop = this.editingCutIn.top;
+    this.editingCutIn.endOpacity = this.editingCutIn.opacity;
+    this.editingCutIn.endScale = this.editingCutIn.scale;
+
+    switch (effect) {
+      case 'fade':
+        this.editingCutIn.endOpacity = 0;
+        break;
+      case 'slide-left':
+        this.editingCutIn.endLeft = this.editingCutIn.left - 20;
+        this.editingCutIn.endOpacity = 0;
+        break;
+      case 'slide-right':
+        this.editingCutIn.endLeft = this.editingCutIn.left + 20;
+        this.editingCutIn.endOpacity = 0;
+        break;
+      case 'slide-up':
+        this.editingCutIn.endTop = this.editingCutIn.top - 20;
+        this.editingCutIn.endOpacity = 0;
+        break;
+      case 'slide-down':
+        this.editingCutIn.endTop = this.editingCutIn.top + 20;
+        this.editingCutIn.endOpacity = 0;
+        break;
+      case 'zoom-in':
+        this.editingCutIn.endScale = 2.0;
+        this.editingCutIn.endOpacity = 0;
+        break;
+      case 'zoom-out':
+        this.editingCutIn.endScale = 0;
+        this.editingCutIn.endOpacity = 0;
+        break;
+    }
+    this.changeDetector.markForCheck();
+  }
+
   ngOnInit(): void {
     // 最初の項目があれば選択する
     if (this.cutIns.length > 0) {

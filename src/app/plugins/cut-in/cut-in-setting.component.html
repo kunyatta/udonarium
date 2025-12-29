@@ -160,7 +160,7 @@
               </div>
             </div>
           </div>
-          <div class="flex-row align-items-center">
+          <div class="flex-row align-items-center mb-1">
             <div class="flex-label small">Y (%)</div>
             <div class="flex-controls">
               <input type="range" class="custom-range flex-grow-1 mr-2" min="0" max="100" step="1" [(ngModel)]="editingCutIn.top">
@@ -169,6 +169,107 @@
               </div>
             </div>
           </div>
+          <div class="flex-row align-items-center">
+            <div class="flex-label small">不透明度</div>
+            <div class="flex-controls">
+              <input type="range" class="custom-range flex-grow-1 mr-2" min="0" max="1" step="0.1" [(ngModel)]="editingCutIn.opacity">
+              <div class="input-with-unit no-unit">
+                <input type="number" class="form-control" [(ngModel)]="editingCutIn.opacity" min="0" max="1" step="0.1">
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="section-divider">演出（登場時）</div>
+        <div class="form-group">
+          <label class="small-label">クイック設定</label>
+          <div class="quick-btns">
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('fade')">フェード</button>
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('slide-left')">←スライド</button>
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('slide-right')">スライド→</button>
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('slide-up')">↑スライド</button>
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('slide-down')">↓スライド</button>
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('zoom-in')">ズームイン</button>
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('zoom-out')">ズームアウト</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="flex-row mb-1 align-items-center">
+            <div class="flex-label small">時間(ms)</div>
+            <div class="flex-controls">
+              <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.inDuration" step="100" min="0">
+              <select class="form-control flex-grow-1 ml-1" [(ngModel)]="editingCutIn.easing">
+                <option *ngFor="let e of easings" [value]="e">{{e}}</option>
+              </select>
+            </div>
+          </div>
+          
+          <details class="advanced-settings">
+            <summary class="small">開始状態の詳細設定</summary>
+            <div class="flex-row align-items-center mb-1">
+              <div class="flex-label small">開始X (%)</div>
+              <div class="flex-controls">
+                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.startLeft">
+                <span class="small-label ml-2">開始Y (%)</span>
+                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.startTop">
+              </div>
+            </div>
+            <div class="flex-row align-items-center mb-1">
+              <div class="flex-label small">不透明度</div>
+              <div class="flex-controls">
+                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.startOpacity" step="0.1" min="0" max="1">
+                <span class="small-label ml-2">スケール</span>
+                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.startScale" step="0.1">
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="section-divider">演出（退場時）</div>
+        <div class="form-group">
+          <label class="small-label">クイック設定</label>
+          <div class="quick-btns">
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('fade')">フェードアウト</button>
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('slide-left')">←スライド消去</button>
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('slide-right')">スライド消去→</button>
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('slide-up')">↑スライド消去</button>
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('slide-down')">↓スライド消去</button>
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('zoom-in')">ズームアウト(拡大)</button>
+            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('zoom-out')">ズームアウト(縮小)</button>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <div class="flex-row mb-1 align-items-center">
+            <div class="flex-label small">時間(ms)</div>
+            <div class="flex-controls">
+              <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.outDuration" step="100" min="0">
+              <select class="form-control flex-grow-1 ml-1" [(ngModel)]="editingCutIn.outEasing">
+                <option *ngFor="let e of easings" [value]="e">{{e}}</option>
+              </select>
+            </div>
+          </div>
+          
+          <details class="advanced-settings">
+            <summary class="small">終了状態の詳細設定</summary>
+            <div class="flex-row align-items-center mb-1">
+              <div class="flex-label small">終了X (%)</div>
+              <div class="flex-controls">
+                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.endLeft">
+                <span class="small-label ml-2">終了Y (%)</span>
+                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.endTop">
+              </div>
+            </div>
+            <div class="flex-row align-items-center mb-1">
+              <div class="flex-label small">不透明度</div>
+              <div class="flex-controls">
+                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.endOpacity" step="0.1" min="0" max="1">
+                <span class="small-label ml-2">スケール</span>
+                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.endScale" step="0.1">
+              </div>
+            </div>
+          </details>
         </div>
 
         <div class="footer-actions">

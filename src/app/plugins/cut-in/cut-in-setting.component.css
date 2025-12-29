@@ -147,6 +147,22 @@
   border-color: #555;
 }
 
+.btn-xs {
+  padding: 1px 5px;
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.btn-outline-primary {
+  color: #444;
+  background-color: #fff;
+  border-color: #ccc;
+}
+.btn-outline-primary:hover {
+  background-color: #eee;
+  border-color: #999;
+}
+
 .btn-outline-danger {
   color: #a00;
   border-color: #ccc;
@@ -337,6 +353,29 @@ input[type="range"].custom-range {
 .small-link { font-size: 11px; color: #666; }
 .text-right { text-align: right; }
 .width-short { width: 60px; }
+
+.quick-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+
+.advanced-settings {
+  margin-top: 8px;
+  padding: 8px;
+  background: rgba(0, 0, 0, 0.03);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  border-radius: 4px;
+}
+
+.advanced-settings summary {
+  cursor: pointer;
+  outline: none;
+  color: #666;
+  margin-bottom: 4px;
+  font-weight: bold;
+}
 
 .footer-actions {
   display: flex;

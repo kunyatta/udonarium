@@ -2,16 +2,17 @@ import { Injectable } from '@angular/core';
 import { CutIn } from './cut-in.model';
 import { PluginOverlayService } from '../service/plugin-overlay.service';
 import { OverlayObject } from '../overlay-object';
-import { SoundEffect } from '@udonarium/sound-effect';
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
 import { Jukebox } from '@udonarium/Jukebox';
+import { OverlayEffectsService } from '../service/overlay-effects.service';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CutInPlaybackService {
   constructor(
-    private overlayService: PluginOverlayService
+    private overlayService: PluginOverlayService,
+    private effectsService: OverlayEffectsService
   ) {}
 
   /**
@@ -47,11 +48,26 @@ export class CutInPlaybackService {
       }
     }
 
-    // 指定時間後に削除 (0の場合は削除しない=無制限)
+    // 演出終了・削除のスケジュール
     if (cutIn.duration > 0) {
+      const totalMs = cutIn.duration * 1000;
+      const outDuration = cutIn.outDuration || 0;
+
+      // 退場アニメーションの開始 (削除の outDuration 前に実行)
+      if (outDuration > 0 && outDuration < totalMs) {
+        setTimeout(() => {
+          if (ObjectStore.instance.get(overlay.identifier)) {
+            this.applyExitConfig(overlay, cutIn);
+          }
+        }, totalMs - outDuration);
+      }
+
+      // 最終的な削除
       setTimeout(() => {
-        overlay.destroy();
-      }, cutIn.duration * 1000);
+        if (ObjectStore.instance.get(overlay.identifier)) {
+          overlay.destroy();
+        }
+      }, totalMs);
     }
   }
 
@@ -88,40 +104,80 @@ export class CutInPlaybackService {
       }
     }
 
-    // 指定時間後に削除 (0の場合は削除しない=無制限)
+    // 演出終了・削除のスケジュール (ローカル)
     if (cutIn.duration > 0) {
+      const totalMs = cutIn.duration * 1000;
+      const outDuration = cutIn.outDuration || 0;
+
+      // 退場アニメーション
+      if (outDuration > 0 && outDuration < totalMs) {
+        setTimeout(() => {
+          this.applyExitConfig(overlay, cutIn, true);
+        }, totalMs - outDuration);
+      }
+
+      // 最終的な削除
       setTimeout(() => {
         this.overlayService.destroyLocalOverlay(overlay.identifier);
-      }, cutIn.duration * 1000);
+      }, totalMs);
     }
   }
 
   private applyConfig(overlay: OverlayObject, cutIn: CutIn, isLocal: boolean = false) {
-    overlay.left = cutIn.left;
-    overlay.top = cutIn.top;
+    // 1. 静的な基本設定
     overlay.width = cutIn.width;
     overlay.height = cutIn.height;
-    overlay.opacity = cutIn.opacity;
-    overlay.scale = cutIn.scale;
     overlay.isLocal = isLocal;
     
-    // 有効期限の設定 (現在時刻 + 持続時間 + マージン1秒)
-    // 0の場合は無制限とするため、expirationTimeは0のまま(無効)にする
+    // 有効期限 (削除のバッファとして +1秒)
     if (cutIn.duration > 0) {
       overlay.expirationTime = Date.now() + (cutIn.duration * 1000) + 1000;
     } else {
       overlay.expirationTime = 0;
     }
     
-    // メディアソースの設定
     if (cutIn.type === 'video' && cutIn.videoIdentifier) {
       overlay.videoIdentifier = cutIn.videoIdentifier;
       overlay.sourceType = 'youtube-video';
     } else {
-      // 画像の場合 (デフォルト)
       overlay.imageIdentifier = cutIn.imageIdentifier;
       overlay.sourceType = 'udonarium-image';
     }
+
+    // 2. 状態遷移（登場アニメーション）の実行
+    const startState = {
+      left: cutIn.startLeft,
+      top: cutIn.startTop,
+      opacity: cutIn.startOpacity,
+      scale: cutIn.startScale
+    };
+
+    const targetState = {
+      left: cutIn.left,
+      top: cutIn.top,
+      opacity: cutIn.opacity,
+      scale: cutIn.scale
+    };
+
+    this.effectsService.applyTransition(
+      overlay, 
+      startState, 
+      targetState, 
+      cutIn.inDuration, 
+      cutIn.easing
+    );
+  }
+
+  /**
+   * 退場アニメーションのプロパティを適用します
+   */
+  private applyExitConfig(overlay: OverlayObject, cutIn: CutIn, isLocal: boolean = false) {
+    overlay.transitionDuration = cutIn.outDuration;
+    overlay.transitionEasing = cutIn.outEasing;
+    overlay.left = cutIn.endLeft;
+    overlay.top = cutIn.endTop;
+    overlay.opacity = cutIn.endOpacity;
+    overlay.scale = cutIn.endScale;
     
     if (!isLocal) {
       overlay.update();
