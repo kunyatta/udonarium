@@ -21,74 +21,86 @@
     <!-- 右カラム: 編集・実行 -->
     <div class="right-panel">
       <ng-container *ngIf="editingCutIn; else noSelection">
-        <div class="header-row">
-          <h6 class="title">
-            <span class="badge badge-secondary mr-1">{{ editingCutIn.identifier ? '編集' : '新規' }}</span>
-            {{ editingCutIn.name }}
-          </h6>
-          <div class="btn-group">
-            <button class="btn btn-sm btn-success" (click)="play()" title="全体に再生">▶ 再生</button>
-            <button class="btn btn-sm btn-info" (click)="playLocal()" title="自分だけ見る">👁</button>
+        <!-- 固定ヘッダーエリア -->
+        <div class="sticky-header">
+          <div class="header-row">
+            <h6 class="title">
+              <span class="badge badge-secondary mr-1">{{ editingCutIn.identifier ? '編集' : '新規' }}</span>
+              {{ editingCutIn.name }}
+            </h6>
+            <div class="btn-group">
+              <button class="btn btn-sm btn-success" (click)="play()" title="全体に再生">▶ 再生</button>
+              <button class="btn btn-sm btn-info" (click)="playLocal()" title="自分だけ見る">👁</button>
+            </div>
+            <button class="btn btn-sm btn-outline-danger ml-1" (click)="stopAll()" title="演出を停止（全員）">■ 停止</button>
+          </div>
+
+          <!-- タイプ選択 & プレビュー (固定) -->
+          <div class="flex-row mb-2">
+            <div class="radio-group small">
+              <input type="radio" id="typeImage" name="cutInType" value="image" [(ngModel)]="cutInType">
+              <label for="typeImage">画像</label>
+              <input type="radio" id="typeVideo" name="cutInType" value="video" [(ngModel)]="cutInType">
+              <label for="typeVideo">動画</label>
+            </div>
+          </div>
+
+          <div *ngIf="cutInType === 'image'" class="preview-area" (click)="openImageSelecter()" title="画像を変更" style="height: 100px; margin-bottom: 12px;">
+            <img [src]="getImageUrl(editingCutIn.imageIdentifier)" class="img-fluid" *ngIf="editingCutIn.imageIdentifier">
+            <div class="preview-placeholder" *ngIf="!editingCutIn.imageIdentifier">クリックして画像を選択</div>
+          </div>
+
+          <div *ngIf="cutInType === 'video'" class="preview-area" style="height: 100px; margin-bottom: 12px;">
+            <img [src]="getVideoThumbnailUrl()" class="img-fluid" *ngIf="editingCutIn.videoIdentifier">
+            <div class="preview-placeholder" *ngIf="!editingCutIn.videoIdentifier">URLを入力してください</div>
+          </div>
+
+          <!-- 保存・削除ボタン (サムネイルの下) -->
+          <div class="flex-row mb-3">
+            <button class="btn btn-sm btn-primary px-4 mr-2" (click)="save()">保存</button>
+            <button class="btn btn-sm btn-outline-danger" (click)="delete()">削除</button>
           </div>
         </div>
 
-        <!-- タイプ選択 -->
-        <div class="form-group">
-          <div class="radio-group">
-            <input type="radio" id="typeImage" name="cutInType" value="image" [(ngModel)]="cutInType">
-            <label for="typeImage">画像 (Image)</label>
+        <!-- スクロール可能な詳細設定エリア -->
+        <div class="scroll-content">
+          <!-- 編集フォーム (基本情報) -->
+          <div class="form-section">
+            <div class="flex-row" *ngIf="cutInType === 'video'">
+              <div class="flex-label small">URL</div>
+              <div class="flex-controls column-direction">
+                <input type="text" class="form-control" [(ngModel)]="videoUrl" placeholder="https://www.youtube.com/watch?v=...">
+                <div class="text-right">
+                  <a href="https://www.youtube.com/terms" target="_blank" class="small-link">YouTube 利用規約</a>
+                </div>
+              </div>
+            </div>
             
-            <input type="radio" id="typeVideo" name="cutInType" value="video" [(ngModel)]="cutInType">
-            <label for="typeVideo">動画 (YouTube)</label>
-          </div>
-        </div>
+            <div class="flex-row">
+              <div class="flex-label small">名前</div>
+              <div class="flex-controls">
+                <input type="text" class="form-control" [(ngModel)]="editingCutIn.name">
+              </div>
+            </div>
 
-        <!-- プレビュー (画像) -->
-        <div *ngIf="cutInType === 'image'" class="preview-area" (click)="openImageSelecter()" title="画像を変更">
-          <img [src]="getImageUrl(editingCutIn.imageIdentifier)" class="img-fluid" *ngIf="editingCutIn.imageIdentifier">
-          <div class="preview-placeholder" *ngIf="!editingCutIn.imageIdentifier">クリックして画像を選択</div>
-        </div>
-
-        <!-- プレビュー (動画) -->
-        <div *ngIf="cutInType === 'video'" class="preview-area">
-          <img [src]="getVideoThumbnailUrl()" class="img-fluid" *ngIf="editingCutIn.videoIdentifier">
-          <div class="preview-placeholder" *ngIf="!editingCutIn.videoIdentifier">URLを入力してください</div>
-        </div>
-
-        <!-- 編集フォーム -->
-        <div class="form-section">
-          <div class="flex-row" *ngIf="cutInType === 'video'">
-            <div class="flex-label small">URL</div>
-            <div class="flex-controls column-direction">
-              <input type="text" class="form-control" [(ngModel)]="videoUrl" placeholder="https://www.youtube.com/watch?v=...">
-              <div class="text-right">
-                <a href="https://www.youtube.com/terms" target="_blank" class="small-link">YouTube 利用規約</a>
+            <div class="flex-row">
+              <div class="flex-label small">キーワード</div>
+              <div class="flex-controls">
+                <input type="text" class="form-control bold-text" [(ngModel)]="editingCutIn.keyword" placeholder="@必殺技 など">
+              </div>
+            </div>
+            
+            <div class="flex-row">
+              <div class="flex-label small">表示秒数</div>
+              <div class="flex-controls">
+                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.duration" min="0">
+                <span class="small-label ml-1" style="margin-left: 4px;">(0=無制限)</span>
               </div>
             </div>
           </div>
-          
-          <div class="flex-row">
-            <div class="flex-label small">名前</div>
-            <div class="flex-controls">
-              <input type="text" class="form-control" [(ngModel)]="editingCutIn.name">
-            </div>
-          </div>
-          
-          <div class="flex-row">
-            <div class="flex-label small">秒数</div>
-            <div class="flex-controls">
-              <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.duration" min="0">
-              <span class="small-label ml-1" style="margin-left: 4px;">(0=無制限)</span>
-            </div>
-          </div>
-        </div>
 
-        <div class="form-group">
-          <label class="small-label">起動キーワード</label>
-          <input type="text" class="form-control bold-text" [(ngModel)]="editingCutIn.keyword" placeholder="@必殺技 など">
-        </div>
-
-        <div class="section-divider">音声設定</div>
+          <div class="section-divider">音声設定</div>
+          <!-- ... (以下、既存の音声、大きさ、位置、演出設定) ... -->
         <div class="form-group">
           <label class="small-label">音源</label>
           <select class="form-control" [(ngModel)]="editingCutIn.audioIdentifier">
@@ -123,7 +135,7 @@
             <label for="modeScale">拡大率で指定</label>
             
             <input type="radio" id="modeRatio" name="sizeMode" value="ratio" [(ngModel)]="sizeMode">
-            <label for="modeRatio">比率で指定</label>
+            <label for="modeRatio">画面比率(%)で指定</label>
           </div>
 
           <div *ngIf="sizeMode === 'scale'" class="flex-row align-items-center mb-1">
@@ -272,9 +284,7 @@
           </details>
         </div>
 
-        <div class="footer-actions">
-          <button class="btn btn-sm btn-outline-danger" (click)="delete()">削除</button>
-          <button class="btn btn-sm btn-primary px-4" (click)="save()">保存</button>
+        <!-- スクロールエリア終了 -->
         </div>
       </ng-container>
 

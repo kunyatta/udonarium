@@ -253,6 +253,10 @@ export class CutInSettingComponent implements OnInit {
     if (this.editingCutIn) this.playbackService.playLocal(this.editingCutIn);
   }
 
+  stopAll() {
+    this.playbackService.stopAll();
+  }
+
   openImageSelecter() {
     if (!this.editingCutIn) return;
     this.pluginUiService.openAsModal(FileSelecterComponent, { title: '画像を選択' }).then(fileIdentifier => {

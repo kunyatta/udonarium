@@ -179,8 +179,42 @@ export class CutInPlaybackService {
     overlay.opacity = cutIn.endOpacity;
     overlay.scale = cutIn.endScale;
     
-    if (!isLocal) {
-      overlay.update();
+        if (!isLocal) {
+    
+          overlay.update();
+    
+        }
+    
+      }
+    
+    
+    
+      /**
+    
+       * 現在実行中の全ての演出（全員分および自分のみ）を停止・破棄します。
+    
+       */
+    
+      stopAll() {
+    
+        console.log('[CutIn] Stop All Overlays');
+    
+        // 同期されている全ての演出オブジェクトを削除（全員の画面から消える）
+    
+        const objects = ObjectStore.instance.getObjects<OverlayObject>(OverlayObject);
+    
+        for (const obj of objects) {
+    
+          obj.destroy();
+    
+        }
+    
+        // 自分だけの演出（ローカル）も即座にクリア
+    
+        this.overlayService.clear();
+    
+      }
+    
     }
-  }
-}
+    
+    

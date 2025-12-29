@@ -77,9 +77,34 @@
 /* Right Panel (Editor) */
 .right-panel {
   flex: 1 1 auto;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  overflow: hidden; /* 子要素でスクロールを管理 */
+}
+
+.sticky-header {
+  flex: 0 0 auto;
+  padding: 16px;
+  padding-bottom: 0;
+  background-color: rgba(255, 255, 255, 0.2);
+  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  z-index: 10;
+}
+
+.scroll-content {
+  flex: 1 1 auto;
   padding: 16px;
   overflow-y: auto;
-  min-width: 0;
+  /* スクロールバーのカスタマイズ（任意） */
+}
+
+.scroll-content::-webkit-scrollbar {
+  width: 6px;
+}
+.scroll-content::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 3px;
 }
 
 /* Header & Title */
