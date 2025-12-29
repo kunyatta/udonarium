@@ -1,6 +1,5 @@
 import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy, HostBinding } from '@angular/core';
 import { OverlayObject } from '../../overlay-object';
-import { OverlayEffectsService } from '../../service/overlay-effects.service';
 import { EventSystem } from '@udonarium/core/system';
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
 import { DataElement } from '@udonarium/data-element';
@@ -34,8 +33,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
   @HostBinding('style.display') get display() { return this.isVisible ? 'block' : 'none'; }
 
   constructor(
-    private changeDetector: ChangeDetectorRef,
-    private effectsService: OverlayEffectsService
+    private changeDetector: ChangeDetectorRef
   ) {}
 
   closeLocal() {
@@ -51,7 +49,8 @@ export class OverlayComponent implements OnInit, OnDestroy {
       'opacity': this.overlayObject.opacity,
       'transform': `translate(-50%, -50%) scale(${this.overlayObject.scale})`, // Fix centering
       'width': this.overlayObject.width > 0 ? this.overlayObject.width + 'vw' : 'auto',
-      'height': this.overlayObject.height > 0 ? this.overlayObject.height + 'vh' : 'auto'
+      'height': this.overlayObject.height > 0 ? this.overlayObject.height + 'vh' : 'auto',
+      'transition': `all ${this.overlayObject.transitionDuration}ms ${this.overlayObject.transitionEasing}`
     };
   }
 
@@ -137,10 +136,6 @@ export class OverlayComponent implements OnInit, OnDestroy {
         this.checkExpiration();
         this.playAudioIfSet();
         this.changeDetector.markForCheck();
-        // 演出処理をサービスに移譲 (現在はダミー)
-        if (this.effectTargetRef) {
-          this.effectsService.processQueue(this.overlayObject, this.effectTargetRef.nativeElement);
-        }
       })
       .on('CHANGE_JUKEBOX_VOLUME', event => {
         this.changeDetector.markForCheck();
@@ -152,11 +147,6 @@ export class OverlayComponent implements OnInit, OnDestroy {
           this.changeDetector.markForCheck();
         }
       });
-
-    // 初回実行
-    if (this.effectTargetRef) {
-      this.effectsService.processQueue(this.overlayObject, this.effectTargetRef.nativeElement);
-    }
   }
 
   private startExpirationTimer() {

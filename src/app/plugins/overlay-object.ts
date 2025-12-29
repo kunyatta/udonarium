@@ -27,15 +27,15 @@ export class OverlayObject extends ObjectNode {
   @SyncVar() isLocal: boolean = false; // If true, this object is not synced via P2P (conceptually)
   @SyncVar() expirationTime: number = 0; // Timestamp when this object should be destroyed
 
+  // Animation Properties
+  @SyncVar() transitionDuration: number = 0; // ms
+  @SyncVar() transitionEasing: string = 'ease'; // 'ease', 'linear', 'ease-in-out', 'cubic-bezier(...)', etc.
+
   /**
    * 自分がこのオブジェクトの所有者（作成者）であるかどうか。
    */
   get isMine(): boolean {
     return PeerCursor.myCursor && this.ownerPeerId === PeerCursor.myCursor.peerId;
-  }
-
-  get taskQueue(): DataElement {
-    return this.getFirstElementByName('taskQueue');
   }
 
   get content(): DataElement {
@@ -53,9 +53,6 @@ export class OverlayObject extends ObjectNode {
   }
 
   createRequiredElements() {
-    if (!this.getFirstElementByName('taskQueue')) {
-      this.appendChild(DataElement.create('taskQueue', '', {}, 'taskQueue'));
-    }
     if (!this.getFirstElementByName('content')) {
       this.appendChild(DataElement.create('content', '', {}, 'content'));
     }
@@ -66,40 +63,6 @@ export class OverlayObject extends ObjectNode {
       if (child instanceof DataElement && child.name === name) return child;
     }
     return null;
-  }
-
-  addTask(effectName: string, duration: number, params: any = {}) {
-    const queue = this.taskQueue;
-    if (!queue) return;
-
-    const now = Date.now();
-    const TTL = 30 * 1000; // 30秒
-
-    // 新しいタスクを追加する前に、古すぎるタスクを掃除する（ゾンビ化対策）
-    // P2Pなので、所有者が責任を持って掃除するのが基本だが、
-    // ここで掃除することで「新しい演出をするついでにゴミ捨て」を行う
-    const oldTasks = queue.children.filter(child => {
-      const created = parseInt(child.getAttribute('created') as string) || 0;
-      // createdがない（古い形式）か、TTLを過ぎている場合は削除対象
-      return (created > 0 && now - created > TTL);
-    });
-    
-    // 削除実行
-    oldTasks.forEach(task => queue.removeChild(task));
-    
-    // 最大数制限も維持
-    if (queue.children.length > 10) {
-      while(queue.children.length > 5) {
-        queue.removeChild(queue.children[0]);
-      }
-    }
-    
-    const taskName = `task_${now}_${Math.floor(Math.random() * 1000)}`;
-    // created 属性を追加
-    const task = DataElement.create(taskName, duration.toString(), { ...params, type: effectName, created: now }, effectName);
-    
-    queue.appendChild(task);
-    this.update();
   }
 
   updateContent(name: string, value: string | number) {

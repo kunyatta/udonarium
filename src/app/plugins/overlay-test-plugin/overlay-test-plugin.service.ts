@@ -42,8 +42,12 @@ export class OverlayTestPlugin implements IPluginWithUI {
     // コンテンツ（画像）のダミーセット
     obj.updateContent('url', './assets/images/ic_account_circle_black_24dp_2x.png');
     
-    // 即座にフェードイン演出を追加
-    obj.addTask('fade-in', 500);
+    // 即座にフェードイン演出を追加 (CSS Transition)
+    obj.opacity = 0;
+    setTimeout(() => {
+      obj.transitionDuration = 500;
+      obj.opacity = 1.0;
+    }, 50); // DOM反映待ち
     
     return obj;
   }

@@ -49,6 +49,16 @@ export class OverlayControllerComponent {
   }
 
   addEffect(name: string) {
-    this.targetObject?.addTask(name, 500); // 500ms
+    if (!this.targetObject) return;
+
+    if (name === 'fade-out') {
+      this.targetObject.transitionDuration = 500;
+      this.targetObject.opacity = 0;
+    } else if (name === 'fade-in') {
+      this.targetObject.transitionDuration = 500;
+      this.targetObject.opacity = 1;
+    } else {
+      console.warn('Unknown effect:', name);
+    }
   }
 }
