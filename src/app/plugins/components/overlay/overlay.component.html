@@ -12,7 +12,9 @@
           [videoId]="videoId"
           [width]="videoWidth"
           [height]="videoHeight"
-          [playerVars]="{ autoplay: 1, rel: 0, controls: 0, loop: 0 }">
+          [playerVars]="{ autoplay: 1, rel: 0, controls: 0, loop: 0 }"
+          (ready)="onPlayerReady($event)"
+          (stateChange)="onPlayerStateChange($event)">
         </youtube-player>
         <!-- Click surface to catch events on top of the iframe -->
         <div class="video-click-surface"></div>

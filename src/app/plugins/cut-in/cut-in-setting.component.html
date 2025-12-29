@@ -94,7 +94,9 @@
               <div class="flex-label small">表示秒数</div>
               <div class="flex-controls">
                 <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.duration" min="0">
-                <span class="small-label ml-1" style="margin-left: 4px;">(0=無制限)</span>
+                <span class="small-label ml-1" style="margin-left: 4px;">
+                  {{ editingCutIn.type === 'video' ? '(0=動画終了まで)' : '(0=無制限)' }}
+                </span>
               </div>
             </div>
           </div>

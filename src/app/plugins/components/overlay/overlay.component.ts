@@ -25,6 +25,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
 
   private audioPlayer: AudioPlayer = new AudioPlayer();
   private expirationTimer: any;
+  private exitAnimationScheduled = false;
 
   @HostBinding('style.left.%') get hostLeft() { return this.overlayObject?.left || 0; }
   @HostBinding('style.top.%') get hostTop() { return this.overlayObject?.top || 0; }
@@ -49,6 +50,34 @@ export class OverlayComponent implements OnInit, OnDestroy {
     this.isVisible = false;
     this.audioPlayer.stop();
     this.changeDetector.markForCheck();
+  }
+
+  /**
+   * YouTubeプレーヤーの準備が整ったら、動画の長さを取得して同期します
+   */
+  onPlayerReady(event: any) {
+    if (!this.overlayObject || !this.overlayObject.isMine) return;
+
+    const duration = event.target.getDuration();
+    if (duration > 0) {
+      console.log('[Overlay] Auto-detected video duration:', duration, '(+15s buffer)');
+      // 動画の長さ + 15秒のバッファを持たせることで、ラグがあるプレイヤーも最後まで見れるようにする
+      this.overlayObject.expirationTime = Date.now() + (duration * 1000) + 15000;
+      this.overlayObject.update();
+    }
+  }
+
+  /**
+   * YouTubeプレーヤーの状態変化をハンドルします
+   */
+  onPlayerStateChange(event: any) {
+    // 0 は YT.PlayerState.ENDED (再生終了)
+    if (event && event.data === 0) {
+      console.log('[Overlay] Video playback ended (Local hide).');
+      // 自分の画面上だけで非表示にする。
+      // 全員への同期削除は、所有者の duration タイマーまたは手動停止に任せる。
+      this.closeLocal();
+    }
   }
 
   get wrapperStyle() {
@@ -76,9 +105,17 @@ export class OverlayComponent implements OnInit, OnDestroy {
   }
 
   get videoHeight(): number | undefined {
-    if (!this.overlayObject || this.overlayObject.height <= 0) return undefined;
-    // vh -> px conversion
-    return (window.innerHeight * this.overlayObject.height) / 100;
+    if (!this.overlayObject) return undefined;
+    if (this.overlayObject.height > 0) {
+      // vh -> px conversion
+      return (window.innerHeight * this.overlayObject.height) / 100;
+    }
+    // 高さが指定されていない場合、横幅から 16:9 の比率で計算する
+    const widthPx = this.videoWidth;
+    if (widthPx) {
+      return (widthPx * 9) / 16;
+    }
+    return undefined;
   }
 
   get imageUrl(): string {
@@ -203,15 +240,33 @@ export class OverlayComponent implements OnInit, OnDestroy {
   private checkExpiration() {
     if (!this.overlayObject || this.overlayObject.expirationTime <= 0) return;
 
-    // 現在時刻が有効期限を過ぎていたら非表示にする
-    if (Date.now() > this.overlayObject.expirationTime) {
+    const now = Date.now();
+    const timeLeft = this.overlayObject.expirationTime - now;
+
+    // 1. 退場アニメーションのトリガー (残り時間が transitionDuration 以下になったら)
+    const outDuration = 500; // 本来はObjectから取得すべきだが、まずは固定値でテスト
+    if (timeLeft <= outDuration && !this.exitAnimationScheduled) {
+      this.exitAnimationScheduled = true;
+      console.log('[Overlay] Triggering Exit Animation');
+      this.isVisible = false; // ローカルでの非表示開始
+      this.changeDetector.markForCheck();
+    }
+
+    // 2. 最終的な削除判定
+    if (timeLeft <= 0) {
       if (this.isVisible) {
         console.log('[Overlay] Expired:', this.overlayObject.identifier);
         this.isVisible = false;
         this.audioPlayer.stop();
-        // 注意: ここでdestroy()を呼ぶとP2P同期で他人の画面からも消してしまう恐れがあるため、
-        // あくまで「自分の画面での非表示」に留める。
-        // 本当の削除は所有者のタイマーに任せる。
+        this.changeDetector.markForCheck();
+      }
+
+      // 所有者のみが GameObject を破棄する責務を負う
+      if (this.overlayObject.isMine) {
+        console.log('[Overlay] Owner destroying object.');
+        const obj = this.overlayObject;
+        this.overlayObject = null;
+        obj.destroy();
       }
     }
   }
