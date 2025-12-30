@@ -1,8 +1,10 @@
-import { Injector } from '@angular/core';
+import { Injector, Injectable } from '@angular/core';
 import { IPluginWithUI } from '../i-plugin';
 import { PluginUiService } from '../service/plugin-ui.service';
 import { ChatLogManagerPanelComponent } from './chat-log-manager-panel.component';
+import { UIExtensionService } from '../service/ui-extension.service';
 
+@Injectable()
 export class ChatLogManagerPlugin implements IPluginWithUI {
   readonly pluginName = 'ChatLogManager';
   
@@ -16,11 +18,30 @@ export class ChatLogManagerPlugin implements IPluginWithUI {
   readonly width = 300;
   readonly height = 250;
 
+  constructor(
+    private uiExtensionService: UIExtensionService,
+    private pluginUiService: PluginUiService
+  ) { }
+
   initialize(): void {
     // 初期化処理が必要ならここに記述
   }
 
   initializeUI(injector: Injector): void {
-    // UI初期化が必要ならここに記述
+    this.uiExtensionService.registerAction('chat-window', {
+      name: this.name,
+      icon: this.icon,
+      priority: -10, // 他のボタンより左に表示する
+      action: (context, pointer) => {
+        this.pluginUiService.open(this.component, {
+          title: this.name,
+          width: this.width,
+          height: this.height,
+          left: pointer ? pointer.x - this.width / 2 : undefined,
+          top: pointer ? pointer.y - this.height / 2 : undefined,
+          isSingleton: true
+        });
+      }
+    });
   }
 }

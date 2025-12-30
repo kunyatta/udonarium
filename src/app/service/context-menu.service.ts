@@ -1,4 +1,7 @@
 import { ComponentRef, Injectable, ViewContainerRef } from '@angular/core';
+// ----- MODIFICATION START (kunyatta) for PluginSystem -----
+import { UIExtensionService, ExtensionAction } from '../plugins/service/ui-extension.service';
+// ----- MODIFICATION END (kunyatta) for PluginSystem -----
 
 interface ContextMenuPoint {
   x: number,
@@ -40,7 +43,13 @@ export class ContextMenuService {
     return this.panelComponentRef ? true : false;
   }
 
-  open(position: ContextMenuPoint, actions: ContextMenuAction[], title?: string, parentViewContainerRef?: ViewContainerRef) {
+  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  constructor(
+    private uiExtensionService: UIExtensionService
+  ) { }
+  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+
+  open(position: ContextMenuPoint, actions: ContextMenuAction[], title?: string, parentViewContainerRef?: ViewContainerRef, context?: any) { // ----- MODIFICATION (kunyatta) for PluginSystem -----
     this.close();
     if (!parentViewContainerRef) {
       parentViewContainerRef = ContextMenuService.defaultParentViewContainerRef;
@@ -54,6 +63,20 @@ export class ContextMenuService {
     childPanelService.panelComponentRef = panelComponentRef;
     if (actions) {
       childPanelService.actions = actions;
+      // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+      if (context) {
+        const extensions = this.uiExtensionService.getActions('context-menu', context);
+        if (extensions && extensions.length > 0) {
+          childPanelService.actions.push(ContextMenuSeparator);
+          extensions.forEach(ext => {
+            childPanelService.actions.push({
+              name: ext.name,
+              action: () => ext.action(context, position)
+            });
+          });
+        }
+      }
+      // ----- MODIFICATION END (kunyatta) for PluginSystem -----
     }
     if (position) {
       childPanelService.position.x = position.x;

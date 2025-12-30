@@ -7,6 +7,8 @@ import { CombatFlowPanelComponent } from './combat-flow-panel.component';
 import { CombatStateService } from './combat-state.service';
 import { EventSystem } from '@udonarium/core/system';
 import { PluginDataContainer } from '../../class/plugin-data-container';
+import { UIExtensionService } from '../service/ui-extension.service';
+import { GameCharacter } from '@udonarium/game-character';
 
 export const COMBAT_FLOW_UI_DEFAULTS = {
   CONTROLLER: {
@@ -39,10 +41,42 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
     private combatStateService: CombatStateService,
     private pluginUiService: PluginUiService,
     private observerService: PluginDataObserverService,
+    private uiExtensionService: UIExtensionService,
     private ngZone: NgZone
   ) { }
 
   initializeUI(injector: Injector): void {
+    // UI Extension の登録
+    this.uiExtensionService.registerAction('main-menu', {
+      name: '戦闘',
+      icon: this.icon,
+      priority: 100,
+      action: () => {
+        this.pluginUiService.open(this.component, {
+          title: this.name,
+          width: this.width,
+          height: this.height,
+          isSingleton: true
+        });
+      }
+    });
+
+    this.uiExtensionService.registerAction('context-menu', {
+      name: '戦闘コントローラを開く',
+      action: (context: GameCharacter, pointer) => {
+        this.pluginUiService.open(this.component, {
+          title: this.name,
+          width: this.width,
+          height: this.height,
+          left: pointer ? pointer.x - this.width / 2 : undefined,
+          top: pointer ? pointer.y - this.height / 2 : undefined,
+          isSingleton: true,
+          inputs: { initialCasterIdentifier: context.identifier }
+        });
+      },
+      condition: (context) => context instanceof GameCharacter
+    });
+
     // ルームロード時に監視が重複しないよう、既存の監視があれば解除
     if (this.observer) this.observer.unsubscribe();
     

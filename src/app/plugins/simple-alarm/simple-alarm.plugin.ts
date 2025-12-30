@@ -6,8 +6,8 @@ import { PluginPanelSyncService } from '../service/plugin-panel-sync.service';
 import { AlarmNotificationComponent } from './alarm-notification.component'; // 追加
 import { PLUGIN_ID, FILE_NAME_HINT_ALARM, NOTIFICATION_STATE_KEY } from './simple-alarm.constants';
 import { EventSystem } from '@udonarium/core/system';
-// import { Subject } from 'rxjs'; // 不要
-// import { takeUntil } from 'rxjs/operators'; // 不要
+import { UIExtensionService } from '../service/ui-extension.service';
+import { PluginUiService } from '../service/plugin-ui.service';
 
 @Injectable() // 追加
 export class SimpleAlarmPlugin implements IPluginWithUI, OnDestroy { // OnDestroyを追加
@@ -28,7 +28,9 @@ export class SimpleAlarmPlugin implements IPluginWithUI, OnDestroy { // OnDestro
   constructor(
     private simpleAlarmService: SimpleAlarmService,
     private pluginPanelSyncService: PluginPanelSyncService, // 追加
-    private ngZone: NgZone // 追加
+    private ngZone: NgZone, // 追加
+    private uiExtensionService: UIExtensionService,
+    private pluginUiService: PluginUiService
   ) { }
 
   initialize(): void { }
@@ -36,6 +38,22 @@ export class SimpleAlarmPlugin implements IPluginWithUI, OnDestroy { // OnDestro
   initializeUI(injector: Injector): void {
     // サービスを初期化して常駐させる
     const service = injector.get(SimpleAlarmService); // このままでOK
+
+    this.uiExtensionService.registerAction('chat-window', {
+      name: this.name,
+      icon: this.icon,
+      action: (context, pointer) => {
+        this.pluginUiService.open(this.component, {
+          title: this.name,
+          width: this.width,
+          height: this.height,
+          left: pointer ? pointer.x - this.width / 2 : undefined,
+          top: pointer ? pointer.y - this.height / 2 : undefined,
+          isSingleton: this.isSingleton
+          // layout: 'full-auto' // SimpleAlarmは固定サイズっぽいのでコメントアウトのままにするか、必要なら追加
+        });
+      }
+    });
 
     // AlarmNotificationComponentのP2P同期開閉をPluginPanelSyncServiceに登録
     this.pluginPanelSyncService.registerPanelSync(

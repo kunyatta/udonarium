@@ -5,6 +5,8 @@ import { RollCallAnswerComponent } from './roll-call-answer.component';
 import { RollCallService } from './roll-call.service';
 import { EventSystem } from '@udonarium/core/system';
 import { ROLL_CALL_UI_DEFAULTS } from './roll-call.constants';
+import { UIExtensionService } from '../service/ui-extension.service';
+import { PluginUiService } from '../service/plugin-ui.service';
 
 @Injectable()
 export class RollCallPlugin implements IPluginWithUI, OnDestroy {
@@ -23,7 +25,9 @@ export class RollCallPlugin implements IPluginWithUI, OnDestroy {
   readonly isSingleton = true; // 管理パネルはシングルトン
 
   constructor(
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private uiExtensionService: UIExtensionService,
+    private pluginUiService: PluginUiService
   ) { }
 
   initialize(): void {
@@ -34,6 +38,22 @@ export class RollCallPlugin implements IPluginWithUI, OnDestroy {
     // サービスを初期化して常駐させる
     // これによりRollCallServiceが初期化され、Voteオブジェクトの監視が始まる
     const service = injector.get(RollCallService);
+
+    this.uiExtensionService.registerAction('chat-window', {
+      name: this.name,
+      icon: this.icon,
+      action: (context, pointer) => {
+        this.pluginUiService.open(this.component, {
+          title: this.name,
+          width: this.width,
+          height: this.height,
+          left: pointer ? pointer.x - this.width / 2 : undefined,
+          top: pointer ? pointer.y - this.height / 2 : undefined,
+          isSingleton: this.isSingleton,
+          layout: this.layout
+        });
+      }
+    });
 
     // ルームロード時の再初期化
     EventSystem.register(this).on('XML_LOADED', () => this.initializeUI(injector));

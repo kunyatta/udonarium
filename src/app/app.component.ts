@@ -48,6 +48,7 @@ import { UserPersistenceService } from './plugins/service/user-persistence.servi
 // ----- MODIFICATION END (kunyatta) for UserPersistence -----
 // ----- MODIFICATION START (kunyatta) for PluginSystem -----
 import { PluginOverlayService } from './plugins/service/plugin-overlay.service';
+import { UIExtensionService, ExtensionAction } from './plugins/service/ui-extension.service';
 // ----- MODIFICATION END (kunyatta) for PluginSystem -----
 
 @Component({
@@ -75,11 +76,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private appConfigService: AppConfigService,
     private saveDataService: SaveDataService,
     private ngZone: NgZone,
-    private contextMenuService: ContextMenuService, // ----- MODIFICATION (kunyatta) for PluginSystem -----
     // ----- MODIFICATION START (kunyatta) for PluginSystem -----
     private pluginService: PluginService,
     private pluginUiService: PluginUiService,
     private pluginOverlayService: PluginOverlayService,
+    private uiExtensionService: UIExtensionService,
     // ----- MODIFICATION END (kunyatta) for PluginSystem -----
     // ----- MODIFICATION START (kunyatta) for UserPersistence -----
     private userPersistenceService: UserPersistenceService
@@ -268,26 +269,11 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   }
 
   // ----- MODIFICATION START (kunyatta) for PluginSystem -----
-  toolBox(event: Event) {
-    const button = <HTMLElement>event.target;
-    const clientRect = button.getBoundingClientRect();
-    const position = {
-      x: window.pageXOffset + clientRect.left + (this.openPanelCount % 20 + 1) * 5, // 簡易的な位置計算
-      y: window.pageYOffset + clientRect.top + 20
-    };
-
-    let menu = [];
-    menu.push({ name: '機能', action: null, disabled: true });
-    // TODO: 他のメニュー項目
-    menu.push({
-      name: '拡張',
-      materialIcon: 'extension',
-      action: () => this.openPluginLauncherPanel()
-    });
-    this.contextMenuService.open(position, menu, 'ツールボックス');
+  get mainMenuExtensions(): ExtensionAction[] {
+    return this.uiExtensionService.getActions('main-menu');
   }
 
-  private openPluginLauncherPanel() {
+  openPluginLauncherPanel() {
     const launcherPlugin = this.pluginService.getUIPlugin('plugin-launcher');
     if (launcherPlugin) {
       const panelOptions: PanelOption = {

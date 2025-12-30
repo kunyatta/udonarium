@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, OnDestroy, OnInit } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, OnDestroy, OnInit } from '@angular/core';
 import { ChatMessage } from '@udonarium/chat-message';
 import { ChatTab } from '@udonarium/chat-tab';
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
@@ -8,6 +8,9 @@ import { ChatTabSettingComponent } from 'component/chat-tab-setting/chat-tab-set
 import { ChatMessageService } from 'service/chat-message.service';
 import { PanelOption, PanelService } from 'service/panel.service';
 import { PointerDeviceService } from 'service/pointer-device.service';
+// ----- MODIFICATION START (kunyatta) for PluginSystem -----
+import { UIExtensionService, ExtensionAction } from '../../plugins/service/ui-extension.service';
+// ----- MODIFICATION END (kunyatta) for PluginSystem -----
 
 @Component({
   selector: 'chat-window',
@@ -19,6 +22,17 @@ export class ChatWindowComponent implements OnInit, OnDestroy, AfterViewInit {
 
   get gameType(): string { return !this.chatMessageService.gameType ? 'DiceBot' : this.chatMessageService.gameType; }
   set gameType(gameType: string) { this.chatMessageService.gameType = gameType; }
+
+  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  get chatWindowExtensions(): ExtensionAction[] {
+    return this.uiExtensionService.getActions('chat-window');
+  }
+
+  onClickExtension(extension: ExtensionAction) {
+    const coordinate = this.pointerDeviceService.pointers[0];
+    extension.action(null, coordinate);
+  }
+  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
 
   private _chatTabidentifier: string = '';
   get chatTabidentifier(): string { return this._chatTabidentifier; }
@@ -38,7 +52,11 @@ export class ChatWindowComponent implements OnInit, OnDestroy, AfterViewInit {
   constructor(
     public chatMessageService: ChatMessageService,
     private panelService: PanelService,
-    private pointerDeviceService: PointerDeviceService
+    private pointerDeviceService: PointerDeviceService,
+    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    private uiExtensionService: UIExtensionService,
+    private elementRef: ElementRef
+    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
   ) { }
 
   ngOnInit() {

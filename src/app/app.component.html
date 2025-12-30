@@ -41,10 +41,16 @@
         </a>
       </li>
       <!-- ----- MODIFICATION START (kunyatta) for PluginSystem ----- -->
-      <li (click)="toolBox($event)">
+      <li *ngFor="let extension of mainMenuExtensions" (click)="extension.action()">
         <a routerLink="/" routerLinkActive="active">
-          <div><i class="material-icons icon-size">build</i></div>
-          <div>ツール</div>
+          <div><i class="material-icons icon-size">{{extension.icon}}</i></div>
+          <div>{{extension.name}}</div>
+        </a>
+      </li>
+      <li (click)="openPluginLauncherPanel()">
+        <a routerLink="/" routerLinkActive="active">
+          <div><i class="material-icons icon-size">extension</i></div>
+          <div>拡張</div>
         </a>
       </li>
       <!-- ----- MODIFICATION END (kunyatta) for PluginSystem ----- -->

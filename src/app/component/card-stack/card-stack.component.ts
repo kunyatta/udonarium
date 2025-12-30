@@ -215,7 +215,7 @@ export class CardStackComponent implements OnChanges, AfterViewInit, OnDestroy {
     menuActions = menuActions.concat(this.makeSelectionContextMenu());
     menuActions = menuActions.concat(this.makeContextMenu());
 
-    this.contextMenuService.open(position, menuActions, this.name);
+    this.contextMenuService.open(position, menuActions, this.name, null, this.cardStack);
   }
 
   onMove() {

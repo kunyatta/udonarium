@@ -129,7 +129,7 @@ export class GameCharacterComponent implements OnChanges, OnDestroy {
     let menuActions: ContextMenuAction[] = [];
     menuActions = menuActions.concat(this.makeSelectionContextMenu());
     menuActions = menuActions.concat(this.makeContextMenu());
-    this.contextMenuService.open(position, menuActions, this.name);
+    this.contextMenuService.open(position, menuActions, this.name, null, this.gameCharacter);
   }
 
   onMove() {

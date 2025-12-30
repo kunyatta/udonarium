@@ -191,7 +191,7 @@ export class CardComponent implements OnDestroy, OnChanges, AfterViewInit {
     menuActions = menuActions.concat(this.makeSelectionContextMenu());
     menuActions = menuActions.concat(this.makeContextMenu());
 
-    this.contextMenuService.open(position, menuActions, this.isVisible ? this.name : 'カード');
+    this.contextMenuService.open(position, menuActions, this.isVisible ? this.name : 'カード', null, this.card);
   }
 
   onMove() {
