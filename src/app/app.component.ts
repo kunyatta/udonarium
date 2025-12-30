@@ -273,6 +273,21 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     return this.uiExtensionService.getActions('main-menu');
   }
 
+  get menuPanelHeight(): number {
+    const standardItemCount = 8; // 接続, チャット, テーブル, 画像, 音楽, インベントリ, ZIP, 保存
+    const extensionLauncherCount = 1; // 「拡張」ボタン
+    const pluginItemCount = this.mainMenuExtensions.length;
+    const totalItemCount = standardItemCount + extensionLauncherCount + pluginItemCount;
+
+    const itemHeight = 49; // 1項目あたりの高さ(実測値に近い値に調整)
+    const chromeHeight = 30; // タイトルバー等の余白
+
+    const calculatedHeight = totalItemCount * itemHeight + chromeHeight;
+    const maxHeight = window.innerHeight - 20;
+
+    return Math.min(calculatedHeight, maxHeight);
+  }
+
   openPluginLauncherPanel() {
     const launcherPlugin = this.pluginService.getUIPlugin('plugin-launcher');
     if (launcherPlugin) {

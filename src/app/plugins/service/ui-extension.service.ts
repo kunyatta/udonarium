@@ -24,7 +24,15 @@ export class UIExtensionService {
     if (!this.actions.has(location)) {
       this.actions.set(location, []);
     }
-    this.actions.get(location).push(action);
+    const actions = this.actions.get(location);
+    
+    // 同名のアクションがあれば上書き（既存を削除）
+    const index = actions.findIndex(a => a.name === action.name);
+    if (index !== -1) {
+      actions.splice(index, 1, action);
+    } else {
+      actions.push(action);
+    }
   }
 
   getActions(location: ExtensionLocation, context?: any): ExtensionAction[] {
