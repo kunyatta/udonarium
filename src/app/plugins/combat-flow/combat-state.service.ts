@@ -247,12 +247,10 @@ export class CombatStateService {
       const isPlaying = engineRoot.getFirstElementByName('isPlaying')?.value === 'true';
       const round = Number(engineRoot.getFirstElementByName('round')?.value) || 1;
       const currentIndex = Number(engineRoot.getFirstElementByName('currentIndex')?.value) || 0;
-      const displayDataTags = engineRoot.getFirstElementByName('displayDataTags')?.value.toString() || 'HP MP'; // デフォルト値を設定
       
       this._isCombat$.next(isPlaying);
       this._round$.next(round);
       this._currentIndex$.next(currentIndex);
-      this._displayDataTags$.next(displayDataTags);
 
       const idsRoot = engineRoot.getFirstElementByName('participantIds');
       if (idsRoot) {
@@ -265,15 +263,23 @@ export class CombatStateService {
       } else {
         this._combatants$.next([]);
       }
-    } else {
-      // engine-state要素がまだ作られていない（またはロード中）場合は、状態を更新しない
-      // (CombatStateServiceはTurnBasedEngineServiceの初期化に責任を持たないため)
-      // ただし、明示的に戦闘を終了する場合は、endCombat()でisCombat=falseをセットする
-      return;
     }
+
+    // --- 設定項目（戦闘状態に依存しないもの）の読み込み ---
+    // getFirstElementByName は再帰的なので、古いデータ（engine-state内や冗長なstate内）にあっても見つけられる
     
+    // 表示パラメータ設定
+    const displayDataTags = stateElement.getFirstElementByName('displayDataTags')?.value.toString() || 'HP MP';
+    if (this._displayDataTags$.value !== displayDataTags) {
+      this._displayDataTags$.next(displayDataTags);
+    }
+
+    // システムログ送信元
     const systemLogSenderName = stateElement.getFirstElementByName('systemLogSenderName')?.value.toString() || '';
-    this._systemLogSenderName.next(systemLogSenderName);
+    if (this._systemLogSenderName.value !== systemLogSenderName) {
+      this._systemLogSenderName.next(systemLogSenderName);
+      EventSystem.trigger('SYSTEM_LOG_SENDER_NAME_CHANGED', systemLogSenderName);
+    }
   }
 
   // --- Public Actions ---
@@ -517,26 +523,16 @@ export class CombatStateService {
       this.container = this.pluginHelper.getOrCreateContainer(PLUGIN_ID, FILE_NAME_HINT);
     }
     
-    // TODO: TurnBasedEngineServiceに委譲すべきだが、一旦ここに書く
-    // findOrCreateEngineRootはprivateなので、同様のロジックが必要
-    // 今回は簡易的に実装
-    let engineRoot = this.container.state.getFirstElementByName('engine-state');
-    if (!engineRoot) {
-      // 通常startCombat経由で作られるが、設定先行の場合はここでも作る必要がある
-      // しかしTurnBasedEngineServiceのprivateメソッドにはアクセスできない
-      // startCombatを呼んで初期化するか、TurnBasedEngineServiceにpublicなensureInitializedを追加するのが良い
-      // ここでは暫定的にTurnBasedEngineService.start()を呼ぶわけにはいかないので、
-      // 既存のengineRootがある場合のみ更新する（なければ何もしない、あるいは保存されない）
-      return; 
-    }
-
-    let tagsElement = engineRoot.getFirstElementByName('displayDataTags');
+    // engine-state ではなく、設定として state 直下に保存するように変更
+    let tagsElement = this.container.state.getFirstElementByName('displayDataTags');
     if (!tagsElement) {
       tagsElement = DataElement.create('displayDataTags', tags, {});
-      engineRoot.appendChild(tagsElement);
+      this.container.state.appendChild(tagsElement);
     } else {
       tagsElement.value = tags;
     }
+    this.container.state.update(); // 変更を通知
+    this._displayDataTags$.next(tags); // 即座に反映
   }
   
   // --- 状態操作 ---
@@ -886,12 +882,7 @@ export class CombatStateService {
       this.container = this.pluginHelper.getOrCreateContainer(PLUGIN_ID, FILE_NAME_HINT);
     }
 
-    let stateElement = this.container.state.getFirstElementByName('state');
-    if (!stateElement) {
-      stateElement = DataElement.create('state', '', {});
-      this.container.state.appendChild(stateElement);
-    }
-
+    const stateElement = this.container.state;
     let nameElement = stateElement.getFirstElementByName('systemLogSenderName');
     if (!nameElement) {
       nameElement = DataElement.create('systemLogSenderName', name, {});
