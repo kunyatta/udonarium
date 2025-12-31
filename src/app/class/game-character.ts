@@ -1,4 +1,5 @@
 import { ChatPalette } from './chat-palette';
+import { EventSystem } from './core/system';
 import { SyncObject, SyncVar } from './core/synchronize-object/decorator';
 import { DataElement } from './data-element';
 import { TabletopObject } from './tabletop-object';
@@ -86,5 +87,9 @@ export class GameCharacter extends TabletopObject {
 //格闘＝１`);
     palette.initialize();
     this.appendChild(palette);
+
+    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    EventSystem.trigger('ON_CHARACTER_DATA_ELEMENTS_CREATED', { character: this });
+    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
   }
 }

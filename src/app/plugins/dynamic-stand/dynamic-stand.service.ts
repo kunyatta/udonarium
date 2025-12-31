@@ -65,7 +65,21 @@ export class DynamicStandPluginService implements OnDestroy {
         } else {
           this.isCutInBlocked = false;
         }
+      })
+      .on('ON_CHARACTER_DATA_ELEMENTS_CREATED', event => {
+        const character = event.data.character as GameCharacter;
+        if (character) {
+          console.log('[DynamicStand] New character detected. Ensuring stand settings.');
+          this.ensureStandSetting(character);
+        }
       });
+    
+    // 既存のキャラクターに対して一括チェック
+    setTimeout(() => {
+      const characters = ObjectStore.instance.getObjects<GameCharacter>(GameCharacter);
+      console.log(`[DynamicStand] Scanning existing ${characters.length} characters for stand settings...`);
+      characters.forEach(c => this.ensureStandSetting(c));
+    }, 2000); // 起動直後は同期が不安定な場合があるため少し待つ
     
     // 永続化設定の監視
     this.observerSubscription = this.observer.observe(this, this.PLUGIN_ID, '', (container) => {
@@ -355,6 +369,18 @@ export class DynamicStandPluginService implements OnDestroy {
       });
     }
     return settings;
+  }
+
+  /**
+   * キャラクターに立ち絵設定セクションが存在するか確認し、なければ追加します。
+   */
+  private ensureStandSetting(character: GameCharacter) {
+    const section = character.detailDataElement.children.find(
+      c => c instanceof DataElement && c.name === DYNAMIC_STAND_SECTION_NAME
+    );
+    if (!section) {
+      this.addStandSetting(character);
+    }
   }
 
   /**
