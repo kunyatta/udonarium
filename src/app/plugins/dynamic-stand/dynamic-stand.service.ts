@@ -13,6 +13,7 @@ import { PluginMapperService } from '../service/plugin-mapper.service';
 import { PluginDataObserverService } from '../service/plugin-data-observer.service';
 import { PluginHelperService } from '../service/plugin-helper.service';
 import { PluginDataContainer } from '../../class/plugin-data-container';
+import { EventSystem } from '@udonarium/core/system';
 
 @Injectable({
   providedIn: 'root'
@@ -30,6 +31,7 @@ export class DynamicStandPluginService implements OnDestroy {
   private observerSubscription: { unsubscribe: () => void } = null;
   private currentContainer: PluginDataContainer = null;
   private isSaving = false;
+  private isCutInBlocked = false;
 
   constructor(
     private chatListenerService: ChatListenerService,
@@ -43,10 +45,24 @@ export class DynamicStandPluginService implements OnDestroy {
 
   ngOnDestroy() {
     if (this.observerSubscription) this.observerSubscription.unsubscribe();
+    EventSystem.unregister(this);
   }
 
   initialize() {
     console.log('[DynamicStand] Service Initializing...');
+    
+    // カットイン監視 (リアクティブ)
+    EventSystem.register(this)
+      .on('CUT_IN_PLAYING', event => {
+        const isPlaying = !!event.data;
+        if (isPlaying) {
+          console.log('[DynamicStand] CutIn detected via Event. Clearing stage.');
+          this.isCutInBlocked = true;
+          this.forceCleanupAll();
+        } else {
+          this.isCutInBlocked = false;
+        }
+      });
     
     // 永続化設定の監視
     this.observerSubscription = this.observer.observe(this, this.PLUGIN_ID, '', (container) => {
@@ -90,6 +106,26 @@ export class DynamicStandPluginService implements OnDestroy {
         this.processChatMessage(chatMessage.name, chatMessage.text);
       }
     });
+  }
+
+  private forceCleanupAll() {
+    this.leftStage = [];
+    this.rightStage = [];
+    
+    const objects = ObjectStore.instance.getObjects<OverlayObject>(OverlayObject);
+    const toDestroy = objects.filter(obj => 
+      obj.label && (
+        obj.label.startsWith('stand_') || 
+        obj.label.startsWith('speech_') || 
+        obj.label.startsWith('emote_')
+      )
+    );
+    
+    for (const obj of toDestroy) obj.destroy();
+    
+    // タイマークリア
+    this.cleanupTimers.forEach(timer => clearTimeout(timer));
+    this.cleanupTimers.clear();
   }
 
   /**
@@ -182,17 +218,22 @@ export class DynamicStandPluginService implements OnDestroy {
     }
 
     if (speech) {
-      speech.transitionDuration = duration;
-      speech.transitionEasing = easing;
+      speech.transitionDuration = duration + 200;
+      speech.transitionEasing = 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
       const lastOffsetX = speech['lastOffsetX'] || 0;
       // 右側ならオフセットを反転させる
       speech.left = x + (side === 'left' ? lastOffsetX : -lastOffsetX);
+      
+      speech.updateContent('targetLeft', x);
+      speech.updateContent('targetTop', 100 - (this.config.standHeight * 0.7));
+      
       speech.update();
     }
     if (emote) {
       emote.transitionDuration = duration;
       emote.transitionEasing = easing;
-      emote.left = x;
+      const lastOffsetX = emote['lastOffsetX'] || 0;
+      emote.left = x + (side === 'left' ? lastOffsetX : -lastOffsetX);
       emote.update();
     }
   }
@@ -208,6 +249,10 @@ export class DynamicStandPluginService implements OnDestroy {
   }
 
   private processChatMessage(senderName: string, text: string) {
+    if (this.isCutInBlocked) {
+      console.log('[DynamicStand] CutIn blocked. Skipping.');
+      return;
+    }
     console.log('[DynamicStand] Chat Received:', senderName, 'text:', text);
 
     // 1. 発言者名から GameCharacter を特定
@@ -431,16 +476,24 @@ export class DynamicStandPluginService implements OnDestroy {
         setTimeout(() => {
           if (!speech) return;
           speech.transitionDuration = 800;
-          speech.transitionEasing = 'cubic-bezier(0.22, 1, 0.36, 1)';
+          speech.transitionEasing = 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
           speech.left = x + actualOffsetX;
           speech.opacity = 1.0;
+          // しっぽのターゲット座標（立ち絵の顔付近）を更新
+          speech.updateContent('targetLeft', x);
+          speech.updateContent('targetTop', 100 - (this.config.standHeight * 0.7));
           speech.update();
         }, 50);
       } else {
-        speech.transitionDuration = duration;
-        speech.transitionEasing = easing;
+        speech.transitionDuration = duration + 200;
+        speech.transitionEasing = 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
         speech.left = x + actualOffsetX;
         speech['lastOffsetX'] = setting.offsetX;
+        
+        // しっぽのターゲット座標を更新
+        speech.updateContent('targetLeft', x);
+        speech.updateContent('targetTop', 100 - (this.config.standHeight * 0.7));
+
         speech.top = 100 + setting.offsetY;
         speech.opacity = 1.0;
         speech.updateContent('text', speechText);
@@ -463,7 +516,11 @@ export class DynamicStandPluginService implements OnDestroy {
         emote.height = 10;
         emote.opacity = 0;
         emote.scale = this.config.emoteSize;
-        emote.top = 100 + setting.offsetY; // 初期位置
+        
+        // 初登場時は画面外に配置
+        emote.transitionDuration = 0;
+        emote.left = side === 'left' ? -this.config.standWidth : 100 + this.config.standWidth;
+        emote.top = 110 + setting.offsetY; // 初期位置
         emote.updateContent('text', floatingEmote); // 内容をセット
         emote['lastOffsetX'] = setting.offsetX; // reposition用
         emote.update();
@@ -472,7 +529,8 @@ export class DynamicStandPluginService implements OnDestroy {
           if (!emote) return;
           emote.transitionDuration = 800;
           emote.transitionEasing = 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-          emote.left = x;
+          emote.left = x + actualOffsetX;
+          emote.top = 110 + setting.offsetY - (10 * this.config.emoteSize);
           emote.opacity = 1.0;
           emote.update();
         }, 50);
@@ -480,8 +538,8 @@ export class DynamicStandPluginService implements OnDestroy {
         emote.scale = this.config.emoteSize;
         emote.transitionDuration = duration;
         emote.transitionEasing = 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
-        emote.left = x; 
-        emote.top = 100 + setting.offsetY; 
+        emote.left = x + actualOffsetX; 
+        emote.top = 110 + setting.offsetY - (10 * this.config.emoteSize); 
         emote.opacity = 1.0;
         emote.updateContent('text', floatingEmote);
         emote.update();

@@ -199,19 +199,6 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     return action.icon(object);
   }
 
-  readonly emoteIcons: { icon: string, label: string }[] = [
-    { icon: '😊', label: '笑顔' },
-    { icon: '😢', label: '悲しみ' },
-    { icon: '💢', label: '怒り' },
-    { icon: '😮', label: '驚き' },
-    { icon: '🤔', label: '考え中' },
-    { icon: '💦', label: '焦り' },
-    { icon: '✨', label: '輝き' },
-    { icon: '💡', label: '閃き' },
-    { icon: '❗', label: '感嘆' },
-    { icon: '❓', label: '疑問' }
-  ];
-
   insertEmote(emote: string) {
     const textArea: HTMLTextAreaElement = this.textAreaElementRef.nativeElement;
     const start = textArea.selectionStart;

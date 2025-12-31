@@ -5,6 +5,7 @@ import { OverlayObject } from '../overlay-object';
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
 import { Jukebox } from '@udonarium/Jukebox';
 import { OverlayEffectsService } from '../service/overlay-effects.service';
+import { EventSystem } from '@udonarium/core/system';
 
 @Injectable({
   providedIn: 'root'
@@ -20,6 +21,7 @@ export class CutInPlaybackService {
    */
   play(cutIn: CutIn) {
     console.log('[CutIn] Play (Global):', cutIn.name);
+    EventSystem.trigger('CUT_IN_PLAYING', true);
 
     // BGM停止処理
     if (cutIn.stopJukebox) {
@@ -67,6 +69,7 @@ export class CutInPlaybackService {
         if (ObjectStore.instance.get(overlay.identifier)) {
           overlay.destroy();
         }
+        EventSystem.trigger('CUT_IN_PLAYING', false);
       }, totalMs);
     }
   }
@@ -76,6 +79,7 @@ export class CutInPlaybackService {
    */
   playLocal(cutIn: CutIn) {
     console.log('[CutIn] Play (Local):', cutIn.name);
+    EventSystem.trigger('CUT_IN_PLAYING', true);
 
     // ローカルでのBGM停止
     if (cutIn.stopJukebox) {
@@ -119,6 +123,7 @@ export class CutInPlaybackService {
       // 最終的な削除
       setTimeout(() => {
         this.overlayService.destroyLocalOverlay(overlay.identifier);
+        EventSystem.trigger('CUT_IN_PLAYING', false);
       }, totalMs);
     }
   }
@@ -128,6 +133,7 @@ export class CutInPlaybackService {
     overlay.width = cutIn.width;
     overlay.height = cutIn.height;
     overlay.isLocal = isLocal;
+    overlay.label = 'cutin_' + cutIn.identifier;
     
     // 有効期限 (削除のバッファとして +1秒)
     if (cutIn.duration > 0) {
@@ -198,6 +204,7 @@ export class CutInPlaybackService {
       stopAll() {
     
         console.log('[CutIn] Stop All Overlays');
+        EventSystem.trigger('CUT_IN_PLAYING', false);
     
         // 同期されている全ての演出オブジェクトを削除（全員の画面から消える）
     

@@ -66,16 +66,28 @@
   50% { transform: translateY(-15px); }
 }
 
-/* 吹き出しのしっぽ（エモート時は非表示） */
+/* 吹き出しのしっぽ（共通: 下向き） */
 .speech-bubble:not(.is-emote)::after {
   content: '';
   position: absolute;
   bottom: -10px;
-  left: 50%;
-  transform: translateX(-50%);
   border-width: 10px 10px 0;
   border-style: solid;
   border-color: #333 transparent transparent;
+}
+
+/* 左サイド（左端キャラ用）: 吹き出しの左側にしっぽを寄せる */
+.speech-bubble.pos-left::after {
+  left: 20px;
+  /* 少し左（キャラ側）へ傾ける */
+  transform: skewX(-20deg);
+}
+
+/* 右サイド（右端キャラ用）: 吹き出しの右側にしっぽを寄せる */
+.speech-bubble.pos-right::after {
+  right: 20px;
+  /* 少し右（キャラ側）へ傾ける */
+  transform: skewX(20deg);
 }
 
 .debug-warning {

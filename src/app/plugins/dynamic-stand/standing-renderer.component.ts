@@ -48,6 +48,10 @@ export class StandingRendererComponent implements OnInit, OnDestroy {
     return `all ${this.overlayObject.transitionDuration}ms ${this.overlayObject.transitionEasing}`;
   }
 
+  get isLeftSide(): boolean {
+    return (this.overlayObject?.left ?? 0) < 50;
+  }
+
   constructor(private changeDetector: ChangeDetectorRef) {}
 
   ngOnInit() {

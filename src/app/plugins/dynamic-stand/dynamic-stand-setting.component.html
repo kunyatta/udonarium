@@ -1,4 +1,9 @@
-<div class="setting-container">
+<div class="tabs">
+  <div class="tab-item" [class.active]="selectedTab === 'global'" (click)="selectTab('global')">全体設定</div>
+  <div class="tab-item" [class.active]="selectedTab === 'emotes'" (click)="selectTab('emotes')">エモート管理</div>
+</div>
+
+<div class="setting-container" *ngIf="selectedTab === 'global'">
   <h3>立ち絵演出設定 (Master Control)</h3>
   
   <div class="setting-group">
@@ -42,5 +47,54 @@
 
   <div class="footer">
     <p>※ 設定はリアルタイムに反映されます。</p>
+  </div>
+</div>
+
+<div class="emote-manager-container" *ngIf="selectedTab === 'emotes'">
+  <!-- Left Column: List -->
+  <div class="emote-list-col">
+    <div class="list-header">
+      <button class="add-btn" (click)="createNewEmote()">+ 新規作成</button>
+    </div>
+    <div class="scrollable-list">
+      <div *ngFor="let emote of emotes" class="list-item" 
+           [class.active]="selectedEmote?.identifier === emote.identifier"
+           (click)="selectEmote(emote)">
+        <span class="icon">{{emote.icon}}</span>
+        <span class="label">{{emote.label}}</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Right Column: Editor -->
+  <div class="emote-editor-col">
+    <div *ngIf="selectedEmote; else noSelection">
+      <h3>エモート編集</h3>
+      <div class="form-group">
+        <label>アイコン (絵文字/テキスト)</label>
+        <input type="text" [(ngModel)]="selectedEmote.icon" placeholder="😊">
+      </div>
+      <div class="form-group">
+        <label>表示名 (メニュー用)</label>
+        <input type="text" [(ngModel)]="selectedEmote.label" placeholder="笑顔">
+      </div>
+      <div class="form-group">
+        <label>効果音 (SE) <small>※実装予定</small></label>
+        <select disabled>
+          <option>設定なし</option>
+        </select>
+      </div>
+
+      <div class="button-row">
+        <button (click)="saveEmote()">保存</button>
+        <button (click)="cancelEdit()">キャンセル</button>
+        <button class="danger" *ngIf="selectedEmote.identifier" (click)="deleteEmote()">削除</button>
+      </div>
+    </div>
+    <ng-template #noSelection>
+      <div class="placeholder">
+        <p>左のリストから選択するか<br>新規作成してください</p>
+      </div>
+    </ng-template>
   </div>
 </div>

@@ -1,6 +1,7 @@
 import { Injectable, Injector } from '@angular/core';
 import { IPluginWithUI } from '../i-plugin';
 import { DynamicStandPluginService } from './dynamic-stand.service';
+import { EmoteManagerService } from './emote-manager.service';
 import { UIExtensionService } from '../service/ui-extension.service';
 import { GameCharacter } from '@udonarium/game-character';
 import { DynamicStandSettingComponent } from './dynamic-stand-setting.component';
@@ -18,11 +19,13 @@ export class DynamicStandPlugin implements IPluginWithUI {
 
   constructor(
     private service: DynamicStandPluginService,
+    private emoteManager: EmoteManagerService,
     private uiExtensionService: UIExtensionService
   ) {}
 
   initialize(): void {
     this.service.initialize();
+    this.emoteManager.initialize();
   }
 
   initializeUI(injector: Injector): void {
@@ -46,9 +49,12 @@ export class DynamicStandPlugin implements IPluginWithUI {
         const char = context instanceof GameCharacter ? context : null;
         return (char && this.service.isActive(char.identifier)) ? 'person' : 'person_off';
       },
-      action: (context: GameCharacter) => {
-        if (context) {
-          this.service.toggleActive(context.identifier);
+      action: (context: any) => {
+        // context は { character: GameCharacter, component: ChatInputComponent } または GameCharacter (旧互換)
+        const char = context.character instanceof GameCharacter ? context.character : (context instanceof GameCharacter ? context : null);
+        
+        if (char) {
+          this.service.toggleActive(char.identifier);
         }
       },
       condition: (context) => {

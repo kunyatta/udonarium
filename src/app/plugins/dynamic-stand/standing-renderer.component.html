@@ -9,7 +9,10 @@
   [style.transition]="transition">
   <!-- 吹き出し / エモート -->
   <ng-container *ngFor="let text of [speechText]">
-    <div *ngIf="text" class="speech-bubble" [ngClass]="{'is-emote': overlayObject?.type === 'emote'}">
+    <div *ngIf="text" class="speech-bubble" 
+      [ngClass]="{'is-emote': overlayObject?.type === 'emote'}"
+      [class.pos-left]="isLeftSide && overlayObject?.type !== 'emote'"
+      [class.pos-right]="!isLeftSide && overlayObject?.type !== 'emote'">
       <div [class.emote-inner]="overlayObject?.type === 'emote'">
         {{ text }}
       </div>
