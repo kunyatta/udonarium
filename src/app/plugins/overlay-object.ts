@@ -14,6 +14,7 @@ export class OverlayObject extends ObjectNode {
   @SyncVar() height: number = 0;
   @SyncVar() opacity: number = 1.0;
   @SyncVar() scale: number = 1.0;
+  @SyncVar() scaleX: number = 1.0; // 左右反転用
   @SyncVar() zIndex: number = 2000000;
   @SyncVar() type: string = 'generic'; // 'image' | 'video' | 'text' | 'generic'
   @SyncVar() anchor: string = 'center'; // 'center' | 'bottom' | 'bottom-left' etc.

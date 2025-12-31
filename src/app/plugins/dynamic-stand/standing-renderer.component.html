@@ -8,9 +8,13 @@
   [style.transform]="transform"
   [style.transition]="transition">
   <!-- 吹き出し / エモート -->
-  <div *ngIf="speechText" class="speech-bubble" [ngClass]="{'is-emote': overlayObject?.type === 'emote'}">
-    {{ speechText }}
-  </div>
+  <ng-container *ngFor="let text of [speechText]">
+    <div *ngIf="text" class="speech-bubble" [ngClass]="{'is-emote': overlayObject?.type === 'emote'}">
+      <div [class.emote-inner]="overlayObject?.type === 'emote'">
+        {{ text }}
+      </div>
+    </div>
+  </ng-container>
 
   <!-- デバッグ情報 (isDebug時のみ) -->
   <div *ngIf="overlayObject?.isDebug" class="debug-warning" style="font-size: 10px; background: rgba(0,0,0,0.5); color: white;">

@@ -3,6 +3,7 @@ import { ChatLogManagerModule } from '../app/plugins/chat-log-manager/chat-log-m
 import { RollCallModule } from '../app/plugins/roll-call/roll-call.module';
 import { SimpleAlarmModule } from '../app/plugins/simple-alarm/simple-alarm.module';
 import { CutInModule } from '../app/plugins/cut-in/cut-in.module';
+import { DynamicStandPluginModule } from '../app/plugins/dynamic-stand/dynamic-stand.module';
 
 export const environment = {
   production: true,
@@ -11,6 +12,7 @@ export const environment = {
     ChatLogManagerModule,
     RollCallModule,
     SimpleAlarmModule,
-    CutInModule
+    CutInModule,
+    DynamicStandPluginModule
   ]
 };

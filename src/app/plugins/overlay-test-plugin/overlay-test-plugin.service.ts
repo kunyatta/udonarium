@@ -2,7 +2,6 @@ import { Injectable, Injector } from '@angular/core';
 import { IPluginWithUI } from '../i-plugin';
 import { PluginOverlayService } from '../service/plugin-overlay.service';
 import { OverlayControllerComponent } from './overlay-test/overlay-controller.component';
-import { StandingRendererComponent } from './standing-renderer/standing-renderer.component';
 import { OverlayObject } from '../overlay-object';
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
 import { OverlayEffectsService } from '../service/overlay-effects.service';
@@ -26,8 +25,8 @@ export class OverlayTestPlugin implements IPluginWithUI {
   ) {}
 
   initialize(): void {
-    // カスタムレンダラー（吹き出し）を 'speech' タイプで登録
-    this.pluginOverlayService.registerRenderer('speech', StandingRendererComponent);
+    // 依存関係を削除。独自のレンダラーが必要な場合は、
+    // このプラグイン内に専用のコンポーネントを作成して登録してください。
   }
 
   initializeUI(injector: Injector): void {}

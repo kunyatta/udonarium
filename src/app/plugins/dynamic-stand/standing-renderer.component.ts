@@ -1,5 +1,5 @@
 import { Component, Input, ChangeDetectorRef, ChangeDetectionStrategy, HostBinding, OnInit, OnDestroy } from '@angular/core';
-import { OverlayObject } from '../../overlay-object';
+import { OverlayObject } from '../overlay-object';
 import { ImageStorage } from '@udonarium/core/file-storage/image-storage';
 import { DataElement } from '@udonarium/data-element';
 import { EventSystem } from '@udonarium/core/system';

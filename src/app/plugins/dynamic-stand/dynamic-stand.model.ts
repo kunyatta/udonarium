@@ -6,6 +6,7 @@ export interface StandSetting {
   imageIdentifier: string;
   offsetX: number;
   offsetY: number;
+  sidePreference?: 'auto' | 'left' | 'right'; // 追加
 }
 
 export class StandGlobalConfig {

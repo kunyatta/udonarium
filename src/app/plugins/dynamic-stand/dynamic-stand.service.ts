@@ -8,7 +8,7 @@ import { DataElement } from '@udonarium/data-element';
 import { DYNAMIC_STAND_SECTION_NAME, StandSetting, StandGlobalConfig } from './dynamic-stand.model';
 import { OverlayEffectsService } from '../service/overlay-effects.service';
 import { ChatMessageService } from 'service/chat-message.service';
-import { StandingRendererComponent } from '../overlay-test-plugin/standing-renderer/standing-renderer.component';
+import { StandingRendererComponent } from './standing-renderer.component';
 import { PluginMapperService } from '../service/plugin-mapper.service';
 import { PluginDataObserverService } from '../service/plugin-data-observer.service';
 import { PluginHelperService } from '../service/plugin-helper.service';
@@ -287,13 +287,15 @@ export class DynamicStandPluginService implements OnDestroy {
       const imgElm = group.children.find(c => c instanceof DataElement && c.name === 'imageIdentifier') as DataElement;
       const oxElm = group.children.find(c => c instanceof DataElement && c.name === 'offsetX') as DataElement;
       const oyElm = group.children.find(c => c instanceof DataElement && c.name === 'offsetY') as DataElement;
+      const sideElm = group.children.find(c => c instanceof DataElement && c.name === 'side') as DataElement;
 
       settings.push({
         index: group.name,
         emote: emoteElm ? emoteElm.value as string : '',
         imageIdentifier: imgElm ? imgElm.value as string : '',
         offsetX: oxElm ? Number(oxElm.value) : 0,
-        offsetY: oyElm ? Number(oyElm.value) : 0
+        offsetY: oyElm ? Number(oyElm.value) : 0,
+        sidePreference: (sideElm ? sideElm.value as any : 'auto')
       });
     }
     return settings;
@@ -323,6 +325,7 @@ export class DynamicStandPluginService implements OnDestroy {
     const group = DataElement.create(nextIndex.toString(), '', {}, nextIndex.toString() + '_' + character.identifier);
     group.appendChild(DataElement.create('emote', nextIndex === 1 ? '' : 'エモート名', {}, 'emote_' + group.identifier));
     group.appendChild(DataElement.create('imageIdentifier', '', { type: 'imageIdentifier' }, 'img_' + group.identifier));
+    group.appendChild(DataElement.create('side', 'auto', {}, 'side_' + group.identifier)); // サイド優先度を追加
     group.appendChild(DataElement.create('offsetX', 20, { type: 'number' }, 'ox_' + group.identifier));
     group.appendChild(DataElement.create('offsetY', -20, { type: 'number' }, 'oy_' + group.identifier));
 
@@ -333,11 +336,18 @@ export class DynamicStandPluginService implements OnDestroy {
   private renderStand(characterId: string, setting: StandSetting, speechText: string, floatingEmote: string = '') {
     // 1. ステージ登壇判定
     if (!this.leftStage.includes(characterId) && !this.rightStage.includes(characterId)) {
-      // 左右交互に振り分け
-      if (this.leftStage.length <= this.rightStage.length) {
-        this.leftStage.unshift(characterId); // 左から割り込み
+      const pref = setting.sidePreference || 'auto';
+      if (pref === 'left') {
+        this.leftStage.unshift(characterId);
+      } else if (pref === 'right') {
+        this.rightStage.unshift(characterId);
       } else {
-        this.rightStage.unshift(characterId); // 右から割り込み
+        // 左右交互に振り分け
+        if (this.leftStage.length <= this.rightStage.length) {
+          this.leftStage.unshift(characterId);
+        } else {
+          this.rightStage.unshift(characterId);
+        }
       }
       // 他のキャラを押し出す
       this.repositionAll();
@@ -372,6 +382,7 @@ export class DynamicStandPluginService implements OnDestroy {
       stand.left = side === 'left' ? -this.config.standWidth : 100 + this.config.standWidth;
       stand.imageIdentifier = setting.imageIdentifier; 
       stand.opacity = 0;
+      stand.scaleX = side === 'left' ? 1.0 : -1.0; // 右側なら反転
       stand.update();
 
       // DOM反映を待ってから目標位置へ
@@ -390,6 +401,7 @@ export class DynamicStandPluginService implements OnDestroy {
       stand.left = x;
       stand.imageIdentifier = setting.imageIdentifier;
       stand.opacity = 1.0;
+      stand.scaleX = side === 'left' ? 1.0 : -1.0; // 配置サイドに合わせて反転
       stand.update();
     }
 

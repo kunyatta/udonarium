@@ -2,14 +2,12 @@ import { NgModule } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { OverlayControllerComponent } from './overlay-test/overlay-controller.component';
-import { StandingRendererComponent } from './standing-renderer/standing-renderer.component';
 import { PLUGIN_TOKEN } from '../i-plugin';
 import { OverlayTestPlugin } from './overlay-test-plugin.service';
 
 @NgModule({
   declarations: [
-    OverlayControllerComponent,
-    StandingRendererComponent
+    OverlayControllerComponent
   ],
   imports: [
     CommonModule,

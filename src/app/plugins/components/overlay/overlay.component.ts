@@ -36,6 +36,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
   get opacity() { return this.overlayObject?.opacity ?? 1; }
   get transform() {
     const scale = this.overlayObject?.scale ?? 1;
+    const scaleX = this.overlayObject?.scaleX ?? 1;
     const anchor = this.overlayObject?.anchor || 'center';
     
     let translateX = '-50%';
@@ -54,7 +55,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
       default: translateX = '-50%'; translateY = '-50%'; break;
     }
 
-    return `translate(${translateX}, ${translateY}) scale(${scale})`;
+    return `translate(${translateX}, ${translateY}) scale(${scale * scaleX}, ${scale})`;
   }
   get transition() {
     if (!this.overlayObject) return 'none';
