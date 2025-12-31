@@ -14,6 +14,8 @@ import { PluginDataObserverService } from '../service/plugin-data-observer.servi
 import { PluginHelperService } from '../service/plugin-helper.service';
 import { PluginDataContainer } from '../../class/plugin-data-container';
 import { EventSystem } from '@udonarium/core/system';
+import { EmoteManagerService } from './emote-manager.service';
+import { SoundEffect } from '@udonarium/sound-effect';
 
 @Injectable({
   providedIn: 'root'
@@ -40,7 +42,8 @@ export class DynamicStandPluginService implements OnDestroy {
     private chatMessageService: ChatMessageService,
     private pluginMapper: PluginMapperService,
     private observer: PluginDataObserverService,
-    private pluginHelper: PluginHelperService
+    private pluginHelper: PluginHelperService,
+    private emoteManager: EmoteManagerService
   ) {}
 
   ngOnDestroy() {
@@ -282,6 +285,14 @@ export class DynamicStandPluginService implements OnDestroy {
     const emoteKeyword = emoteMatch ? emoteMatch[0] : '';
     console.log('[DynamicStand] Emote keyword:', emoteKeyword || '(none)');
 
+    // SE再生
+    if (emoteKeyword) {
+      const emoteData = this.emoteManager.getEmotes().find(e => e.icon === emoteKeyword);
+      if (emoteData && emoteData.soundIdentifier) {
+        SoundEffect.play(emoteData.soundIdentifier);
+      }
+    }
+
     if (!speechText && !emoteKeyword) {
       console.log('[DynamicStand] No speech or emote found. Skipping.');
       return;
@@ -369,12 +380,16 @@ export class DynamicStandPluginService implements OnDestroy {
     // 新しいグループを作成
     const group = DataElement.create(nextIndex.toString(), '', {}, nextIndex.toString() + '_' + character.identifier);
     group.appendChild(DataElement.create('emote', nextIndex === 1 ? '' : 'エモート名', {}, 'emote_' + group.identifier));
-    group.appendChild(DataElement.create('imageIdentifier', '', { type: 'imageIdentifier' }, 'img_' + group.identifier));
+    group.appendChild(DataElement.create('imageIdentifier', character.imageFile.identifier, { type: 'imageIdentifier' }, 'img_' + group.identifier));
     group.appendChild(DataElement.create('side', 'auto', {}, 'side_' + group.identifier)); // サイド優先度を追加
     group.appendChild(DataElement.create('offsetX', 20, { type: 'number' }, 'ox_' + group.identifier));
     group.appendChild(DataElement.create('offsetY', -20, { type: 'number' }, 'oy_' + group.identifier));
 
     section.appendChild(group);
+    
+    // UIを即時更新させるため、各データ要素の更新を通知
+    section.update();
+    character.detailDataElement.update();
     character.update();
   }
 

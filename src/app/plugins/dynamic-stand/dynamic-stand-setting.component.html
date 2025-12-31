@@ -79,9 +79,10 @@
         <input type="text" [(ngModel)]="selectedEmote.label" placeholder="笑顔">
       </div>
       <div class="form-group">
-        <label>効果音 (SE) <small>※実装予定</small></label>
-        <select disabled>
-          <option>設定なし</option>
+        <label>効果音 (SE)</label>
+        <select [(ngModel)]="selectedEmote.soundIdentifier">
+          <option value="">設定なし</option>
+          <option *ngFor="let audio of audios" [value]="audio.identifier">{{audio.name}}</option>
         </select>
       </div>
 

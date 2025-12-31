@@ -3,6 +3,8 @@ import { DynamicStandPluginService } from './dynamic-stand.service';
 import { StandGlobalConfig } from './dynamic-stand.model';
 import { EmoteManagerService, EmoteData } from './emote-manager.service';
 import { UUID } from '@udonarium/core/system/util/uuid';
+import { AudioStorage } from '@udonarium/core/file-storage/audio-storage';
+import { AudioFile } from '@udonarium/core/file-storage/audio-file';
 
 @Component({
   selector: 'dynamic-stand-setting',
@@ -19,6 +21,10 @@ export class DynamicStandSettingComponent implements OnInit {
 
   get emotes(): EmoteData[] {
     return this.emoteManager.getEmotes();
+  }
+
+  get audios(): AudioFile[] {
+    return AudioStorage.instance.audios.filter(audio => !audio.isHidden);
   }
 
   constructor(
