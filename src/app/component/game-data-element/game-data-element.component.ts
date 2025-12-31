@@ -1,6 +1,12 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
 import { EventSystem } from '@udonarium/core/system';
 import { DataElement } from '@udonarium/data-element';
+// ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+import { ModalService } from 'service/modal.service';
+import { FileSelecterComponent } from 'component/file-selecter/file-selecter.component';
+import { ImageStorage } from '@udonarium/core/file-storage/image-storage';
+import { ImageFile } from '@udonarium/core/file-storage/image-file';
+// ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
 
 @Component({
   selector: 'game-data-element, [game-data-element]',
@@ -29,7 +35,10 @@ export class GameDataElementComponent implements OnInit, OnChanges, OnDestroy {
   private updateTimer: NodeJS.Timeout = null;
 
   constructor(
-    private changeDetector: ChangeDetectorRef
+    private changeDetector: ChangeDetectorRef,
+    // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+    private modalService: ModalService
+    // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
   ) { }
 
   ngOnInit() {
@@ -83,6 +92,23 @@ export class GameDataElementComponent implements OnInit, OnChanges, OnDestroy {
   setElementType(type: string) {
     this.gameDataElement.setAttribute('type', type);
   }
+
+  // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+  openModal() {
+    this.modalService.open<string>(FileSelecterComponent, { isAllowedEmpty: true }).then(value => {
+      if (!this.gameDataElement || value == null) return;
+      this.gameDataElement.value = value;
+      this.setValues(this.gameDataElement);
+      this.changeDetector.markForCheck();
+    });
+  }
+
+  get imageFile(): ImageFile {
+    if (!this.gameDataElement || this.gameDataElement.type !== 'imageIdentifier') return ImageFile.Empty;
+    const file = ImageStorage.instance.get(<string>this.gameDataElement.value);
+    return file ? file : ImageFile.Empty;
+  }
+  // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
 
   private setValues(object: DataElement) {
     this._name = object.name;

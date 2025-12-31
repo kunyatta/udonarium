@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 
-export type ExtensionLocation = 'main-menu' | 'context-menu' | 'chat-window';
+export type ExtensionLocation = 'main-menu' | 'context-menu' | 'chat-window' | 'character-sheet' | 'chat-input';
 
 export interface ExtensionAction {
   name: string;
-  icon?: string;
+  icon?: string | ((context?: any) => string);
   action: (context?: any, pointer?: { x: number, y: number }) => void;
   condition?: (context?: any) => boolean;
   separator?: boolean;

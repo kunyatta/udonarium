@@ -16,6 +16,8 @@ export class OverlayObject extends ObjectNode {
   @SyncVar() scale: number = 1.0;
   @SyncVar() zIndex: number = 2000000;
   @SyncVar() type: string = 'generic'; // 'image' | 'video' | 'text' | 'generic'
+  @SyncVar() anchor: string = 'center'; // 'center' | 'bottom' | 'bottom-left' etc.
+  @SyncVar() isClickToClose: boolean = true;
   @SyncVar() label: string = '';
   @SyncVar() imageIdentifier: string = ''; // Used for persistence in SaveDataService
   @SyncVar() imageName: string = '';

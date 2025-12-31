@@ -90,3 +90,11 @@
   width: 12em;
 }
 /* ----- MODIFICATION END (kunyatta) for CSS Separation ----- */
+
+/* ----- MODIFICATION START (kunyatta) for DynamicStandPlugin ----- */
+.emote-btn:hover {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+  border-color: #ccc !important;
+  border-radius: 4px;
+}
+/* ----- MODIFICATION END (kunyatta) for DynamicStandPlugin ----- */

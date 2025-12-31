@@ -8,6 +8,7 @@ import { RollCallModule } from '../app/plugins/roll-call/roll-call.module';
 import { ChatLogManagerModule } from '../app/plugins/chat-log-manager/chat-log-manager.module';
 import { OverlayTestPluginModule } from '../app/plugins/overlay-test-plugin/overlay-test-plugin.module';
 import { CutInModule } from '../app/plugins/cut-in/cut-in.module';
+import { DynamicStandPluginModule } from '../app/plugins/dynamic-stand/dynamic-stand.module';
 
 export const environment = {
   production: false,
@@ -21,6 +22,7 @@ export const environment = {
     HelloWorldModule,
     AutoLayoutTestModule,
     TurnEngineTestModule,
-    OverlayTestPluginModule
+    OverlayTestPluginModule,
+    DynamicStandPluginModule
   ]
 };

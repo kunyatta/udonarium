@@ -1,0 +1,26 @@
+<div class="standing-wrapper"
+  [style.left]="left"
+  [style.top]="top"
+  [style.width]="width"
+  [style.height]="height"
+  [style.z-index]="zIndex"
+  [style.opacity]="opacity"
+  [style.transform]="transform"
+  [style.transition]="transition">
+  <!-- 吹き出し / エモート -->
+  <div *ngIf="speechText" class="speech-bubble" [ngClass]="{'is-emote': overlayObject?.type === 'emote'}">
+    {{ speechText }}
+  </div>
+
+  <!-- デバッグ情報 (isDebug時のみ) -->
+  <div *ngIf="overlayObject?.isDebug" class="debug-warning" style="font-size: 10px; background: rgba(0,0,0,0.5); color: white;">
+    ID: {{ overlayObjectIdentifier | slice:0:8 }}...<br>
+    Label: {{ overlayObject?.label }}<br>
+    Type: {{ overlayObject?.type }}<br>
+    Op: {{ overlayObject?.opacity }}
+  </div>
+
+  <div *ngIf="!speechText && !overlayObject?.isDebug" class="debug-warning">
+    TEXT NOT SET
+  </div>
+</div>

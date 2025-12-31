@@ -19,6 +19,9 @@ import { Jukebox } from '@udonarium/Jukebox';
 import { PeerCursor } from '@udonarium/peer-cursor';
 import { PresetSound, SoundEffect } from '@udonarium/sound-effect';
 import { TableSelecter } from '@udonarium/table-selecter';
+// ----- MODIFICATION START (kunyatta) for PluginSystem -----
+import { Room } from '@udonarium/room';
+// ----- MODIFICATION END (kunyatta) for PluginSystem -----
 
 import { ChatWindowComponent } from 'component/chat-window/chat-window.component';
 import { ContextMenuComponent } from 'component/context-menu/context-menu.component';
@@ -177,6 +180,17 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         Network.configure(event.data);
         Network.open();
       })
+      // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+      .on('XML_LOADED', event => {
+        console.log('XML_LOADED !!!');
+        let xmlElement: Element = event.data.xmlElement;
+        if (xmlElement.tagName.toLowerCase() === 'room') {
+          new Room().parseInnerXml(xmlElement);
+        }
+        // 処理完了を通知
+        EventSystem.trigger('XML_LOAD_COMPLETED', { tagName: xmlElement.tagName });
+      })
+      // ----- MODIFICATION END (kunyatta) for PluginSystem -----
       .on<File>('FILE_LOADED', event => {
         this.lazyNgZoneUpdate(false);
       })

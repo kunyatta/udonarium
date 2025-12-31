@@ -27,26 +27,49 @@ export class OverlayComponent implements OnInit, OnDestroy {
   private expirationTimer: any;
   private exitAnimationScheduled = false;
 
-  @HostBinding('style.left.%') get hostLeft() { return this.overlayObject?.left || 0; }
-  @HostBinding('style.top.%') get hostTop() { return this.overlayObject?.top || 0; }
-  @HostBinding('style.z-index') get hostZIndex() { return this.overlayObject?.zIndex || 2000000; }
-  @HostBinding('style.pointer-events') get pointerEvents() { return this.isVisible ? 'auto' : 'none'; }
-  @HostBinding('style.display') get display() { return this.isVisible ? 'block' : 'none'; }
-  @HostBinding('style.opacity') get hostOpacity() { return this.overlayObject?.opacity ?? 1; }
-  @HostBinding('style.transform') get hostTransform() {
+  // 計算用のゲッター
+  get left() { return (this.overlayObject?.left || 0) + 'vw'; }
+  get top() { return (this.overlayObject?.top || 0) + 'vh'; }
+  get width() { return this.overlayObject && this.overlayObject.width > 0 ? this.overlayObject.width + 'vw' : 'auto'; }
+  get height() { return this.overlayObject && this.overlayObject.height > 0 ? this.overlayObject.height + 'vh' : 'auto'; }
+  get zIndex() { return this.overlayObject?.zIndex || 2000000; }
+  get opacity() { return this.overlayObject?.opacity ?? 1; }
+  get transform() {
     const scale = this.overlayObject?.scale ?? 1;
-    return `translate(-50%, -50%) scale(${scale})`;
+    const anchor = this.overlayObject?.anchor || 'center';
+    
+    let translateX = '-50%';
+    let translateY = '-50%';
+
+    switch (anchor) {
+      case 'top': translateX = '-50%'; translateY = '0%'; break;
+      case 'bottom': translateX = '-50%'; translateY = '-100%'; break;
+      case 'left': translateX = '0%'; translateY = '-50%'; break;
+      case 'right': translateX = '-100%'; translateY = '-50%'; break;
+      case 'top-left': translateX = '0%'; translateY = '0%'; break;
+      case 'top-right': translateX = '-100%'; translateY = '0%'; break;
+      case 'bottom-left': translateX = '0%'; translateY = '-100%'; break;
+      case 'bottom-right': translateX = '-100%'; translateY = '-100%'; break;
+      case 'center': 
+      default: translateX = '-50%'; translateY = '-50%'; break;
+    }
+
+    return `translate(${translateX}, ${translateY}) scale(${scale})`;
   }
-  @HostBinding('style.transition') get hostTransition() {
+  get transition() {
     if (!this.overlayObject) return 'none';
     return `all ${this.overlayObject.transitionDuration}ms ${this.overlayObject.transitionEasing}`;
   }
+
+  @HostBinding('style.pointer-events') get pointerEvents() { return this.isVisible ? 'auto' : 'none'; }
+  @HostBinding('style.display') get display() { return this.isVisible ? 'block' : 'none'; }
 
   constructor(
     private changeDetector: ChangeDetectorRef
   ) {}
 
   closeLocal() {
+    if (this.overlayObject && !this.overlayObject.isClickToClose) return;
     this.isVisible = false;
     this.audioPlayer.stop();
     this.changeDetector.markForCheck();

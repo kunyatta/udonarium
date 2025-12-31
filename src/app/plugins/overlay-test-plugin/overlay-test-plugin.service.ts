@@ -2,8 +2,10 @@ import { Injectable, Injector } from '@angular/core';
 import { IPluginWithUI } from '../i-plugin';
 import { PluginOverlayService } from '../service/plugin-overlay.service';
 import { OverlayControllerComponent } from './overlay-test/overlay-controller.component';
+import { StandingRendererComponent } from './standing-renderer/standing-renderer.component';
 import { OverlayObject } from '../overlay-object';
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
+import { OverlayEffectsService } from '../service/overlay-effects.service';
 
 @Injectable({
   providedIn: 'root'
@@ -19,12 +21,13 @@ export class OverlayTestPlugin implements IPluginWithUI {
   height: number = 400; // 少し高く調整
 
   constructor(
-    private pluginOverlayService: PluginOverlayService
+    private pluginOverlayService: PluginOverlayService,
+    private effectsService: OverlayEffectsService
   ) {}
 
   initialize(): void {
-    // 監視ロジックは PluginOverlayService 側に集約されたため、
-    // ここでは初期化時に特別なことをする必要はありません。
+    // カスタムレンダラー（吹き出し）を 'speech' タイプで登録
+    this.pluginOverlayService.registerRenderer('speech', StandingRendererComponent);
   }
 
   initializeUI(injector: Injector): void {}
@@ -33,22 +36,13 @@ export class OverlayTestPlugin implements IPluginWithUI {
    * 基盤を使って新しい演出を作成します。
    */
   createTestOverlay(type: string, label: string) {
-    const obj = this.pluginOverlayService.createOverlay(type);
+    // 指定されたタイプ（デフォルトは 'speech'）で生成
+    const obj = this.pluginOverlayService.createOverlay(type || 'speech');
     obj.label = label;
     obj.isDebug = true; // テスト用なのでデバッグ情報を表示
-    // テスト用に少しランダムな位置に配置
-    obj.left = 30 + Math.random() * 40;
-    obj.top = 30 + Math.random() * 40;
     
     // コンテンツ（画像）のダミーセット
     obj.updateContent('url', './assets/images/ic_account_circle_black_24dp_2x.png');
-    
-    // 即座にフェードイン演出を追加 (CSS Transition)
-    obj.opacity = 0;
-    setTimeout(() => {
-      obj.transitionDuration = 500;
-      obj.opacity = 1.0;
-    }, 50); // DOM反映待ち
     
     return obj;
   }

@@ -1,0 +1,43 @@
+.setting-container {
+  padding: 15px;
+  font-size: 14px;
+}
+
+h3 {
+  margin-top: 0;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 5px;
+}
+
+.setting-group {
+  margin-bottom: 15px;
+}
+
+.setting-group label {
+  display: block;
+  margin-bottom: 5px;
+  font-weight: bold;
+}
+
+.setting-group label span {
+  float: right;
+  font-weight: normal;
+  color: #007bff;
+}
+
+.setting-group input[type="range"] {
+  width: 100%;
+}
+
+hr {
+  border: none;
+  border-top: 1px dashed #eee;
+  margin: 15px 0;
+}
+
+.footer {
+  margin-top: 20px;
+  font-size: 11px;
+  color: #888;
+  text-align: center;
+}

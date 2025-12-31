@@ -13,6 +13,9 @@ import { BatchService } from 'service/batch.service';
 import { ChatMessageService } from 'service/chat-message.service';
 import { PanelOption, PanelService } from 'service/panel.service';
 import { PointerDeviceService } from 'service/pointer-device.service';
+// ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+import { UIExtensionService, ExtensionAction } from '../../plugins/service/ui-extension.service';
+// ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
 
 @Component({
   selector: 'chat-input',
@@ -21,6 +24,9 @@ import { PointerDeviceService } from 'service/pointer-device.service';
 })
 export class ChatInputComponent implements OnInit, OnDestroy {
   @ViewChild('textArea', { static: true }) textAreaElementRef: ElementRef;
+  // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+  ObjectStore = ObjectStore; // テンプレート参照用
+  // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
 
   @Input() onlyCharacters: boolean = false;
   @Input() chatTabidentifier: string = '';
@@ -112,7 +118,10 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     public chatMessageService: ChatMessageService,
     private batchService: BatchService,
     private panelService: PanelService,
-    private pointerDeviceService: PointerDeviceService
+    private pointerDeviceService: PointerDeviceService,
+    // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+    private uiExtensionService: UIExtensionService
+    // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
   ) { }
 
   ngOnInit(): void {
@@ -174,6 +183,51 @@ export class ChatInputComponent implements OnInit, OnDestroy {
       return peer ? peer.name : '';
     });
   }
+
+  // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+  get chatInputExtensions(): ExtensionAction[] {
+    let object = ObjectStore.instance.get(this.sendFrom);
+    return this.uiExtensionService.getActions('chat-input', object);
+  }
+
+  getExtensionIcon(action: ExtensionAction): string {
+    if (!action.icon) return '';
+    if (typeof action.icon === 'string') return action.icon;
+    
+    // 関数の場合は現在の context を渡して実行
+    let object = ObjectStore.instance.get(this.sendFrom);
+    return action.icon(object);
+  }
+
+  readonly emoteIcons: { icon: string, label: string }[] = [
+    { icon: '😊', label: '笑顔' },
+    { icon: '😢', label: '悲しみ' },
+    { icon: '💢', label: '怒り' },
+    { icon: '😮', label: '驚き' },
+    { icon: '🤔', label: '考え中' },
+    { icon: '💦', label: '焦り' },
+    { icon: '✨', label: '輝き' },
+    { icon: '💡', label: '閃き' },
+    { icon: '❗', label: '感嘆' },
+    { icon: '❓', label: '疑問' }
+  ];
+
+  insertEmote(emote: string) {
+    const textArea: HTMLTextAreaElement = this.textAreaElementRef.nativeElement;
+    const start = textArea.selectionStart;
+    const end = textArea.selectionEnd;
+    const currentText = this.text;
+    
+    // 選択範囲またはカーソル位置に挿入
+    this.text = currentText.substring(0, start) + emote + currentText.substring(end);
+    
+    // カーソル位置を挿入した文字の直後に移動（非同期で行う必要あり）
+    setTimeout(() => {
+      textArea.focus();
+      textArea.setSelectionRange(start + emote.length, start + emote.length);
+    }, 0);
+  }
+  // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
 
   onInput() {
     if (this.writingEventInterval === null && this.previousWritingLength <= this.text.length) {

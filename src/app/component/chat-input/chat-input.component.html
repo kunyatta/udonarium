@@ -46,6 +46,21 @@
       </ng-container>
       <button (click)="showDicebotHelp()" [disabled]="diceBotInfos.length < 1">?</button>
     </div>
+    <!-- ----- MODIFICATION START (kunyatta) for DynamicStandPlugin ----- -->
+    <div *ngIf="showColorPicker && onlyCharacters" class="extension-button-row" style="margin: 4px 0; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
+      <button *ngFor="let extension of chatInputExtensions" (click)="extension.action($any(ObjectStore.instance.get(sendFrom)))" 
+        style="font-size: 0.75rem; padding: 2px 6px; display: inline-flex; align-items: center; gap: 2px; height: 24px; vertical-align: middle;">
+        <i *ngIf="extension.icon" class="material-icons" style="font-size: 1rem;">{{getExtensionIcon(extension)}}</i>
+        <span>{{extension.name}}</span>
+      </button>
+      <div style="border-left: 1px solid #ccc; height: 16px; margin: 0 4px;"></div>
+      <button *ngFor="let emote of emoteIcons" (click)="insertEmote(emote.icon)" [title]="emote.label"
+        style="font-size: 1.1rem; padding: 0 4px; height: 24px; width: 28px; display: inline-flex; align-items: center; justify-content: center; background: none; border: 1px solid transparent; cursor: pointer;"
+        class="emote-btn">
+        {{emote.icon}}
+      </button>
+    </div>
+    <!-- ----- MODIFICATION END (kunyatta) for DynamicStandPlugin ----- -->
     <div>
       <form>
         <textarea class="chat-input" placeholder="Enterで送信  Shift+Enterで改行" [(ngModel)]="text"

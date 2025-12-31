@@ -13,9 +13,9 @@
   display: flex;
   justify-content: center;
   align-items: center;
-  transform: translate(-50%, -50%);
+  /* transform 指定を削除 */
   box-sizing: border-box;
-  pointer-events: auto; /* Allow clicks on the wrapper */
+  pointer-events: none; /* 透明なラッパーはクリックをスルーさせる */
   cursor: pointer;
   /* 画面端で内容が折り返されたり潰れたりするのを防ぐ */
   white-space: nowrap;
@@ -67,6 +67,7 @@ img {
   width: 100%;
   height: 100%;
   object-fit: contain;
+  object-position: bottom; /* 下端に吸着させる */
 }
 
 .debug-info {

@@ -134,7 +134,19 @@ export class FileArchiver {
           ObjectSerializer.instance.parseXml(xmlElement.children[i]);
         }
       } else {
+        // XML_LOAD_COMPLETED を待機する Promise を作成
+        const waitLoad = new Promise<void>((resolve) => {
+          const listener = {}; // 一時的なリスナーオブジェクト
+          EventSystem.register(listener).on('XML_LOAD_COMPLETED', event => {
+            EventSystem.unregister(listener);
+            resolve();
+          });
+        });
+
         EventSystem.trigger('XML_LOADED', { xmlElement: xmlElement });
+        
+        // メインデータのパース（Roomのリセット等）が完了するまで待つ
+        await waitLoad;
       }
       // ----- MODIFICATION END (kunyatta) for PluginSystem -----
     } catch (reason) {

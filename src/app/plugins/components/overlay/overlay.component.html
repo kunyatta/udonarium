@@ -1,4 +1,13 @@
-<div class="overlay-content-wrapper" [ngStyle]="wrapperStyle" [class.has-frame]="hasFrame" (click)="closeLocal()">
+<div class="overlay-content-wrapper" 
+  [style.left]="left"
+  [style.top]="top"
+  [style.width]="width"
+  [style.height]="height"
+  [style.z-index]="zIndex"
+  [style.opacity]="opacity"
+  [style.transform]="transform"
+  [style.transition]="transition"
+  [class.has-frame]="hasFrame" (click)="closeLocal()">
   
   <!-- 演出ロジック専用の要素（Angularのバインドを持たせない） -->
   <div #effectTarget class="effect-target">

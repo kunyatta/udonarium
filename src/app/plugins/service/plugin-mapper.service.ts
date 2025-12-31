@@ -98,7 +98,8 @@ export class PluginMapperService {
     for (const child of element.children) {
       if (!(child instanceof DataElement)) continue;
 
-      const propName = this.getPropNameFromTag(child.getAttribute('name'), options);
+      const tagName = child.getAttribute('name');
+      const propName = this.getPropNameFromTag(tagName, options);
       const val = this.fromElement(child, options);
 
       if (obj[propName] !== undefined) {
@@ -109,9 +110,16 @@ export class PluginMapperService {
         obj[propName].push(val);
       } else {
         // 配列として期待されているタグ名なら、最初から配列として格納
-        const isArrayItem = this.isArrayItemTag(child.getAttribute('name'), options);
+        const isArrayItem = this.isArrayItemTag(tagName, options);
         obj[propName] = isArrayItem ? [val] : val;
       }
+    }
+
+    // 特殊処理: オブジェクトのプロパティが一つだけで、かつそれが配列（デフォルトの 'item' など）の場合、
+    // その配列そのものを返す（プリミティブ配列の復元）
+    const keys = Object.keys(obj);
+    if (keys.length === 1 && (keys[0] === 'item' || this.isArrayItemTag(keys[0], options))) {
+      return obj[keys[0]];
     }
 
     return obj as T;

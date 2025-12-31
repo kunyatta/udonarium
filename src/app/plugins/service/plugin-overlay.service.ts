@@ -14,9 +14,23 @@ export class PluginOverlayService {
   static defaultParentViewContainerRef: ViewContainerRef;
 
   // identifier をキーとして生成済みのコンポーネントを管理
-  private componentMap: Map<string, ComponentRef<OverlayComponent>> = new Map();
+  // 型を any に広げる（OverlayComponent 以外のカスタムコンポーネントも許可するため）
+  private componentMap: Map<string, ComponentRef<any>> = new Map();
+
+  // 演出タイプごとのレンダラー・コンポーネントのレジストリ
+  private rendererRegistry: Map<string, Type<any>> = new Map();
 
   constructor(private ngZone: NgZone) { }
+
+  /**
+   * 演出タイプに対応するコンポーネントを登録します。
+   * @param type 演出タイプ ('standing' 等)
+   * @param component 描画に使用するコンポーネントクラス
+   */
+  registerRenderer(type: string, component: Type<any>) {
+    this.rendererRegistry.set(type, component);
+    console.log(`[PluginOverlayService] Registered renderer for type: ${type}`);
+  }
 
   /**
    * サービスの初期化。GameObject の監視を開始します。
@@ -26,8 +40,14 @@ export class PluginOverlayService {
     ObjectFactory.instance.register(OverlayObject, 'overlay-object');
 
     EventSystem.register(this)
+      .on('ADD_GAME_OBJECT', event => {
+        // OverlayObject が作成されたらコンポーネントの同期を確認
+        if (event.data.aliasName === 'overlay-object') {
+          this.syncComponents();
+        }
+      })
       .on('UPDATE_GAME_OBJECT', event => {
-        // OverlayObject が作成・更新されたらコンポーネントの同期を確認
+        // OverlayObject が更新されたらコンポーネントの同期を確認
         if (event.data.aliasName === 'overlay-object') {
           this.syncComponents();
         }
@@ -40,7 +60,6 @@ export class PluginOverlayService {
       })
       .on('XML_LOADED', () => {
         // ルームデータ読込時はコンポーネントを再同期
-        // this.clear() は行わない（GameObjectは既にObjectStoreにあるため）
         this.syncComponents();
       });
 
@@ -58,20 +77,7 @@ export class PluginOverlayService {
     obj.type = type;
     obj.initialize(); // identifier 発行
     ObjectStore.instance.add(obj);
-    // syncComponents は UPDATE_GAME_OBJECT イベント経由で自動実行される
     return obj;
-  }
-
-  /**
-   * 指定されたコンポーネントを動的に生成します。
-   * 基盤以外から直接呼ぶことは想定していませんが、互換性のために残します。
-   */
-  show<T>(component: Type<T>): ComponentRef<T> {
-    if (!PluginOverlayService.defaultParentViewContainerRef) {
-      console.warn('PluginOverlayService: ViewContainerRef is not set.');
-      return null;
-    }
-    return PluginOverlayService.defaultParentViewContainerRef.createComponent(component);
   }
 
   /**
@@ -103,15 +109,11 @@ export class PluginOverlayService {
 
   /**
    * ローカル（自分だけ）のオーバーレイ演出を作成します。P2P同期されません。
-   * @param type 演出タイプ
-   * @returns 作成された OverlayObject
    */
   createLocalOverlay(type: string = 'generic'): OverlayObject {
-    const obj = new OverlayObject(); // constructorでidentifierは生成される
+    const obj = new OverlayObject();
     obj.type = type;
-    obj.createRequiredElements(); // 手動で初期化
-    
-    // initialize() を呼ばないことで ObjectStore への追加（P2P同期）を回避
+    obj.createRequiredElements();
     
     this.ngZone.run(() => {
       this.createOverlayComponent(obj);
@@ -122,22 +124,33 @@ export class PluginOverlayService {
 
   /**
    * ローカルのオーバーレイ演出を破棄します。
-   * @param identifier オブジェクトの識別子
    */
   destroyLocalOverlay(identifier: string) {
     this.destroyComponent(identifier);
   }
 
   /**
-   * 実際の OverlayComponent インスタンスを作成し、Input をセットします。
+   * 演出コンポーネント インスタンスを作成し、データをセットします。
    */
   private createOverlayComponent(obj: OverlayObject) {
     if (!PluginOverlayService.defaultParentViewContainerRef) return;
 
-    const ref = PluginOverlayService.defaultParentViewContainerRef.createComponent(OverlayComponent);
-    ref.instance.overlayObject = obj; // オブジェクトを直接セット
-    ref.instance.overlayObjectIdentifier = obj.identifier;
-    ref.changeDetectorRef.markForCheck();
+    // レジストリからコンポーネントを取得、なければデフォルトの OverlayComponent を使用
+    const componentType = this.rendererRegistry.get(obj.type) || OverlayComponent;
+
+    const ref = PluginOverlayService.defaultParentViewContainerRef.createComponent(componentType);
+    
+    // インスタンス作成直後、ngOnInit が実行される前にプロパティを流し込む
+    const instance = ref.instance as any;
+    instance.overlayObject = obj;
+    instance.overlayObjectIdentifier = obj.identifier;
+    
+    // プロパティをセットし終えてから初期描画を走らせる（ここで ngOnInit が呼ばれる）
+    ref.changeDetectorRef.detectChanges();
+    
+    if (ref.changeDetectorRef) {
+      ref.changeDetectorRef.markForCheck();
+    }
     
     this.componentMap.set(obj.identifier, ref);
   }
@@ -151,5 +164,17 @@ export class PluginOverlayService {
       ref.destroy();
       this.componentMap.delete(identifier);
     }
+  }
+
+  /**
+   * 指定されたコンポーネントを動的に生成します。
+   * (古い show メソッド: 互換性のために残すが、現在は createOverlay 推奨)
+   */
+  show<T>(component: Type<T>): ComponentRef<T> {
+    if (!PluginOverlayService.defaultParentViewContainerRef) {
+      console.warn('PluginOverlayService: ViewContainerRef is not set.');
+      return null;
+    }
+    return PluginOverlayService.defaultParentViewContainerRef.createComponent(component);
   }
 }
