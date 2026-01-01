@@ -29,6 +29,9 @@ export class DynamicStandPluginService implements OnDestroy {
   // ステージ上のキャラクター管理 (0番目が一番端)
   private leftStage: string[] = [];
   private rightStage: string[] = [];
+  
+  // 表示中のテキスト管理 (連投連結用)
+  private activeTexts: Map<string, string> = new Map();
 
   private observerSubscription: { unsubscribe: () => void } = null;
   private currentContainer: PluginDataContainer = null;
@@ -120,15 +123,15 @@ export class DynamicStandPluginService implements OnDestroy {
       name: 'dynamic-stand-trigger',
       keyword: '', 
       callback: (chatMessage) => {
-        this.processChatMessage(chatMessage.name, chatMessage.text);
+        console.log('[DynamicStand] Chat rule triggered:', chatMessage.name, chatMessage.text);
+        // chatMessage.from (識別子) を優先的に渡す
+        this.processChatMessage(chatMessage.name, chatMessage.text, chatMessage.from);
       }
     });
+    console.log('[DynamicStand] Chat rule registered.');
   }
 
   private forceCleanupAll() {
-    this.leftStage = [];
-    this.rightStage = [];
-    
     const objects = ObjectStore.instance.getObjects<OverlayObject>(OverlayObject);
     const toDestroy = objects.filter(obj => 
       obj.label && (
@@ -143,6 +146,7 @@ export class DynamicStandPluginService implements OnDestroy {
     // タイマークリア
     this.cleanupTimers.forEach(timer => clearTimeout(timer));
     this.cleanupTimers.clear();
+    this.activeTexts.clear();
   }
 
   /**
@@ -178,8 +182,7 @@ export class DynamicStandPluginService implements OnDestroy {
     const index = this.config.activeCharacterIds.indexOf(characterId);
     if (index >= 0) {
       this.config.activeCharacterIds.splice(index, 1);
-      // OFFにしたら即座に画面から消し、ステージから除外
-      this.removeFromStage(characterId);
+      // OFFにしたら即座に画面から消す（物理削除）
       this.forceCleanup(characterId);
     } else {
       this.config.activeCharacterIds.push(characterId);
@@ -196,25 +199,34 @@ export class DynamicStandPluginService implements OnDestroy {
     return this.config.activeCharacterIds.length > 0;
   }
 
-  private removeFromStage(characterId: string) {
-    let changed = false;
-    if (this.leftStage.includes(characterId)) {
-      this.leftStage = this.leftStage.filter(id => id !== characterId);
-      changed = true;
-    } else if (this.rightStage.includes(characterId)) {
-      this.rightStage = this.rightStage.filter(id => id !== characterId);
-      changed = true;
-    }
+  /**
+   * ObjectStore上のOverlayObjectから現在のステージ状態（左右の並び順）を動的に解析します。
+   */
+  private getStageState(): { left: string[], right: string[] } {
+    const objects = ObjectStore.instance.getObjects<OverlayObject>(OverlayObject);
+    const stands = objects.filter(obj => obj.type === 'image' && obj.label && obj.label.startsWith('stand_'));
+    
+    // X座標でソートして論理的な並び順を復元
+    const leftStands = stands
+      .filter(s => s.left < 50)
+      .sort((a, b) => a.left - b.left)
+      .map(s => s.label.replace('stand_', ''));
+      
+    const rightStands = stands
+      .filter(s => s.left >= 50)
+      .sort((a, b) => b.left - a.left)
+      .map(s => s.label.replace('stand_', ''));
 
-    if (changed) {
-      // 残ったメンバーの位置を再計算（引き寄せ）
-      this.repositionAll();
-    }
+    return { left: leftStands, right: rightStands };
   }
 
   private repositionAll() {
-    this.leftStage.forEach((id, index) => this.updateObjectPosition(id, 'left', index));
-    this.rightStage.forEach((id, index) => this.updateObjectPosition(id, 'right', index));
+    const { left, right } = this.getStageState();
+    
+    // 負荷軽減: 複数のPeerが同時に計算して更新が衝突するのを防ぐため、
+    // 基本的に位置更新は「自分に関係があるもの」または「マスター」のみが行う
+    left.forEach((id, index) => this.updateObjectPosition(id, 'left', index));
+    right.forEach((id, index) => this.updateObjectPosition(id, 'right', index));
   }
 
   private updateObjectPosition(characterId: string, side: 'left' | 'right', index: number) {
@@ -238,8 +250,8 @@ export class DynamicStandPluginService implements OnDestroy {
       speech.transitionDuration = duration + 200;
       speech.transitionEasing = 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
       const lastOffsetX = speech['lastOffsetX'] || 0;
-      // 右側ならオフセットを反転させる
       speech.left = x + (side === 'left' ? lastOffsetX : -lastOffsetX);
+      speech.anchor = side === 'left' ? 'bottom-left' : 'bottom-right';
       
       speech.updateContent('targetLeft', x);
       speech.updateContent('targetTop', 100 - (this.config.standHeight * 0.7));
@@ -251,53 +263,72 @@ export class DynamicStandPluginService implements OnDestroy {
       emote.transitionEasing = easing;
       const lastOffsetX = emote['lastOffsetX'] || 0;
       emote.left = x + (side === 'left' ? lastOffsetX : -lastOffsetX);
+      emote.anchor = side === 'left' ? 'bottom-left' : 'bottom-right';
       emote.update();
     }
   }
 
   private forceCleanup(characterId: string) {
     const objects = ObjectStore.instance.getObjects<OverlayObject>(OverlayObject);
-    const toDestroy = objects.filter(obj => obj.label === 'stand_' + characterId || obj.label === 'speech_' + characterId);
+    const toDestroy = objects.filter(obj => obj.label === 'stand_' + characterId || obj.label === 'speech_' + characterId || obj.label === 'emote_' + characterId);
     for (const obj of toDestroy) obj.destroy();
     if (this.cleanupTimers.has(characterId)) {
       clearTimeout(this.cleanupTimers.get(characterId));
       this.cleanupTimers.delete(characterId);
     }
+    this.activeTexts.delete(characterId);
+    
+    // 消えたら位置を再調整（引き寄せ）
+    setTimeout(() => this.repositionAll(), 200);
   }
 
-  private processChatMessage(senderName: string, text: string) {
+  private processChatMessage(senderName: string, text: string, senderId: string) {
+    console.log(`[DynamicStand] processChatMessage: senderName=${senderName}, senderId=${senderId}, text=${text}`);
     if (this.isCutInBlocked) {
-      console.log('[DynamicStand] CutIn blocked. Skipping.');
+      console.log('[DynamicStand] Processing blocked by Cut-In');
       return;
     }
-    console.log('[DynamicStand] Chat Received:', senderName, 'text:', text);
 
-    // 1. 発言者名から GameCharacter を特定
+    // 1. 発言者を特定 (IDがあればIDで、なければ名前で検索)
     const characters = ObjectStore.instance.getObjects<GameCharacter>(GameCharacter);
-    const character = characters.find(c => c.name === senderName);
+    // 完全に一致するID、または名前で検索
+    let character = characters.find(c => c.identifier === senderId);
+    if (!character) {
+      character = characters.find(c => c.name === senderName);
+    }
     
     if (!character) {
-      console.warn('[DynamicStand] Character not found for name:', senderName);
+      console.warn(`[DynamicStand] Character not found for name: ${senderName}, id: ${senderId}`);
       return;
     }
-
-    // 立ち絵 ON のキャラのみ処理
+    
     if (!this.isActive(character.identifier)) {
-      console.log('[DynamicStand] Character is not ON. Skipping stand rendering.');
+      console.log(`[DynamicStand] Character ${character.name} (${character.identifier}) is not active.`);
       return;
     }
 
-    // 2. 鍵括弧内のセリフを抽出 (最優先)
+    // --- 2. 鍵括弧内のセリフを抽出 (復元) ---
     const speechMatch = text.match(/[「『](.+?)[」』]/);
     const speechText = speechMatch ? speechMatch[1] : '';
-    console.log('[DynamicStand] Speech text:', speechText || '(none)');
+
+    // --- 連結処理: すでに喋っている場合は追記する (復元) ---
+    let finalSpeechText = speechText;
+    if (speechText) {
+      const existingText = this.activeTexts.get(character.identifier);
+      const { left, right } = this.getStageState();
+      // すでに登壇している場合のみ連結
+      if (existingText && (left.includes(character.identifier) || right.includes(character.identifier))) {
+        finalSpeechText = existingText + '\n' + speechText;
+      }
+      this.activeTexts.set(character.identifier, finalSpeechText);
+    }
 
     // 3. テキストからエモート（絵文字・記号）を抽出
     // メッセージ全体から最初の1つをエモートとして採用
     const emoteRegex = /(\p{Extended_Pictographic}|[!?！？])/u;
     const emoteMatch = text.match(emoteRegex);
     const emoteKeyword = emoteMatch ? emoteMatch[0] : '';
-    console.log('[DynamicStand] Emote keyword:', emoteKeyword || '(none)');
+    console.log(`[DynamicStand] Emote extraction: speechText="${speechText}", emoteKeyword="${emoteKeyword}"`);
 
     // SE再生
     if (emoteKeyword) {
@@ -339,7 +370,7 @@ export class DynamicStandPluginService implements OnDestroy {
       return;
     }
 
-    this.renderStand(character.identifier, selected, speechText, floatingEmote);
+    this.renderStand(character.identifier, selected, finalSpeechText, floatingEmote);
   }
 
   private getStandSettings(character: GameCharacter): StandSetting[] {
@@ -420,24 +451,33 @@ export class DynamicStandPluginService implements OnDestroy {
   }
 
   private renderStand(characterId: string, setting: StandSetting, speechText: string, floatingEmote: string = '') {
-    // 1. ステージ登壇判定
-    if (!this.leftStage.includes(characterId) && !this.rightStage.includes(characterId)) {
+    const { left, right } = this.getStageState();
+    
+    // 1. サイドの決定
+    let side: 'left' | 'right';
+    if (left.includes(characterId)) {
+      side = 'left';
+    } else if (right.includes(characterId)) {
+      side = 'right';
+    } else {
       const pref = setting.sidePreference || 'auto';
-      if (pref === 'left') {
-        this.leftStage.unshift(characterId);
-      } else if (pref === 'right') {
-        this.rightStage.unshift(characterId);
-      } else {
-        // 左右交互に振り分け
-        if (this.leftStage.length <= this.rightStage.length) {
-          this.leftStage.unshift(characterId);
-        } else {
-          this.rightStage.unshift(characterId);
-        }
-      }
-      // 他のキャラを押し出す
-      this.repositionAll();
+      if (pref === 'left') side = 'left';
+      else if (pref === 'right') side = 'right';
+      else side = (left.length <= right.length) ? 'left' : 'right';
     }
+
+    console.log(`[DynamicStand] Rendering character: ${characterId} on side: ${side}`);
+
+    // 2. 押し出しロジックの改善
+    // 他のキャラを押し出す
+    const currentStage = side === 'left' ? left : right;
+    const others = currentStage.filter(id => id !== characterId);
+    others.forEach((id, idx) => {
+      this.updateObjectPosition(id, side, idx + 1);
+    });
+
+    // 自分は常に index 0
+    const x = side === 'left' ? this.config.edgeOffset : (100 - this.config.edgeOffset);
 
     const objects = ObjectStore.instance.getObjects<OverlayObject>(OverlayObject);
     let stand = objects.find(obj => obj.type === 'image' && obj.label === 'stand_' + characterId);
@@ -447,13 +487,12 @@ export class DynamicStandPluginService implements OnDestroy {
     const duration = this.config.animationDuration;
     const easing = 'ease-out';
 
-    // 現在のスタック位置から座標を算出
-    const side = this.leftStage.includes(characterId) ? 'left' : 'right';
-    const index = side === 'left' ? this.leftStage.indexOf(characterId) : this.rightStage.indexOf(characterId);
-    const x = side === 'left' ? (this.config.edgeOffset + index * this.config.slideWidth) : (100 - this.config.edgeOffset - index * this.config.slideWidth);
+    // 自分が登壇していなかった場合、反対側のサイドに穴が空く可能性があるので後で整頓する
+    const wasOnOtherSide = (side === 'left' && right.includes(characterId)) || (side === 'right' && left.includes(characterId));
 
-    // --- 1. 立ち絵の処理 ---
+    // --- 立ち絵の処理 ---
     if (!stand) {
+      console.log(`[DynamicStand] Creating new stand for: ${characterId}`);
       stand = this.overlayService.createOverlay('image');
       stand.label = 'stand_' + characterId;
       stand.ownerPeerId = characterId;
@@ -463,55 +502,51 @@ export class DynamicStandPluginService implements OnDestroy {
       stand.height = this.config.standHeight;
       stand.top = 100;
       
-      // 初登場時は画面外に配置
       stand.transitionDuration = 0;
       stand.left = side === 'left' ? -this.config.standWidth : 100 + this.config.standWidth;
       stand.imageIdentifier = setting.imageIdentifier; 
       stand.opacity = 0;
-      stand.scaleX = side === 'left' ? 1.0 : -1.0; // 右側なら反転
+      stand.scaleX = side === 'left' ? 1.0 : -1.0;
       stand.update();
 
-      // DOM反映を待ってから目標位置へ
       setTimeout(() => {
         if (!stand) return;
-        stand.transitionDuration = 800; // 登場は少しゆっくり
+        stand.transitionDuration = 800;
         stand.transitionEasing = 'cubic-bezier(0.22, 1, 0.36, 1)';
         stand.left = x;
         stand.opacity = 1.0;
         stand.update();
       }, 50);
     } else {
-      // すでに存在する場合は通常のアニメーション
       stand.transitionDuration = duration;
       stand.transitionEasing = easing;
       stand.left = x;
       stand.imageIdentifier = setting.imageIdentifier;
       stand.opacity = 1.0;
-      stand.scaleX = side === 'left' ? 1.0 : -1.0; // 配置サイドに合わせて反転
+      stand.scaleX = side === 'left' ? 1.0 : -1.0;
       stand.update();
     }
 
-    // 吹き出しの最終的な座標計算用オフセット
     const actualOffsetX = side === 'left' ? setting.offsetX : -setting.offsetX;
 
-    // --- 2. 吹き出しの処理 ---
+    // --- 吹き出しの処理 ---
     if (speechText) {
       if (!speech) {
         speech = this.overlayService.createOverlay('speech');
         speech.label = 'speech_' + characterId;
         speech.ownerPeerId = characterId;
-        speech.anchor = 'bottom';
+        speech.anchor = side === 'left' ? 'bottom-left' : 'bottom-right';
         speech.isClickToClose = false;
         speech.width = 30;
         speech.height = 10;
         
-        // 初登場時は立ち絵に合わせて配置
         speech.transitionDuration = 0;
         speech.left = (side === 'left' ? -this.config.standWidth : 100 + this.config.standWidth) + actualOffsetX;
         speech.top = 100 + setting.offsetY;
         speech.opacity = 0;
         speech.updateContent('text', speechText);
-        speech['lastOffsetX'] = setting.offsetX; // 元の値を保持
+        speech.updateContent('typingSpeed', this.config.typingSpeed);
+        speech['lastOffsetX'] = setting.offsetX;
         speech.update();
 
         setTimeout(() => {
@@ -520,7 +555,6 @@ export class DynamicStandPluginService implements OnDestroy {
           speech.transitionEasing = 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
           speech.left = x + actualOffsetX;
           speech.opacity = 1.0;
-          // しっぽのターゲット座標（立ち絵の顔付近）を更新
           speech.updateContent('targetLeft', x);
           speech.updateContent('targetTop', 100 - (this.config.standHeight * 0.7));
           speech.update();
@@ -529,15 +563,16 @@ export class DynamicStandPluginService implements OnDestroy {
         speech.transitionDuration = duration + 200;
         speech.transitionEasing = 'cubic-bezier(0.175, 0.885, 0.32, 1.275)';
         speech.left = x + actualOffsetX;
+        speech.anchor = side === 'left' ? 'bottom-left' : 'bottom-right';
         speech['lastOffsetX'] = setting.offsetX;
         
-        // しっぽのターゲット座標を更新
         speech.updateContent('targetLeft', x);
         speech.updateContent('targetTop', 100 - (this.config.standHeight * 0.7));
 
         speech.top = 100 + setting.offsetY;
         speech.opacity = 1.0;
         speech.updateContent('text', speechText);
+        speech.updateContent('typingSpeed', this.config.typingSpeed);
         speech.update();
       }
     } else if (speech) {
@@ -545,25 +580,24 @@ export class DynamicStandPluginService implements OnDestroy {
       speech.update();
     }
 
-    // --- 3. 浮遊エモートの処理 ---
+    // --- 浮遊エモートの処理 ---
     if (floatingEmote) {
       if (!emote) {
         emote = this.overlayService.createOverlay('emote');
         emote.label = 'emote_' + characterId;
         emote.ownerPeerId = characterId;
-        emote.anchor = 'bottom';
+        emote.anchor = side === 'left' ? 'bottom-left' : 'bottom-right';
         emote.isClickToClose = false;
         emote.width = 10;
         emote.height = 10;
         emote.opacity = 0;
         emote.scale = this.config.emoteSize;
         
-        // 初登場時は画面外に配置
         emote.transitionDuration = 0;
         emote.left = side === 'left' ? -this.config.standWidth : 100 + this.config.standWidth;
-        emote.top = 110 + setting.offsetY; // 初期位置
-        emote.updateContent('text', floatingEmote); // 内容をセット
-        emote['lastOffsetX'] = setting.offsetX; // reposition用
+        emote.top = 110 + setting.offsetY;
+        emote.updateContent('text', floatingEmote);
+        emote['lastOffsetX'] = setting.offsetX;
         emote.update();
 
         setTimeout(() => {
@@ -582,6 +616,7 @@ export class DynamicStandPluginService implements OnDestroy {
         emote.left = x + actualOffsetX; 
         emote.top = 110 + setting.offsetY - (10 * this.config.emoteSize); 
         emote.opacity = 1.0;
+        emote.anchor = side === 'left' ? 'bottom-left' : 'bottom-right';
         emote.updateContent('text', floatingEmote);
         emote.update();
       }
@@ -590,22 +625,24 @@ export class DynamicStandPluginService implements OnDestroy {
       emote.update();
     }
 
-    this.scheduleCleanup(characterId, this.config.displayDuration);
+    const typingDuration = speechText.length * this.config.typingSpeed;
+    const totalDuration = typingDuration + this.config.displayDuration;
+    this.scheduleCleanup(characterId, totalDuration);
+
+    // サイド変更があった場合は全体を整頓
+    if (wasOnOtherSide) {
+      setTimeout(() => this.repositionAll(), 100);
+    }
   }
 
   private cleanupTimers: Map<string, any> = new Map();
 
   private scheduleCleanup(characterId: string, ms: number) {
-    // 既存のタイマーがあればキャンセル
     if (this.cleanupTimers.has(characterId)) {
       clearTimeout(this.cleanupTimers.get(characterId));
     }
 
-    // 新しいタイマーをセット
     const timer = setTimeout(() => {
-      // ステージから削除（引き寄せが発生）
-      this.removeFromStage(characterId);
-
       const objects = ObjectStore.instance.getObjects<OverlayObject>(OverlayObject);
       const toDestroy = objects.filter(obj => 
         obj.label === 'stand_' + characterId || 
@@ -614,15 +651,16 @@ export class DynamicStandPluginService implements OnDestroy {
       );
       
       for (const obj of toDestroy) {
-        // 退場アニメーション
         obj.transitionDuration = 500;
         obj.opacity = 0;
         obj.update();
-        
-        // アニメーション完了後に物理的に削除
         setTimeout(() => obj.destroy(), 500);
       }
       this.cleanupTimers.delete(characterId);
+      this.activeTexts.delete(characterId);
+      
+      // 他のキャラが退場したら位置を再調整（引き寄せ）
+      setTimeout(() => this.repositionAll(), 600);
     }, ms);
 
     this.cleanupTimers.set(characterId, timer);

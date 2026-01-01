@@ -8,7 +8,7 @@
   [style.transform]="transform"
   [style.transition]="transition">
   <!-- 吹き出し / エモート -->
-  <ng-container *ngFor="let text of [speechText]">
+  <ng-container *ngFor="let text of [visibleText]">
     <div *ngIf="text" class="speech-bubble" 
       [ngClass]="{'is-emote': overlayObject?.type === 'emote'}"
       [class.pos-left]="isLeftSide && overlayObject?.type !== 'emote'"
@@ -19,15 +19,10 @@
     </div>
   </ng-container>
 
-  <!-- デバッグ情報 (isDebug時のみ) -->
   <div *ngIf="overlayObject?.isDebug" class="debug-warning" style="font-size: 10px; background: rgba(0,0,0,0.5); color: white;">
     ID: {{ overlayObjectIdentifier | slice:0:8 }}...<br>
     Label: {{ overlayObject?.label }}<br>
     Type: {{ overlayObject?.type }}<br>
     Op: {{ overlayObject?.opacity }}
-  </div>
-
-  <div *ngIf="!speechText && !overlayObject?.isDebug" class="debug-warning">
-    TEXT NOT SET
   </div>
 </div>

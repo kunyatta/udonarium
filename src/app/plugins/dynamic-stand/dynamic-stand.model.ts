@@ -18,6 +18,7 @@ export class StandGlobalConfig {
   edgeOffset: number = 10;      // 画面端からのオフセット (vw)
   emoteSize: number = 2.5;       // エモートの拡大率 (scale)
   activeCharacterIds: string[] = []; // 立ち絵ONのキャラクターID
+  typingSpeed: number = 50;      // 1文字あたりの表示速度 (ms)
 }
 
 export const DEFAULT_STAND_CONFIG = new StandGlobalConfig();

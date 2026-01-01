@@ -8,41 +8,47 @@
   
   <div class="setting-group">
     <label>表示持続時間 (ms): <span>{{config.displayDuration}}</span></label>
-    <input type="range" min="1000" max="20000" step="500" [(ngModel)]="config.displayDuration">
+    <input type="range" min="1000" max="20000" step="500" [(ngModel)]="config.displayDuration" (change)="updateConfig()">
   </div>
 
   <div class="setting-group">
     <label>アニメーション速度 (ms): <span>{{config.animationDuration}}</span></label>
-    <input type="range" min="100" max="2000" step="50" [(ngModel)]="config.animationDuration">
+    <input type="range" min="100" max="2000" step="50" [(ngModel)]="config.animationDuration" (change)="updateConfig()">
+  </div>
+
+  <div class="setting-group">
+    <label>文字表示速度 (ms/文字): <span>{{config.typingSpeed}}</span></label>
+    <small style="display: block; color: #ccc;">(0で即時表示。推奨: 30-70)</small>
+    <input type="range" min="0" max="200" step="5" [(ngModel)]="config.typingSpeed" (change)="updateConfig()">
   </div>
 
   <hr>
 
   <div class="setting-group">
     <label>押し出し幅 (vw): <span>{{config.slideWidth}}</span></label>
-    <input type="range" min="5" max="40" step="1" [(ngModel)]="config.slideWidth">
+    <input type="range" min="5" max="40" step="1" [(ngModel)]="config.slideWidth" (change)="updateConfig()">
   </div>
 
   <div class="setting-group">
     <label>画面端からの距離 (vw): <span>{{config.edgeOffset}}</span></label>
-    <input type="range" min="0" max="30" step="1" [(ngModel)]="config.edgeOffset">
+    <input type="range" min="0" max="30" step="1" [(ngModel)]="config.edgeOffset" (change)="updateConfig()">
   </div>
 
   <hr>
 
   <div class="setting-group">
     <label>立ち絵の標準幅 (vw): <span>{{config.standWidth}}</span></label>
-    <input type="range" min="10" max="50" step="1" [(ngModel)]="config.standWidth">
+    <input type="range" min="10" max="50" step="1" [(ngModel)]="config.standWidth" (change)="updateConfig()">
   </div>
 
   <div class="setting-group">
     <label>立ち絵の標準高さ (vh): <span>{{config.standHeight}}</span></label>
-    <input type="range" min="20" max="100" step="1" [(ngModel)]="config.standHeight">
+    <input type="range" min="20" max="100" step="1" [(ngModel)]="config.standHeight" (change)="updateConfig()">
   </div>
 
   <div class="setting-group">
     <label>エモートの大きさ (scale): <span>{{config.emoteSize}}</span></label>
-    <input type="range" min="1" max="10" step="0.1" [(ngModel)]="config.emoteSize">
+    <input type="range" min="1" max="10" step="0.1" [(ngModel)]="config.emoteSize" (change)="updateConfig()">
   </div>
 
   <div class="footer">

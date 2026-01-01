@@ -34,6 +34,10 @@ export class DynamicStandSettingComponent implements OnInit {
 
   ngOnInit(): void {}
 
+  updateConfig() {
+    this.service.saveConfig();
+  }
+
   selectTab(tab: 'global' | 'emotes') {
     this.selectedTab = tab;
   }
