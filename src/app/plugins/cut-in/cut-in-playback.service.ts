@@ -11,6 +11,8 @@ import { EventSystem } from '@udonarium/core/system';
   providedIn: 'root'
 })
 export class CutInPlaybackService {
+  private bgmTimer: any = null;
+
   constructor(
     private overlayService: PluginOverlayService,
     private effectsService: OverlayEffectsService
@@ -22,6 +24,12 @@ export class CutInPlaybackService {
   play(cutIn: CutIn) {
     console.log('[CutIn] Play (Global):', cutIn.name);
     EventSystem.trigger('CUT_IN_PLAYING', true);
+
+    // 既存のBGM予約があればキャンセル
+    if (this.bgmTimer) {
+      clearTimeout(this.bgmTimer);
+      this.bgmTimer = null;
+    }
 
     // BGM停止処理
     if (cutIn.stopJukebox) {
@@ -71,6 +79,19 @@ export class CutInPlaybackService {
         }
         EventSystem.trigger('CUT_IN_PLAYING', false);
       }, totalMs);
+
+      // 演出終了後のBGM予約
+      if (cutIn.afterAudioIdentifier) {
+        const delayMs = (cutIn.afterAudioDelay || 0) * 1000;
+        this.bgmTimer = setTimeout(() => {
+          const jukebox = ObjectStore.instance.get<Jukebox>('Jukebox');
+          if (jukebox) {
+            console.log('[CutIn] Auto-switching BGM:', cutIn.afterAudioIdentifier);
+            jukebox.play(cutIn.afterAudioIdentifier, true);
+          }
+          this.bgmTimer = null;
+        }, totalMs + delayMs);
+      }
     }
   }
 
@@ -81,6 +102,8 @@ export class CutInPlaybackService {
     console.log('[CutIn] Play (Local):', cutIn.name);
     EventSystem.trigger('CUT_IN_PLAYING', true);
 
+    // BGM予約はローカル再生では行わない
+    
     // ローカルでのBGM停止
     if (cutIn.stopJukebox) {
       const jukebox = ObjectStore.instance.get<Jukebox>('Jukebox');
@@ -206,6 +229,12 @@ export class CutInPlaybackService {
         console.log('[CutIn] Stop All Overlays');
         EventSystem.trigger('CUT_IN_PLAYING', false);
     
+        // BGM予約があればキャンセル
+        if (this.bgmTimer) {
+          clearTimeout(this.bgmTimer);
+          this.bgmTimer = null;
+        }
+
         // 同期されている全ての演出オブジェクトを削除（全員の画面から消える）
     
         const objects = ObjectStore.instance.getObjects<OverlayObject>(OverlayObject);

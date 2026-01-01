@@ -30,6 +30,9 @@ export interface CutIn {
   audioMode: 'none' | 'se' | 'bgm'; // 再生モード
   isLoop: boolean;         // ループ再生するか (SEモード用)
   stopJukebox: boolean;    // 再生時にBGMを停止するか
+  // 演出終了後のBGM設定
+  afterAudioIdentifier?: string; // 演出終了後に再生するBGM
+  afterAudioDelay?: number;      // 演出終了から再生までの待機時間(秒)
 }
 
 export const DEFAULT_CUT_IN: Omit<CutIn, 'identifier'> = {
@@ -60,5 +63,7 @@ export const DEFAULT_CUT_IN: Omit<CutIn, 'identifier'> = {
   audioIdentifier: '',
   audioMode: 'se',
   isLoop: false,
-  stopJukebox: false
+  stopJukebox: false,
+  afterAudioIdentifier: '',
+  afterAudioDelay: 0
 };
