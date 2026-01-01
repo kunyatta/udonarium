@@ -1,4 +1,5 @@
-import { AfterViewInit, Component, NgZone, OnDestroy, ViewChild, ViewContainerRef } from '@angular/core';
+import { AfterViewInit, Component, NgZone, OnDestroy, OnInit, ViewChild, ViewContainerRef } from '@angular/core';
+import { Subscription } from 'rxjs';
 
 import { ChatTabList } from '@udonarium/chat-tab-list';
 import { AudioPlayer } from '@udonarium/core/file-storage/audio-player';
@@ -70,6 +71,10 @@ export class AppComponent implements AfterViewInit, OnDestroy {
   private openPanelCount: number = 0;
   isSaveing: boolean = false;
   progresPercent: number = 0;
+
+  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  private extensionSubscription: Subscription;
+  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
 
   constructor(
     private modalService: ModalService,
@@ -225,6 +230,12 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.lazyNgZoneUpdate(event.isSendFromSelf);
       });
 
+    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    this.extensionSubscription = this.uiExtensionService.onUpdate$.subscribe(() => {
+      this.lazyNgZoneUpdate(true);
+    });
+    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+
     workaroundForMobileSafari();
   }
 
@@ -244,6 +255,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     EventSystem.unregister(this);
+    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    if (this.extensionSubscription) this.extensionSubscription.unsubscribe();
+    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
   }
 
   open(componentName: string) {

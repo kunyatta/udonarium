@@ -1,4 +1,5 @@
 import { Injectable } from '@angular/core';
+import { Subject, Observable } from 'rxjs';
 
 export type ExtensionLocation = 'main-menu' | 'context-menu' | 'chat-window' | 'character-sheet' | 'chat-input';
 
@@ -17,10 +18,13 @@ export interface ExtensionAction {
 export class UIExtensionService {
 
   private actions: Map<ExtensionLocation, ExtensionAction[]> = new Map();
+  private _updateSource = new Subject<void>();
+  readonly onUpdate$: Observable<void> = this._updateSource.asObservable();
 
   constructor() { }
 
   registerAction(location: ExtensionLocation, action: ExtensionAction) {
+    console.log(`UIExtensionService: Registering action "${action.name}" to ${location}`);
     if (!this.actions.has(location)) {
       this.actions.set(location, []);
     }
@@ -33,6 +37,7 @@ export class UIExtensionService {
     } else {
       actions.push(action);
     }
+    this._updateSource.next();
   }
 
   getActions(location: ExtensionLocation, context?: any): ExtensionAction[] {
