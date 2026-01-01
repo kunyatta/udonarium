@@ -277,7 +277,12 @@ export class DynamicStandPluginService implements OnDestroy {
       }
     }
 
-    if (!speechText && !emoteKeyword) return;
+    // セリフからエモート文字を除去
+    if (finalSpeechText && emoteKeyword) {
+      finalSpeechText = finalSpeechText.split(emoteKeyword).join('').trim();
+    }
+
+    if (!finalSpeechText && !emoteKeyword) return;
 
     // 5. 設定読み込みと選択
     const settings = this.getStandSettings(character);
