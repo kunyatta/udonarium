@@ -49,20 +49,23 @@
             <img *ngIf="imageUrl" [src]="imageUrl" draggable="false">
           </div>
 
-          <!-- Speech Bubble -->
-          <div *ngIf="standingSpeechVisible && visibleSpeechText" class="standing-speech">
-             <div class="speech-bubble" 
-                  [class.pos-left]="standingSide === 'left'"
-                  [class.pos-right]="standingSide === 'right'">
-               {{ visibleSpeechText }}
-             </div>
-          </div>
+          <!-- Standing Info Layer (Speech & Emote Stack) -->
+          <div class="standing-info-container">
+            <!-- Speech Bubble -->
+            <div *ngIf="standingSpeechVisible && visibleSpeechText" class="standing-speech">
+               <div class="speech-bubble" 
+                    [class.pos-left]="standingSide === 'left'"
+                    [class.pos-right]="standingSide === 'right'">
+                 {{ visibleSpeechText }}
+               </div>
+            </div>
 
-          <!-- Floating Emote -->
-          <div *ngIf="standingEmoteVisible && standingEmoteText" class="standing-emote">
-            <div class="emote-float-wrapper">
-              <div class="emote-inner">
-                {{ standingEmoteText }}
+            <!-- Floating Emote -->
+            <div *ngIf="standingEmoteVisible && standingEmoteText" class="standing-emote">
+              <div class="emote-float-wrapper">
+                <div class="emote-inner">
+                  {{ standingEmoteText }}
+                </div>
               </div>
             </div>
           </div>

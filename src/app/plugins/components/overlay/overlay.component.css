@@ -108,20 +108,34 @@ img {
   object-fit: contain;
 }
 
-/* Speech Bubble Layout */
-.standing-speech {
+/* Speech & Emote Container */
+.standing-info-container {
   position: absolute;
-  /* デフォルト配置 (Left side character) */
+  /* Anchor at the same point where they used to be */
   bottom: 80%; 
   left: 80%; 
+  display: flex;
+  flex-direction: column-reverse; /* Bottom to top: Speech first, then Emote */
+  align-items: flex-start;
+  z-index: 20;
+  pointer-events: none;
+}
+
+.is-right .standing-info-container {
+  left: auto;
+  right: 80%;
+  align-items: flex-end;
+}
+
+/* Speech Bubble Layout */
+.standing-speech {
+  position: relative;
   z-index: 10;
   /* アニメーション用 */
   transform-origin: bottom left;
 }
 
 .is-right .standing-speech {
-  left: auto;
-  right: 80%;
   transform-origin: bottom right;
 }
 
@@ -180,21 +194,18 @@ img {
 
 /* Emote Layout */
 .standing-emote {
-  position: absolute;
-  /* Align with Speech Bubble horizontal position */
-  bottom: 80%; 
-  left: 80%;
-  /* Slightly above speech start */
-  transform: translateX(-20%) translateY(-100%); 
+  position: relative;
+  /* Horizontal offset to match previous look */
+  margin-left: -10px;
+  margin-bottom: 5px; /* Gap between speech and emote */
   z-index: 20;
   font-size: 4rem;
   text-shadow: 0 2px 4px rgba(0,0,0,0.3);
 }
 
 .is-right .standing-emote {
-  left: auto;
-  right: 80%;
-  transform: translateX(20%) translateY(-100%);
+  margin-left: 0;
+  margin-right: -10px;
 }
 
 /* Floating Animation Layer */
