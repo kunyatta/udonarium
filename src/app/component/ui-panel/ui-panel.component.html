@@ -4,11 +4,18 @@
   <div class="title">
     <div class="title-text">{{panelService.title}}</div>
     <div class="title-button" *ngIf="showTitleButtons">
+      <!-- ----- MODIFICATION START (kunyatta) for PanelMinimize ----- -->
+      <button (click)="toggleMinimize()">
+        <i class="material-icons" style="font-size: 14px">{{ isMinimized ? 'crop_din' : 'remove' }}</i>
+      </button>
+      <!-- ----- MODIFICATION END (kunyatta) for PanelMinimize ----- -->
       <button (click)="toggleFullScreen()"><i class="material-icons" style="font-size: 14px;">fullscreen</i></button>
       <button (click)="close()"><i class="material-icons" style="font-size: 14px;">close</i></button>
     </div>
   </div>
-  <div class="scrollable-panel" #scrollablePanel>
+  <!-- ----- MODIFICATION START (kunyatta) for PanelMinimize ----- -->
+  <div class="scrollable-panel" [style.display]="isMinimized ? 'none' : ''" #scrollablePanel>
+  <!-- ----- MODIFICATION END (kunyatta) for PanelMinimize ----- -->
     <ng-content></ng-content>
     <div #content></div>
   </div>

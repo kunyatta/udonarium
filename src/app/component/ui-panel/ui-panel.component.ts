@@ -41,7 +41,17 @@ export class UIPanelComponent implements OnInit {
   get left() { return this.panelService.left; }
   get top() { return this.panelService.top; }
   get width() { return this.panelService.width; }
-  get height() { return this.panelService.height; }
+  // get height() { return this.panelService.height; }
+  get height() {
+    // ----- MODIFICATION START (kunyatta) for PanelMinimize -----
+    if (this.isMinimized) return 25;
+    // ----- MODIFICATION END (kunyatta) for PanelMinimize -----
+    return this.panelService.height;
+  }
+
+  // ----- MODIFICATION START (kunyatta) for PanelMinimize -----
+  isMinimized: boolean = false;
+  // ----- MODIFICATION END (kunyatta) for PanelMinimize -----
 
   private preLeft: number = 0
   private preTop: number = 0;
@@ -61,7 +71,16 @@ export class UIPanelComponent implements OnInit {
     this.panelService.scrollablePanel = this.scrollablePanel.nativeElement;
   }
 
+  // ----- MODIFICATION START (kunyatta) for PanelMinimize -----
+  toggleMinimize() {
+    this.isMinimized = !this.isMinimized;
+  }
+  // ----- MODIFICATION END (kunyatta) for PanelMinimize -----
+
   toggleFullScreen() {
+    // ----- MODIFICATION START (kunyatta) for PanelMinimize -----
+    this.isMinimized = false;
+    // ----- MODIFICATION END (kunyatta) for PanelMinimize -----
     let panel = this.draggablePanel.nativeElement;
     if (panel.offsetLeft <= 0
       && panel.offsetTop <= 0
