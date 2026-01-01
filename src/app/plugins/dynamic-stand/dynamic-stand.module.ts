@@ -4,7 +4,6 @@ import { FormsModule } from '@angular/forms';
 import { DynamicStandPlugin } from './dynamic-stand.plugin';
 import { DynamicStandPluginService } from './dynamic-stand.service';
 import { DynamicStandSettingComponent } from './dynamic-stand-setting.component';
-import { StandingRendererComponent } from './standing-renderer.component';
 import { PLUGIN_TOKEN } from '../i-plugin';
 
 @NgModule({
@@ -13,8 +12,7 @@ import { PLUGIN_TOKEN } from '../i-plugin';
     FormsModule
   ],
   declarations: [
-    DynamicStandSettingComponent,
-    StandingRendererComponent
+    DynamicStandSettingComponent
   ],
   exports: [
     DynamicStandSettingComponent

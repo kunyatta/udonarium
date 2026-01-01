@@ -27,6 +27,16 @@ export class OverlayComponent implements OnInit, OnDestroy {
   private expirationTimer: any;
   private exitAnimationScheduled = false;
 
+  // --- Standing Unit Logic ---
+  visibleSpeechText: string = '';
+  private typingTimer: any = null;
+  private _lastSpeechText: string = '';
+
+  // 慣性演出用
+  inertiaState: 'left' | 'right' | 'none' = 'none';
+  private _prevLeft: number = null;
+  private inertiaTimer: any = null;
+
   // 計算用のゲッター
   get left() { return (this.overlayObject?.left || 0) + 'vw'; }
   get top() { return (this.overlayObject?.top || 0) + 'vh'; }
@@ -145,6 +155,19 @@ export class OverlayComponent implements OnInit, OnDestroy {
   get imageUrl(): string {
     if (!this.overlayObject) return '';
     
+    // StandingUnitの場合は内部のcharacter要素から取得
+    if (this.overlayObject.type === 'standing-unit') {
+      const chara = this.getStandingElement('character');
+      if (chara) {
+        const id = this.getChildValue(chara, 'imageIdentifier');
+        if (id) {
+          const file = ImageStorage.instance.get(id);
+          if (file) return file.url;
+        }
+      }
+      return '';
+    }
+
     // 0. imageIdentifierによる解決 (標準)
     if (this.overlayObject.imageIdentifier && this.overlayObject.type !== 'video') {
        const file = ImageStorage.instance.get(this.overlayObject.imageIdentifier);
@@ -191,17 +214,27 @@ export class OverlayComponent implements OnInit, OnDestroy {
       this.overlayObject = ObjectStore.instance.get<OverlayObject>(this.overlayObjectIdentifier);
     }
     if (!this.overlayObject) return;
+    
+    this._prevLeft = this.overlayObject.left;
 
     // 有効期限の監視開始
     this.checkExpiration();
     this.startExpirationTimer();
     this.playAudioIfSet();
 
+    if (this.overlayObject.type === 'standing-unit') {
+      this.updateTyping();
+    }
+
     EventSystem.register(this)
       .on('UPDATE_GAME_OBJECT/identifier/' + this.overlayObject.identifier, event => {
         // 同期された値を反映
+        this.checkInertia();
         this.checkExpiration();
         this.playAudioIfSet();
+        if (this.overlayObject.type === 'standing-unit') {
+          this.updateTyping();
+        }
         this.changeDetector.markForCheck();
       })
       .on('CHANGE_JUKEBOX_VOLUME', event => {
@@ -211,6 +244,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
         if (this.overlayObject && this.overlayObject.identifier === event.data.identifier) {
           this.overlayObject = null;
           this.audioPlayer.stop();
+          this.stopTyping();
           this.changeDetector.markForCheck();
         }
       });
@@ -295,9 +329,138 @@ export class OverlayComponent implements OnInit, OnDestroy {
     }
   }
 
+  // --- StandingUnit Helpers ---
+
+  get standingSpeechText(): string {
+    const speech = this.getStandingElement('speech');
+    return this.getChildValue(speech, 'text') || '';
+  }
+
+  get standingSpeechVisible(): boolean {
+    const speech = this.getStandingElement('speech');
+    // booleanはDataElementで扱いにくいため、文字列比較か存在確認
+    // ここではtextがあれば表示とするか、isVisibleプロパティを信じるか
+    const isVisible = this.getChildValue(speech, 'isVisible');
+    return isVisible === 'true' || isVisible === true;
+  }
+
+  get standingEmoteText(): string {
+    const emote = this.getStandingElement('emote');
+    return this.getChildValue(emote, 'text') || '';
+  }
+
+  get standingEmoteVisible(): boolean {
+    const emote = this.getStandingElement('emote');
+    const isVisible = this.getChildValue(emote, 'isVisible');
+    return isVisible === 'true' || isVisible === true;
+  }
+
+  get standingSide(): 'left' | 'right' {
+    const side = this.getChildValue(this.overlayObject?.content, 'side');
+    return side === 'right' ? 'right' : 'left';
+  }
+
+  // Helper to safely get nested DataElement
+  private getStandingElement(name: string): DataElement | undefined {
+    if (!this.overlayObject || !this.overlayObject.content) return undefined;
+    return this.overlayObject.content.children.find(c => c instanceof DataElement && c.name === name) as DataElement;
+  }
+
+  private getChildValue(parent: DataElement | undefined, childName: string): any {
+    if (!parent) return undefined;
+    const child = parent.children.find(c => c instanceof DataElement && c.name === childName) as DataElement;
+    return child ? child.value : undefined;
+  }
+
+  // タイピング演出制御
+  private updateTyping() {
+    const targetText = this.standingSpeechText;
+    const speed = Number(this.getChildValue(this.getStandingElement('speech'), 'typingSpeed')) || 50;
+
+    if (targetText === this._lastSpeechText) return; // 変更なし
+
+    if (targetText.startsWith(this._lastSpeechText) && this._lastSpeechText.length > 0) {
+      // 追記モード
+      this.runTypingLoop(targetText, speed);
+    } else {
+      // 新規・置換モード
+      this.visibleSpeechText = '';
+      this.runTypingLoop(targetText, speed);
+    }
+    this._lastSpeechText = targetText;
+  }
+
+  private runTypingLoop(targetText: string, speed: number) {
+    if (this.typingTimer) clearInterval(this.typingTimer);
+    
+    // 即時完了チェック
+    if (speed <= 0) {
+      this.visibleSpeechText = targetText;
+      this.changeDetector.markForCheck();
+      return;
+    }
+
+    this.typingTimer = setInterval(() => {
+      if (this.visibleSpeechText.length < targetText.length) {
+        this.visibleSpeechText += targetText.charAt(this.visibleSpeechText.length);
+        this.changeDetector.markForCheck();
+      } else {
+        this.stopTyping();
+      }
+    }, speed);
+  }
+
+  private stopTyping() {
+    if (this.typingTimer) {
+      clearInterval(this.typingTimer);
+      this.typingTimer = null;
+    }
+  }
+
+  // 慣性検知ロジック
+  private checkInertia() {
+    if (this.overlayObject.type !== 'standing-unit') return;
+    
+    const currentLeft = this.overlayObject.left;
+    if (this._prevLeft === null) {
+      this._prevLeft = currentLeft;
+      return;
+    }
+
+    // 0.1vw以上の移動のみ検知（微細なブレは無視）
+    if (Math.abs(currentLeft - this._prevLeft) < 0.1) return;
+
+    // 方向決定
+    const direction = currentLeft < this._prevLeft ? 'left' : 'right';
+    
+    // 状態更新 (タイマーリセット)
+    this.inertiaState = direction;
+    if (this.inertiaTimer) clearTimeout(this.inertiaTimer);
+    
+    // 移動時間(Duration)後に慣性解除
+    const duration = this.overlayObject.transitionDuration || 500;
+    
+    // 移動距離に応じて係数を調整
+    // 登場時(大移動): 0.2 (等速移動を見せないため早めに戻す)
+    // スライド時(小移動): 0.7 (慣性をしっかり見せるため粘る)
+    const dist = Math.abs(currentLeft - this._prevLeft);
+    const ratio = dist > 20 ? 0.2 : 0.7;
+
+    const inertiaDuration = duration * ratio;
+
+    this.inertiaTimer = setTimeout(() => {
+      this.inertiaState = 'none';
+      this.changeDetector.markForCheck();
+    }, inertiaDuration);
+
+    this._prevLeft = currentLeft;
+  }
+
   ngOnDestroy() {
     console.log('[Overlay] Component Destroyed');
     this.stopExpirationTimer();
+    this.stopTyping();
+    if (this.inertiaTimer) clearTimeout(this.inertiaTimer);
     this.audioPlayer.stop();
     EventSystem.unregister(this);
   }

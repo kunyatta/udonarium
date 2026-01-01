@@ -80,3 +80,160 @@ img {
   padding: 2px;
   pointer-events: none;
 }
+
+/* --- Standing Unit Styles --- */
+
+.standing-unit-wrapper {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.standing-character {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+.standing-character img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: 100%; /* Height fixed to container height */
+  object-fit: contain;
+}
+
+/* Speech Bubble Layout */
+.standing-speech {
+  position: absolute;
+  /* デフォルト配置 (Left side character) */
+  bottom: 80%; 
+  left: 80%; 
+  z-index: 10;
+  /* アニメーション用 */
+  transform-origin: bottom left;
+}
+
+.is-right .standing-speech {
+  left: auto;
+  right: 80%;
+  transform-origin: bottom right;
+}
+
+/* Bubble Visuals */
+.speech-bubble {
+  position: relative;
+  background: rgba(255, 255, 255, 0.95);
+  border: 2px solid #333;
+  border-radius: 12px;
+  padding: 12px 16px;
+  color: #333;
+  font-weight: bold;
+  font-size: 1.2rem;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  min-width: 120px;
+  max-width: 400px;
+  pointer-events: none;
+}
+
+/* Tail (Speech Bubble) */
+.speech-bubble::after {
+  content: '';
+  position: absolute;
+  bottom: -10px;
+  left: 20px;
+  border-width: 10px 10px 0;
+  border-style: solid;
+  border-color: #333 transparent;
+  display: block;
+  width: 0;
+}
+.speech-bubble::before {
+  content: '';
+  position: absolute;
+  bottom: -6px;
+  left: 22px;
+  border-width: 8px 8px 0;
+  border-style: solid;
+  border-color: rgba(255, 255, 255, 0.95) transparent;
+  display: block;
+  width: 0;
+  z-index: 1;
+}
+
+/* Right side tail */
+.is-right .speech-bubble::after {
+  left: auto;
+  right: 20px;
+}
+.is-right .speech-bubble::before {
+  left: auto;
+  right: 22px;
+}
+
+/* Emote Layout */
+.standing-emote {
+  position: absolute;
+  /* Align with Speech Bubble horizontal position */
+  bottom: 80%; 
+  left: 80%;
+  /* Slightly above speech start */
+  transform: translateX(-20%) translateY(-100%); 
+  z-index: 20;
+  font-size: 4rem;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+.is-right .standing-emote {
+  left: auto;
+  right: 80%;
+  transform: translateX(20%) translateY(-100%);
+}
+
+/* Floating Animation Layer */
+.emote-float-wrapper {
+  display: block;
+  animation: float 2s ease-in-out infinite;
+}
+
+@keyframes float {
+  0% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+  100% { transform: translateY(0); }
+}
+
+/* --- Inertia Animation (Simulated Lag) --- */
+
+.standing-speech,
+.emote-inner {
+  display: block;
+  /* Default state: return to origin with bounce */
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: translateX(0);
+}
+
+/* While moving LEFT (Parent goes Left): Drag elements to the RIGHT */
+.inertia-left .standing-speech,
+.inertia-left .emote-inner {
+  transform: translateX(6vw) !important; /* Use vw for responsive lag */
+  transition: transform 0.7s ease-in-out; /* Slow drag sensation */
+}
+
+/* While moving RIGHT (Parent goes Right): Drag elements to the LEFT */
+.inertia-right .standing-speech,
+.inertia-right .emote-inner {
+  transform: translateX(-6vw) !important;
+  transition: transform 0.7s ease-in-out;
+}
+
+
+
+
+
