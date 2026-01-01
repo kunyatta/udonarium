@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 
-export type ExtensionLocation = 'main-menu' | 'context-menu' | 'chat-window' | 'character-sheet' | 'chat-input';
+export type ExtensionLocation = 'main-menu' | 'context-menu' | 'chat-window' | 'character-sheet' | 'chat-input' | 'chat-input-quick';
 
 export interface ExtensionAction {
   name: string;
@@ -20,6 +20,30 @@ export class UIExtensionService {
   private actions: Map<ExtensionLocation, ExtensionAction[]> = new Map();
   private _updateSource = new Subject<void>();
   readonly onUpdate$: Observable<void> = this._updateSource.asObservable();
+
+  // ----- MODIFICATION START (kunyatta) for Dynamic UI Slot -----
+  activeComponent: any = null;
+  activeContext: any = null;
+
+  toggleCustomUI(component: any, context?: any) {
+    if (this.activeComponent === component) {
+      this.activeComponent = null;
+      this.activeContext = null;
+    } else {
+      this.activeComponent = component;
+      this.activeContext = context;
+    }
+    this._updateSource.next();
+  }
+
+  closeCustomUI() {
+    if (this.activeComponent) {
+      this.activeComponent = null;
+      this.activeContext = null;
+      this._updateSource.next();
+    }
+  }
+  // ----- MODIFICATION END (kunyatta) for Dynamic UI Slot -----
 
   constructor() { }
 

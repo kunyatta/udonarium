@@ -1,6 +1,7 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { UIExtensionService } from '../service/ui-extension.service';
-import { ContextMenuService, ContextMenuAction } from '../../service/context-menu.service';
+import { ModalService } from '../../service/modal.service';
+import { EmotePaletteComponent } from './emote-palette.component';
 import { PluginDataObserverService } from '../service/plugin-data-observer.service';
 import { PluginMapperService } from '../service/plugin-mapper.service';
 import { PluginHelperService } from '../service/plugin-helper.service';
@@ -44,7 +45,7 @@ export class EmoteManagerService implements OnDestroy {
 
   constructor(
     private uiExtension: UIExtensionService,
-    private contextMenu: ContextMenuService,
+    private modalService: ModalService,
     private observer: PluginDataObserverService,
     private pluginMapper: PluginMapperService,
     private pluginHelper: PluginHelperService
@@ -74,6 +75,7 @@ export class EmoteManagerService implements OnDestroy {
         if (JSON.stringify(this.emotes) !== JSON.stringify(loadedEmotes)) {
           console.log('[EmoteManager] Loading remote data...');
           this.emotes = loadedEmotes;
+          this.registerQuickEmotes();
         }
       } else {
         // 初回ロード時などでデータがない場合はデフォルトを使用し、保存する
@@ -84,6 +86,7 @@ export class EmoteManagerService implements OnDestroy {
             if (!e.identifier) e.identifier = UUID.generateUuid();
           });
           
+          this.registerQuickEmotes();
           setTimeout(() => {
             if (!this.currentContainer && !this.isSaving) {
               this.saveConfig();
@@ -133,6 +136,28 @@ export class EmoteManagerService implements OnDestroy {
     }
   }
 
+  pinEmote(identifier: string) {
+    const index = this.emotes.findIndex(e => e.identifier === identifier);
+    if (index >= 0) {
+      const [emote] = this.emotes.splice(index, 1);
+      this.emotes.unshift(emote);
+      this.registerQuickEmotes();
+      this.saveConfig();
+    }
+  }
+
+  moveEmote(identifier: string, direction: number) {
+    const index = this.emotes.findIndex(e => e.identifier === identifier);
+    if (index < 0) return;
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= this.emotes.length) return;
+
+    const [emote] = this.emotes.splice(index, 1);
+    this.emotes.splice(newIndex, 0, emote);
+    this.registerQuickEmotes();
+    this.saveConfig();
+  }
+
   deleteEmote(identifier: string) {
     const index = this.emotes.findIndex(e => e.identifier === identifier);
     if (index >= 0) {
@@ -145,6 +170,22 @@ export class EmoteManagerService implements OnDestroy {
     return this.emotes;
   }
 
+  private registerQuickEmotes() {
+    // 上位5つをクイックアクションとして登録
+    this.emotes.slice(0, 5).forEach((emote, index) => {
+      this.uiExtension.registerAction('chat-input-quick', {
+        name: emote.label,
+        icon: () => emote.icon, // 絵文字そのものをアイコンとして返す
+        action: (context: any) => {
+          if (context && context.component && typeof context.component.insertEmote === 'function') {
+            context.component.insertEmote(emote.icon);
+          }
+        },
+        priority: index
+      });
+    });
+  }
+
   private registerUI() {
     this.uiExtension.registerAction('chat-input', {
       name: 'エモート',
@@ -155,17 +196,6 @@ export class EmoteManagerService implements OnDestroy {
   }
 
   private openEmoteMenu(context: any, pointer: { x: number, y: number }) {
-    if (!pointer) return;
-
-    const actions: ContextMenuAction[] = this.emotes.map(emote => ({
-      name: `${emote.icon} ${emote.label}`,
-      action: () => {
-        if (context && context.component && typeof context.component.insertEmote === 'function') {
-          context.component.insertEmote(emote.icon);
-        }
-      }
-    }));
-
-    this.contextMenu.open(pointer, actions, 'エモート選択');
+    this.uiExtension.toggleCustomUI(EmotePaletteComponent, context);
   }
 }

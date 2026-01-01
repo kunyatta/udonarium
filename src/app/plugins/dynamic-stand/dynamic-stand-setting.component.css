@@ -131,15 +131,41 @@ hr {
 }
 
 .list-item .icon {
-  font-size: 1.2em;
-  margin-right: 10px;
-  width: 1.5em;
+  font-size: 1.1em;
+  margin-right: 6px;
+  width: 1.2em;
   text-align: center;
 }
 
 .list-item .label {
   flex-grow: 1;
   font-weight: bold;
+  font-size: 0.8em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-right: 4px;
+}
+
+.move-btns {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0.3;
+  transition: opacity 0.2s;
+}
+
+.list-item:hover .move-btns {
+  opacity: 1;
+}
+
+.move-btns button {
+  padding: 0;
+  font-size: 8px;
+  line-height: 1;
+  width: 16px;
+  height: 14px;
+  cursor: pointer;
 }
 
 /* 編集フォーム */

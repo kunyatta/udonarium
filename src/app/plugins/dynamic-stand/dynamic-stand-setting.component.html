@@ -63,11 +63,15 @@
       <button class="add-btn" (click)="createNewEmote()">+ 新規作成</button>
     </div>
     <div class="scrollable-list">
-      <div *ngFor="let emote of emotes" class="list-item" 
+      <div *ngFor="let emote of emotes; let i = index" class="list-item" 
            [class.active]="selectedEmote?.identifier === emote.identifier"
            (click)="selectEmote(emote)">
         <span class="icon">{{emote.icon}}</span>
         <span class="label">{{emote.label}}</span>
+        <div class="move-btns">
+          <button [disabled]="i === 0" (click)="moveEmote($event, emote, -1)">▲</button>
+          <button [disabled]="i === emotes.length - 1" (click)="moveEmote($event, emote, 1)">▼</button>
+        </div>
       </div>
     </div>
   </div>

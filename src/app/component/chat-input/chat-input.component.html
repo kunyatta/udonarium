@@ -48,12 +48,28 @@
     </div>
     <!-- ----- MODIFICATION START (kunyatta) for DynamicStandPlugin ----- -->
     <div *ngIf="showColorPicker && onlyCharacters" class="extension-button-row" style="margin: 4px 0; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
-      <button *ngFor="let extension of chatInputExtensions" (click)="extension.action({ character: $any(ObjectStore.instance.get(sendFrom)), component: this }, { x: $event.clientX, y: $event.clientY })" 
+      <button *ngFor="let extension of chatInputExtensions" (click)="extension.action({ character: $any(ObjectStore.instance.get(sendFrom)), component: this }, { x: $event.clientX, y: $event.clientY }); $event.stopPropagation()" 
         style="font-size: 0.75rem; padding: 2px 6px; display: inline-flex; align-items: center; gap: 2px; height: 24px; vertical-align: middle;">
         <i *ngIf="extension.icon" class="material-icons" style="font-size: 1rem;">{{getExtensionIcon(extension)}}</i>
         <span>{{extension.name}}</span>
       </button>
+
+      <!-- クイックアクション用（アイコンのみ・枠なし） -->
+      <button *ngFor="let quick of chatInputQuickExtensions" (click)="quick.action({ character: $any(ObjectStore.instance.get(sendFrom)), component: this }); $event.stopPropagation()"
+        [title]="quick.name"
+        style="background: transparent; border: none; padding: 0 4px; cursor: pointer; font-size: 1.2rem; min-width: 28px; height: 24px; display: inline-flex; align-items: center; justify-content: center; color: white; opacity: 0.8;">
+        <ng-container *ngIf="getExtensionIcon(quick) as icon">
+          <i *ngIf="icon.length <= 2" style="font-style: normal;">{{ icon }}</i>
+          <i *ngIf="icon.length > 2" class="material-icons" style="font-size: 1.2rem;">{{ icon }}</i>
+        </ng-container>
+        <span *ngIf="!quick.icon">{{ quick.name }}</span>
+      </button>
     </div>
+    <!-- ----- MODIFICATION START (kunyatta) for Dynamic UI Slot ----- -->
+    <div *ngIf="showColorPicker && onlyCharacters && uiExtensionService.activeComponent && uiExtensionService.activeContext?.component === this" class="extension-custom-slot" (click)="$event.stopPropagation()">
+      <ng-container *ngComponentOutlet="uiExtensionService.activeComponent"></ng-container>
+    </div>
+    <!-- ----- MODIFICATION END (kunyatta) for Dynamic UI Slot ----- -->
     <!-- ----- MODIFICATION END (kunyatta) for DynamicStandPlugin ----- -->
     <div>
       <form>

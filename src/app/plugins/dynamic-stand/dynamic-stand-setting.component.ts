@@ -77,6 +77,11 @@ export class DynamicStandSettingComponent implements OnInit {
     this.selectedEmote = null;
   }
 
+  moveEmote(event: Event, emote: EmoteData, direction: number) {
+    event.stopPropagation();
+    this.emoteManager.moveEmote(emote.identifier, direction);
+  }
+
   cancelEdit() {
     this.selectedEmote = null;
   }

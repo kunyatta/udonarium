@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, NgZone, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
 import { ChatMessage } from '@udonarium/chat-message';
 import { ImageFile } from '@udonarium/core/file-storage/image-file';
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
@@ -26,6 +26,13 @@ export class ChatInputComponent implements OnInit, OnDestroy {
   @ViewChild('textArea', { static: true }) textAreaElementRef: ElementRef;
   // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
   ObjectStore = ObjectStore; // テンプレート参照用
+  
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent) {
+    if (this.uiExtensionService.activeComponent) {
+      this.uiExtensionService.closeCustomUI();
+    }
+  }
   // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
 
   @Input() onlyCharacters: boolean = false;
@@ -126,7 +133,7 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     private panelService: PanelService,
     private pointerDeviceService: PointerDeviceService,
     // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
-    private uiExtensionService: UIExtensionService
+    public uiExtensionService: UIExtensionService
     // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
   ) { }
 
@@ -194,6 +201,11 @@ export class ChatInputComponent implements OnInit, OnDestroy {
   get chatInputExtensions(): ExtensionAction[] {
     let object = ObjectStore.instance.get(this.sendFrom);
     return this.uiExtensionService.getActions('chat-input', object);
+  }
+
+  get chatInputQuickExtensions(): ExtensionAction[] {
+    let object = ObjectStore.instance.get(this.sendFrom);
+    return this.uiExtensionService.getActions('chat-input-quick', object);
   }
 
   getExtensionIcon(action: ExtensionAction): string {

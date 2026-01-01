@@ -1,0 +1,11 @@
+<div class="emote-palette-container">
+  <div class="palette-instruction">右クリックでクイックボタンに登録</div>
+  <div class="emote-grid">
+    <button *ngFor="let emote of emotes" class="emote-button" 
+      (click)="selectEmote(emote)"
+      (contextmenu)="pinEmote($event, emote)">
+      <span class="emote-icon">{{ emote.icon }}</span>
+      <span class="emote-label">{{ emote.label }}</span>
+    </button>
+  </div>
+</div>
