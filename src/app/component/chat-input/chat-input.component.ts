@@ -60,6 +60,12 @@ export class ChatInputComponent implements OnInit, OnDestroy {
   get isDirect(): boolean { return this.sendTo != null && this.sendTo.length ? true : false }
   gameHelp: string = '';
 
+  // ----- MODIFICATION START (kunyatta) for ChatHistory -----
+  private static chatHistory: string[] = [];
+  private historyIndex: number = -1;
+  private tempInputText: string = '';
+  // ----- MODIFICATION END (kunyatta) for ChatHistory -----
+
   get imageFile(): ImageFile {
     let object = ObjectStore.instance.get(this.sendFrom);
     let image: ImageFile = null;
@@ -235,6 +241,36 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     this.calcFitHeight();
   }
 
+  // ----- MODIFICATION START (kunyatta) for ChatHistory -----
+  moveHistory(event: Event, direction: number) {
+    if (event) event.preventDefault();
+
+    if (this.historyIndex < 0) {
+      this.tempInputText = this.text;
+    }
+
+    const nextIndex = this.historyIndex + direction;
+
+    if (nextIndex < -1) {
+      this.historyIndex = -1;
+    } else if (nextIndex >= ChatInputComponent.chatHistory.length) {
+      this.historyIndex = ChatInputComponent.chatHistory.length - 1;
+    } else {
+      this.historyIndex = nextIndex;
+    }
+
+    if (this.historyIndex >= 0) {
+      this.text = ChatInputComponent.chatHistory[this.historyIndex];
+    } else {
+      this.text = this.tempInputText;
+    }
+
+    const textArea: HTMLTextAreaElement = this.textAreaElementRef.nativeElement;
+    textArea.value = this.text;
+    this.calcFitHeight();
+  }
+  // ----- MODIFICATION END (kunyatta) for ChatHistory -----
+
   // sendChat(event: KeyboardEvent) {
   sendChat(event: Partial<KeyboardEvent>) { // ----- MODIFICATION (kunyatta) -----
     if (event) event.preventDefault();
@@ -243,6 +279,20 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     if (event && event.keyCode !== 13) return;
 
     if (!this.sendFrom.length) this.sendFrom = this.myPeer.identifier;
+
+    // ----- MODIFICATION START (kunyatta) for ChatHistory -----
+    if (this.text && this.text.trim().length > 0) {
+      if (ChatInputComponent.chatHistory.length === 0 || ChatInputComponent.chatHistory[0] !== this.text) {
+        ChatInputComponent.chatHistory.unshift(this.text);
+        if (ChatInputComponent.chatHistory.length > 1000) {
+          ChatInputComponent.chatHistory.pop();
+        }
+      }
+      this.historyIndex = -1;
+      this.tempInputText = '';
+    }
+    // ----- MODIFICATION END (kunyatta) for ChatHistory -----
+
     this.chat.emit({ text: this.text, gameType: this.gameType, sendFrom: this.sendFrom, sendTo: this.sendTo });
 
     this.text = '';
