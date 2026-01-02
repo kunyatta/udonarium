@@ -43,7 +43,10 @@
       <!-- ----- MODIFICATION START (kunyatta) for PluginSystem ----- -->
       <li *ngFor="let extension of mainMenuExtensions" (click)="extension.action()">
         <a routerLink="/" routerLinkActive="active">
-          <div><i class="material-icons icon-size">{{extension.icon}}</i></div>
+          <!-- ----- MODIFICATION START (kunyatta) for MaterialSymbolsSupport ----- -->
+          <!-- <div><i class="material-icons icon-size">{{extension.icon}}</i></div> -->
+          <div><i [ngClass]="extension.iconClass || 'material-icons'" class="icon-size">{{extension.icon}}</i></div>
+          <!-- ----- MODIFICATION END (kunyatta) ----- -->
           <div>{{extension.name}}</div>
         </a>
       </li>
@@ -76,6 +79,14 @@
           <div>{{progresPercent}}%</div>
         </a>
       </li>
+      <!-- ----- MODIFICATION START (kunyatta) for PluginSystem ----- -->
+      <li *ngFor="let extension of mainMenuBottomExtensions" (click)="extension.action()">
+        <a routerLink="/" routerLinkActive="active">
+          <div><i [ngClass]="extension.iconClass || 'material-icons'" class="icon-size">{{extension.icon}}</i></div>
+          <div>{{extension.name}}</div>
+        </a>
+      </li>
+      <!-- ----- MODIFICATION END (kunyatta) for PluginSystem ----- -->
     </ul>
   </nav>
 </ui-panel>

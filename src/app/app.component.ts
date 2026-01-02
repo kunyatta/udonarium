@@ -301,10 +301,14 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     return this.uiExtensionService.getActions('main-menu');
   }
 
+  get mainMenuBottomExtensions(): ExtensionAction[] {
+    return this.uiExtensionService.getActions('main-menu-bottom');
+  }
+
   get menuPanelHeight(): number {
     const standardItemCount = 8; // 接続, チャット, テーブル, 画像, 音楽, インベントリ, ZIP, 保存
     const extensionLauncherCount = 1; // 「拡張」ボタン
-    const pluginItemCount = this.mainMenuExtensions.length;
+    const pluginItemCount = this.mainMenuExtensions.length + this.mainMenuBottomExtensions.length;
     const totalItemCount = standardItemCount + extensionLauncherCount + pluginItemCount;
 
     const itemHeight = 49; // 1項目あたりの高さ(実測値に近い値に調整)

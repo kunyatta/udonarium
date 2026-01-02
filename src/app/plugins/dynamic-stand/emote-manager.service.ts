@@ -209,6 +209,7 @@ export class EmoteManagerService implements OnDestroy {
   }
 
   private registerQuickEmotes() {
+    this.uiExtension.unregisterActions('chat-input-quick');
     this.emotes.slice(0, 5).forEach((emote, index) => {
       this.uiExtension.registerAction('chat-input-quick', {
         name: emote.label,

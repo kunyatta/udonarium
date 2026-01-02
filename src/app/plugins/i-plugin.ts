@@ -20,6 +20,8 @@ export interface IPluginWithUI extends IPlugin {
   name: string;
   // 表示されるアイコン (Material Icons)。
   icon?: string;
+  // 表示されるアイコンのCSSクラス。 (任意)
+  iconClass?: string; // ----- MODIFICATION (kunyatta) -----
   // UIのタイプ: 'panel' または 'toggle'。
   type: 'panel' | 'toggle';
   // 表示するUIコンポーネント ('panel' タイプで必須)。

@@ -1,11 +1,12 @@
 import { Injectable } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 
-export type ExtensionLocation = 'main-menu' | 'context-menu' | 'chat-window' | 'character-sheet' | 'chat-input' | 'chat-input-quick';
+export type ExtensionLocation = 'main-menu' | 'main-menu-bottom' | 'context-menu' | 'chat-window' | 'character-sheet' | 'chat-input' | 'chat-input-quick';
 
 export interface ExtensionAction {
   name: string;
   icon?: string | ((context?: any) => string);
+  iconClass?: string; // ----- MODIFICATION (kunyatta) -----
   action: (context?: any, pointer?: { x: number, y: number }) => void;
   condition?: (context?: any) => boolean;
   separator?: boolean;
@@ -48,7 +49,6 @@ export class UIExtensionService {
   constructor() { }
 
   registerAction(location: ExtensionLocation, action: ExtensionAction) {
-    console.log(`UIExtensionService: Registering action "${action.name}" to ${location}`);
     if (!this.actions.has(location)) {
       this.actions.set(location, []);
     }
@@ -62,6 +62,13 @@ export class UIExtensionService {
       actions.push(action);
     }
     this._updateSource.next();
+  }
+
+  unregisterActions(location: ExtensionLocation) {
+    if (this.actions.has(location)) {
+      this.actions.delete(location);
+      this._updateSource.next();
+    }
   }
 
   getActions(location: ExtensionLocation, context?: any): ExtensionAction[] {

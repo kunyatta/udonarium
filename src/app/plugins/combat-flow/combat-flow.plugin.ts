@@ -28,7 +28,8 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
   readonly pluginName: string = 'combat-flow';
   readonly name: string = COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.title;
   readonly type: 'panel' = 'panel';
-  readonly icon: string = 'groups';
+  readonly icon: string = 'swords'; // ----- MODIFICATION (kunyatta) -----
+  readonly iconClass: string = 'material-symbols-outlined'; // ----- MODIFICATION (kunyatta) -----
   readonly component = CombatFlowControllerComponent;
   width: number = COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.width;
   height: number = COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.height;
@@ -50,6 +51,7 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
     this.uiExtensionService.registerAction('main-menu', {
       name: '戦闘',
       icon: this.icon,
+      iconClass: this.iconClass, // ----- MODIFICATION (kunyatta) -----
       priority: 100,
       action: () => {
         this.pluginUiService.open(this.component, {

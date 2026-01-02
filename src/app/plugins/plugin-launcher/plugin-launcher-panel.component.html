@@ -7,7 +7,10 @@
         <!-- Case: type is 'panel' -->
         <li *ngIf="ui.type === 'panel'" (click)="openPluginPanel(ui)">
           <a>
-            <div><i class="material-icons icon-size">{{ ui.icon || 'open_in_new' }}</i></div>
+            <!-- ----- MODIFICATION START (kunyatta) for MaterialSymbolsSupport ----- -->
+            <!-- <div><i class="material-icons icon-size">{{ ui.icon || 'open_in_new' }}</i></div> -->
+            <div><i [ngClass]="ui.iconClass || 'material-icons'" class="icon-size">{{ ui.icon || 'open_in_new' }}</i></div>
+            <!-- ----- MODIFICATION END (kunyatta) ----- -->
             <div>{{ ui.name }}</div>
           </a>
         </li>
@@ -15,7 +18,10 @@
         <!-- Case: type is 'toggle' -->
         <li *ngIf="ui.type === 'toggle'" (click)="onToggleButtonClick(ui)" [class.active]="ui.isActive">
           <a>
-            <div><i class="material-icons icon-size">{{ ui.icon }}</i></div>
+            <!-- ----- MODIFICATION START (kunyatta) for MaterialSymbolsSupport ----- -->
+            <!-- <div><i class="material-icons icon-size">{{ ui.icon }}</i></div> -->
+            <div><i [ngClass]="ui.iconClass || 'material-icons'" class="icon-size">{{ ui.icon }}</i></div>
+            <!-- ----- MODIFICATION END (kunyatta) ----- -->
             <div>{{ ui.name }}</div>
           </a>
         </li>

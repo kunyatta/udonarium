@@ -24,7 +24,7 @@ export class LogoutPlugin implements IPluginWithUI {
     console.log(`[${this.pluginName}] initializeUI called`);
     const uiExtensionService = injector.get(UIExtensionService);
 
-    uiExtensionService.registerAction('main-menu', {
+    uiExtensionService.registerAction('main-menu-bottom', {
       name: this.name,
       icon: this.icon,
       priority: 200,
