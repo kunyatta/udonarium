@@ -94,7 +94,6 @@ export class OverlayComponent implements OnInit, OnDestroy {
 
     const duration = event.target.getDuration();
     if (duration > 0) {
-      console.log('[Overlay] Auto-detected video duration:', duration, '(+15s buffer)');
       // 動画の長さ + 15秒のバッファを持たせることで、ラグがあるプレイヤーも最後まで見れるようにする
       this.overlayObject.expirationTime = Date.now() + (duration * 1000) + 15000;
       this.overlayObject.update();
@@ -107,7 +106,6 @@ export class OverlayComponent implements OnInit, OnDestroy {
   onPlayerStateChange(event: any) {
     // 0 は YT.PlayerState.ENDED (再生終了)
     if (event && event.data === 0) {
-      console.log('[Overlay] Video playback ended (Local hide).');
       // 自分の画面上だけで非表示にする。
       // 全員への同期削除は、所有者の duration タイマーまたは手動停止に任せる。
       this.closeLocal();
@@ -209,7 +207,6 @@ export class OverlayComponent implements OnInit, OnDestroy {
   }
 
   ngOnInit() {
-    console.log('[Overlay] Component Initialized');
     if (!this.overlayObject && this.overlayObjectIdentifier) {
       this.overlayObject = ObjectStore.instance.get<OverlayObject>(this.overlayObjectIdentifier);
     }
@@ -300,12 +297,19 @@ export class OverlayComponent implements OnInit, OnDestroy {
 
     const now = Date.now();
     const timeLeft = this.overlayObject.expirationTime - now;
+    const outDuration = 500; // 退場アニメーション時間
 
-    // 1. 退場アニメーションのトリガー (残り時間が transitionDuration 以下になったら)
-    const outDuration = 500; // 本来はObjectから取得すべきだが、まずは固定値でテスト
-    if (timeLeft <= outDuration && !this.exitAnimationScheduled) {
+    // 1. 有効期限の監視と表示・非表示の切り替え
+    if (timeLeft > outDuration) {
+      // 寿命が延長された場合、または非表示状態なら、強制的に表示状態に復帰させる
+      if (this.exitAnimationScheduled || !this.isVisible) {
+        this.exitAnimationScheduled = false;
+        this.isVisible = true;
+        this.changeDetector.markForCheck();
+      }
+    } else if (timeLeft <= outDuration && timeLeft > 0 && !this.exitAnimationScheduled) {
+      // 退場アニメーションのトリガー
       this.exitAnimationScheduled = true;
-      console.log('[Overlay] Triggering Exit Animation');
       this.isVisible = false; // ローカルでの非表示開始
       this.changeDetector.markForCheck();
     }
@@ -313,7 +317,6 @@ export class OverlayComponent implements OnInit, OnDestroy {
     // 2. 最終的な削除判定
     if (timeLeft <= 0) {
       if (this.isVisible) {
-        console.log('[Overlay] Expired:', this.overlayObject.identifier);
         this.isVisible = false;
         this.audioPlayer.stop();
         this.changeDetector.markForCheck();
@@ -321,7 +324,6 @@ export class OverlayComponent implements OnInit, OnDestroy {
 
       // 所有者のみが GameObject を破棄する責務を負う
       if (this.overlayObject.isMine) {
-        console.log('[Overlay] Owner destroying object.');
         const obj = this.overlayObject;
         this.overlayObject = null;
         obj.destroy();
@@ -457,7 +459,6 @@ export class OverlayComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy() {
-    console.log('[Overlay] Component Destroyed');
     this.stopExpirationTimer();
     this.stopTyping();
     if (this.inertiaTimer) clearTimeout(this.inertiaTimer);

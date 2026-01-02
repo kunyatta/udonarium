@@ -13,6 +13,7 @@ import { PluginDataObserverService } from '../service/plugin-data-observer.servi
 import { PluginHelperService } from '../service/plugin-helper.service';
 import { PluginDataContainer } from '../../class/plugin-data-container';
 import { EventSystem } from '@udonarium/core/system';
+import { PeerCursor } from '@udonarium/peer-cursor';
 import { EmoteManagerService } from './emote-manager.service';
 import { SoundEffect } from '@udonarium/sound-effect';
 
@@ -50,14 +51,11 @@ export class DynamicStandPluginService implements OnDestroy {
   }
 
   initialize() {
-    console.log('[DynamicStand] Service Initializing (Unified Object Mode)...');
-    
     // カットイン監視 (リアクティブ)
     EventSystem.register(this)
       .on('CUT_IN_PLAYING', event => {
         const isPlaying = !!event.data;
         if (isPlaying) {
-          console.log('[DynamicStand] CutIn detected via Event. Clearing stage.');
           this.isCutInBlocked = true;
           this.forceCleanupAll();
         } else {
@@ -77,6 +75,30 @@ export class DynamicStandPluginService implements OnDestroy {
       characters.forEach(c => this.ensureStandSetting(c));
     }, 2000); 
     
+    // オブジェクト削除時の後処理（テキストクリアと再配置）
+    EventSystem.register(this)
+      .on('DELETE_GAME_OBJECT', event => {
+        const identifier = event.data.identifier;
+        // activeTexts に存在するID、または unit_ で始まるラベルを持つオブジェクトが消えたらチェック
+        for (const [charId, text] of this.activeTexts.entries()) {
+          // ラベル unit_<charId> に一致するオブジェクトが消えたか確認
+          // identifier 直接一致は OverlayObject 側で ownerPeerId を見ているため、
+          // ここでは全消し後の再配置トリガーとして機能させる
+          if (event.data.aliasName === 'overlay-object') {
+            // 少し遅らせて再配置（完全にObjectStoreから消えた後）
+            setTimeout(() => {
+               const units = ObjectStore.instance.getObjects<OverlayObject>(OverlayObject)
+                 .filter(obj => obj.type === 'standing-unit');
+               const stillExists = units.some(u => u.label === 'unit_' + charId);
+               if (!stillExists) {
+                 this.activeTexts.delete(charId);
+                 this.repositionAll();
+               }
+            }, 100);
+          }
+        }
+      });
+
     // 永続化設定の監視
     this.observerSubscription = this.observer.observe(this, this.PLUGIN_ID, '', (container) => {
       if (this.isSaving) return;
@@ -88,7 +110,6 @@ export class DynamicStandPluginService implements OnDestroy {
           const currentJson = JSON.stringify(this.config);
           const loadedJson = JSON.stringify(loaded);
           if (currentJson !== loadedJson) {
-            console.log('[DynamicStand] Applying Remote Config Change');
             Object.assign(this.config, loaded);
             if (!Array.isArray(this.config.activeCharacterIds)) {
               this.config.activeCharacterIds = [];
@@ -112,7 +133,6 @@ export class DynamicStandPluginService implements OnDestroy {
         this.processChatMessage(chatMessage.name, chatMessage.text, chatMessage.from);
       }
     });
-    console.log('[DynamicStand] Chat rule registered.');
   }
 
   private forceCleanupAll() {
@@ -125,8 +145,6 @@ export class DynamicStandPluginService implements OnDestroy {
     
     for (const obj of toDestroy) obj.destroy();
     
-    this.cleanupTimers.forEach(timer => clearTimeout(timer));
-    this.cleanupTimers.clear();
     this.activeTexts.clear();
   }
 
@@ -229,10 +247,6 @@ export class DynamicStandPluginService implements OnDestroy {
       unit.destroy();
     }
 
-    if (this.cleanupTimers.has(characterId)) {
-      clearTimeout(this.cleanupTimers.get(characterId));
-      this.cleanupTimers.delete(characterId);
-    }
     this.activeTexts.delete(characterId);
     
     // 消えたら位置を再調整
@@ -256,10 +270,16 @@ export class DynamicStandPluginService implements OnDestroy {
     let finalSpeechText = speechText;
     if (speechText) {
       const existingText = this.activeTexts.get(character.identifier);
-      const { left, right } = this.getStageState();
-      // すでに登壇している場合のみ連結
-      if (existingText && (left.includes(character.identifier) || right.includes(character.identifier))) {
+      const objects = ObjectStore.instance.getObjects<OverlayObject>(OverlayObject);
+      const unit = objects.find(obj => obj.type === 'standing-unit' && obj.label === 'unit_' + character.identifier);
+      
+      // ユニットが存在し、かつ不透明度があり、かつ有効期限に1秒以上の余裕がある場合のみ連結
+      if (existingText && unit && unit.opacity > 0.5 && unit.expirationTime > Date.now() + 1000) {
         finalSpeechText = existingText + '\n' + speechText;
+      } else {
+        // それ以外（消えかかっている、または存在しない）は新規として扱う
+        this.activeTexts.delete(character.identifier);
+        finalSpeechText = speechText;
       }
       this.activeTexts.set(character.identifier, finalSpeechText);
     }
@@ -292,12 +312,9 @@ export class DynamicStandPluginService implements OnDestroy {
     if (emoteKeyword) {
       selected = settings.find(s => s.emote === emoteKeyword && s.imageIdentifier);
     }
-    if (selected) {
-      console.log('[DynamicStand] Matched setting with image:', emoteKeyword);
-    } else {
+    if (!selected) {
       selected = settings.find(s => s.index === '1') || settings[0];
       floatingEmote = emoteKeyword;
-      console.log('[DynamicStand] Floating emote mode:', emoteKeyword);
     }
 
     if (!selected) return;
@@ -401,6 +418,13 @@ export class DynamicStandPluginService implements OnDestroy {
     const objects = ObjectStore.instance.getObjects<OverlayObject>(OverlayObject);
     let unit = objects.find(obj => obj.type === 'standing-unit' && obj.label === 'unit_' + characterId);
 
+    // ゾンビ化ガード: 既存ユニットが透明すぎる、または有効期限が切れそう（残り1秒未満）な場合は一度消して作り直す
+    // これにより、退場アニメーション(500ms)との競合を完全に回避する
+    if (unit && (unit.opacity < 0.1 || (unit.expirationTime > 0 && unit.expirationTime < Date.now() + 1000))) {
+      unit.destroy();
+      unit = null;
+    }
+
     const wasOnOtherSide = (side === 'left' && right.includes(characterId)) || (side === 'right' && left.includes(characterId));
 
     // --- StandingUnit モデルの構築 ---
@@ -428,10 +452,9 @@ export class DynamicStandPluginService implements OnDestroy {
 
     // --- OverlayObject の生成または更新 ---
     if (!unit) {
-      console.log(`[DynamicStand] Creating new unit for: ${characterId}`);
       unit = this.overlayService.createOverlay('standing-unit');
       unit.label = 'unit_' + characterId;
-      unit.ownerPeerId = characterId;
+      if (PeerCursor.myCursor) unit.ownerPeerId = PeerCursor.myCursor.peerId;
       unit.isClickToClose = false;
       unit.anchor = 'bottom';
       
@@ -479,40 +502,17 @@ export class DynamicStandPluginService implements OnDestroy {
       unit.update();
     }
 
-    // タイマーセット
+    // --- 有効期限の計算とセット ---
+    // タイピング時間 + 基本表示時間 + 退場バッファ(500ms)
     const typingDuration = speechText.length * this.config.typingSpeed;
-    const totalDuration = typingDuration + this.config.displayDuration;
-    this.scheduleCleanup(characterId, totalDuration);
+    const totalDuration = typingDuration + this.config.displayDuration + 500;
+    
+    unit.expirationTime = Date.now() + totalDuration;
+    unit.update();
 
     if (wasOnOtherSide) {
       setTimeout(() => this.repositionAll(), 100);
     }
-  }
-
-  private cleanupTimers: Map<string, any> = new Map();
-
-  private scheduleCleanup(characterId: string, ms: number) {
-    if (this.cleanupTimers.has(characterId)) {
-      clearTimeout(this.cleanupTimers.get(characterId));
-    }
-
-    const timer = setTimeout(() => {
-      const objects = ObjectStore.instance.getObjects<OverlayObject>(OverlayObject);
-      const unit = objects.find(obj => obj.label === 'unit_' + characterId);
-      
-      if (unit) {
-        unit.transitionDuration = 500;
-        unit.opacity = 0;
-        unit.update();
-        setTimeout(() => unit.destroy(), 500);
-      }
-      this.cleanupTimers.delete(characterId);
-      this.activeTexts.delete(characterId);
-      
-      setTimeout(() => this.repositionAll(), 600);
-    }, ms);
-
-    this.cleanupTimers.set(characterId, timer);
   }
 }
 

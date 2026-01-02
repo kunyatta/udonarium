@@ -62,7 +62,5 @@ export class DynamicStandPlugin implements IPluginWithUI {
       },
       priority: 10
     });
-
-    console.log('[DynamicStandPlugin] UI Extensions registered.');
   }
 }

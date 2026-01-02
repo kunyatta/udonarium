@@ -36,9 +36,6 @@ export class PluginOverlayService {
    * サービスの初期化。GameObject の監視を開始します。
    */
   initialize() {
-    // 演出用 GameObject を登録
-    ObjectFactory.instance.register(OverlayObject, 'overlay-object');
-
     EventSystem.register(this)
       .on('ADD_GAME_OBJECT', event => {
         // OverlayObject が作成されたらコンポーネントの同期を確認
