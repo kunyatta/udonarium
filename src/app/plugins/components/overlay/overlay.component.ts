@@ -26,8 +26,12 @@ export class OverlayComponent implements OnInit, OnDestroy {
   isVisible = true;
 
   protected audioPlayer: AudioPlayer = new AudioPlayer();
-  protected expirationTimer: any;
-  protected exitAnimationScheduled = false;
+  private expirationTimer: any;
+  
+  // --- Typing Logic ---
+  private visibleTexts: Map<string, string> = new Map();
+  private typingTimers: Map<string, any> = new Map();
+  private readonly TYPING_SPEED = 60; // 1文字 60ms
 
   constructor(
     private changeDetector: ChangeDetectorRef,
@@ -36,15 +40,50 @@ export class OverlayComponent implements OnInit, OnDestroy {
 
   get stageActors(): any[] {
     const actors = this.dynamicStandService.localActors;
-    if (actors.length > 0) {
-      // console.log(`[OverlayComponent] Rendering ${actors.length} actors from service.`);
-    }
+    actors.forEach(actor => this.updateActorTyping(actor));
     return actors;
   }
 
   getActorData(actor: any): any {
-    // キーワード駆動方式では、リストの要素そのものが表示用データ
     return actor;
+  }
+
+  private updateActorTyping(actor: any) {
+    const id = actor.characterId;
+    const targetText = actor.speechText || '';
+    let currentVisible = this.visibleTexts.get(id) || '';
+
+    if (!targetText.startsWith(currentVisible)) {
+      currentVisible = '';
+      this.visibleTexts.set(id, '');
+    }
+
+    if (currentVisible.length < targetText.length) {
+      if (!this.typingTimers.has(id)) {
+        const timer = setInterval(() => {
+          let v = this.visibleTexts.get(id) || '';
+          if (v.length < targetText.length) {
+            v += targetText.charAt(v.length);
+            this.visibleTexts.set(id, v);
+            this.changeDetector.markForCheck();
+          } else {
+            this.stopActorTyping(id);
+          }
+        }, this.TYPING_SPEED);
+        this.typingTimers.set(id, timer);
+      }
+    }
+  }
+
+  private stopActorTyping(id: string) {
+    if (this.typingTimers.has(id)) {
+      clearInterval(this.typingTimers.get(id));
+      this.typingTimers.delete(id);
+    }
+  }
+
+  getVisibleSpeechText(actor: any): string {
+    return this.visibleTexts.get(actor.characterId) || '';
   }
 
   getActorImageUrl(imageIdentifier: string): string {
@@ -145,13 +184,11 @@ export class OverlayComponent implements OnInit, OnDestroy {
       this.overlayObject = ObjectStore.instance.get<OverlayObject>(this.overlayObjectIdentifier);
     }
     if (!this.overlayObject) return;
-    this.checkExpiration();
     this.startExpirationTimer();
     this.playAudioIfSet();
 
     EventSystem.register(this)
       .on('UPDATE_GAME_OBJECT/identifier/' + this.overlayObject.identifier, event => {
-        this.checkExpiration();
         this.playAudioIfSet();
         this.changeDetector.markForCheck();
       })
@@ -179,7 +216,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
     this.expirationTimer = setInterval(() => {
       this.checkExpiration();
       if (!this.overlayObject) this.stopExpirationTimer();
-    }, 500);
+    }, 1000);
   }
 
   private stopExpirationTimer() { if (this.expirationTimer) { clearInterval(this.expirationTimer); this.expirationTimer = null; } }
@@ -218,5 +255,10 @@ export class OverlayComponent implements OnInit, OnDestroy {
     }
   }
 
-  ngOnDestroy() { this.stopExpirationTimer(); this.audioPlayer.stop(); EventSystem.unregister(this); }
+  ngOnDestroy() { 
+    this.stopExpirationTimer(); 
+    this.audioPlayer.stop(); 
+    this.typingTimers.forEach(t => clearInterval(t));
+    EventSystem.unregister(this); 
+  }
 }

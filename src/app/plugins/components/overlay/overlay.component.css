@@ -110,6 +110,15 @@ img {
   animation: actor-entrance-right 0.6s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* 退場アニメーション */
+.standing-unit-wrapper.stage-actor.is-disappearing.is-left {
+  animation: actor-exit-left 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+.standing-unit-wrapper.stage-actor.is-disappearing.is-right {
+  animation: actor-exit-right 0.6s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 @keyframes actor-entrance-left {
   from {
     opacity: 0;
@@ -129,6 +138,28 @@ img {
   to {
     opacity: 1;
     transform: translateX(0);
+  }
+}
+
+@keyframes actor-exit-left {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-20vw);
+  }
+}
+
+@keyframes actor-exit-right {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(20vw);
   }
 }
 

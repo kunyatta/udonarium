@@ -63,9 +63,11 @@ export class DynamicStandPluginService implements OnDestroy {
   initialize() {
     console.log(`[DynamicStand] Initializing (Keyword-Driven Mode)...`);
     setTimeout(() => this.getOrCreateStageObject(), 1000);
+    
+    // 頻度を上げてチェックの漏れを防ぐ
     setInterval(() => {
       this.ngZone.run(() => this.cleanupExpiredActors());
-    }, 1000);
+    }, 500);
 
     EventSystem.register(this)
       .on('ADD_GAME_OBJECT', event => {
@@ -132,41 +134,49 @@ export class DynamicStandPluginService implements OnDestroy {
   private cleanupExpiredActors() {
     const now = Date.now();
     const prevCount = this.localActors.length;
-    this.localActors = this.localActors.filter(a => a.expirationTime > now);
-    if (this.localActors.length !== prevCount) {
+    let changed = false;
+
+    for (const actor of this.localActors) {
+      const timeLeft = actor.expirationTime - now;
+      
+      // 1. 退場アニメーションの開始判定
+      if (timeLeft <= 600 && !actor.isDisappearing) {
+        actor.isDisappearing = true;
+        changed = true;
+      }
+    }
+
+    // 2. 物理削除の判定
+    const nextActors = this.localActors.filter(a => {
+      const timeLeft = a.expirationTime - now;
+      if (timeLeft > 0) return true;
+      if (a.isDisappearing && timeLeft > -600) return true;
+      return false;
+    });
+    
+    if (nextActors.length !== prevCount || changed) {
+      this.localActors = nextActors; // リスト更新
       this.repositionAll();
     }
   }
 
-      private repositionAll() {
-
-        // タイムスタンプの降順（新しい順）にソート
-
-        const sortedActors = [...this.localActors].sort((a, b) => b.timestamp - a.timestamp);
-
-        const leftActors = sortedActors.filter(a => a.side === 'left');
-
-        const rightActors = sortedActors.filter(a => a.side === 'right');
-
+  private repositionAll() {
+    // 退場中のアクターは位置計算から除外する（現在の位置で去らせるため）
+    const activeActors = this.localActors.filter(a => !a.isDisappearing);
     
+    // タイムスタンプの降順（新しい順）にソート
+    const sortedActors = [...activeActors].sort((a, b) => b.timestamp - a.timestamp);
+    const leftActors = sortedActors.filter(a => a.side === 'left');
+    const rightActors = sortedActors.filter(a => a.side === 'right');
 
-  
+    leftActors.forEach((a, idx) => {
+      a.left = this.config.edgeOffset + (idx * this.config.slideWidth);
+    });
+    rightActors.forEach((a, idx) => {
+      a.left = 100 - this.config.edgeOffset - this.config.standWidth - (idx * this.config.slideWidth);
+    });
+  }
 
-      // 新しい人(idx=0)ほど端に来るように計算
-
-      leftActors.forEach((a, idx) => {
-
-        a.left = this.config.edgeOffset + (idx * this.config.slideWidth);
-
-      });
-
-      rightActors.forEach((a, idx) => {
-
-        a.left = 100 - this.config.edgeOffset - this.config.standWidth - (idx * this.config.slideWidth);
-
-      });
-
-    }
 
   
 

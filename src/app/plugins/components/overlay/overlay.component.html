@@ -47,6 +47,7 @@
                  [style.height]="data.height + 'vh'"
                  [class.is-left]="data.side === 'left'" 
                  [class.is-right]="data.side === 'right'"
+                 [class.is-disappearing]="data.isDisappearing"
                  [style.transition]="'all 500ms ease-out'">
               
               <!-- Character Image -->
@@ -65,7 +66,7 @@
                    <div class="speech-bubble" 
                         [class.pos-left]="data.side === 'left'"
                         [class.pos-right]="data.side === 'right'">
-                     {{ data.speechText }}
+                     {{ getVisibleSpeechText(actor) }}
                    </div>
                 </div>
               </div>
