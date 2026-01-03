@@ -10,6 +10,7 @@ export interface ChatListenerRule {
   keywordRegExp?: RegExp;  // 正規表現
   characterName?: string;  // 発言者名
   from?: string;           // 送信元 (例: 'System-BCDice')
+  isLocalOnly?: boolean;   // trueの場合、自分の発言にのみ反応する（デフォルト: false）
   callback: (message: ChatMessage, match: RegExpMatchArray | null) => void;
 }
 
@@ -20,7 +21,7 @@ export class ChatListenerService implements OnDestroy {
   private rules: ChatListenerRule[] = [];
 
   constructor() {
-    EventSystem.register(this).on('SEND_MESSAGE', event => {
+    EventSystem.register(this).on('MESSAGE_ADDED', event => {
       const messageIdentifier = event.data.messageIdentifier;
       const message = ObjectStore.instance.get<ChatMessage>(messageIdentifier);
       if (message) {
@@ -59,6 +60,7 @@ export class ChatListenerService implements OnDestroy {
     const text = message.value?.toString() || '';
     
     for (const rule of this.rules) {
+      if (rule.isLocalOnly && !message.isSendFromSelf) continue;
       if (!this.checkCondition(message, text, rule)) continue;
 
       let match: RegExpMatchArray | null = null;

@@ -46,15 +46,15 @@ export class DynamicStandPlugin implements IPluginWithUI {
     this.uiExtensionService.registerAction('chat-input', {
       name: '立ち絵',
       icon: (context: any) => {
-        const char = context instanceof GameCharacter ? context : null;
-        return (char && this.service.isActive(char.identifier)) ? 'person' : 'person_off';
+        const char = context instanceof GameCharacter ? context : (context?.character instanceof GameCharacter ? context.character : null);
+        return (char && this.service.isActive(char)) ? 'person' : 'person_off';
       },
       action: (context: any) => {
         // context は { character: GameCharacter, component: ChatInputComponent } または GameCharacter (旧互換)
         const char = context.character instanceof GameCharacter ? context.character : (context instanceof GameCharacter ? context : null);
         
         if (char) {
-          this.service.toggleActive(char.identifier);
+          this.service.toggleActive(char);
         }
       },
       condition: (context) => {

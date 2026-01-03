@@ -40,18 +40,21 @@ export class PluginOverlayService {
       .on('ADD_GAME_OBJECT', event => {
         // OverlayObject が作成されたらコンポーネントの同期を確認
         if (event.data.aliasName === 'overlay-object') {
+          console.log(`[PluginOverlayService] EVENT: ADD_GAME_OBJECT. ID=${event.data.identifier}`);
           this.syncComponents();
         }
       })
       .on('UPDATE_GAME_OBJECT', event => {
         // OverlayObject が更新されたらコンポーネントの同期を確認
         if (event.data.aliasName === 'overlay-object') {
+          // console.log(`[PluginOverlayService] EVENT: UPDATE_GAME_OBJECT. ID=${event.data.identifier}`);
           this.syncComponents();
         }
       })
       .on('DELETE_GAME_OBJECT', event => {
         // OverlayObject が削除されたらコンポーネントも破棄
         if (this.componentMap.has(event.data.identifier)) {
+          console.log(`[PluginOverlayService] EVENT: DELETE_GAME_OBJECT. ID=${event.data.identifier}`);
           this.destroyComponent(event.data.identifier);
         }
       })

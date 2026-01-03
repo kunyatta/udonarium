@@ -36,41 +36,53 @@
         <div *ngIf="!imageUrl && overlayObject?.isDebug" style="color: red; background: white; padding: 10px;">IMAGE NOT SET</div>
       </ng-container>
 
-      <!-- Standing Unit (Combined Object) -->
-      <ng-container *ngSwitchCase="'standing-unit'">
-        <div class="standing-unit-wrapper" 
-             [class.is-left]="standingSide === 'left'" 
-             [class.is-right]="standingSide === 'right'"
-             [class.inertia-left]="inertiaState === 'left'"
-             [class.inertia-right]="inertiaState === 'right'">
-          
-          <!-- Character Image -->
-          <div class="standing-character">
-            <img *ngIf="imageUrl" [src]="imageUrl" draggable="false">
-          </div>
+      <!-- Standing Stage (Global Director Mode) -->
+      <ng-container *ngSwitchCase="'standing-stage'">
+        <ng-container *ngFor="let actor of stageActors">
+          <ng-container *ngIf="getActorData(actor); let data">
+            <div class="standing-unit-wrapper stage-actor"
+                 [style.left]="data.left + 'vw'"
+                 [style.bottom]="'0'"
+                 [style.opacity]="data.opacity"
+                 [style.height]="data.height + 'vh'"
+                 [class.is-left]="data.side === 'left'" 
+                 [class.is-right]="data.side === 'right'"
+                 [style.transition]="'all 500ms ease-out'">
+              
+              <!-- Character Image -->
+              <div class="standing-character" 
+                   [style.width]="data.width + 'vw'" 
+                   [style.height]="'100%'">
+                <img [src]="getActorImageUrl(data.imageIdentifier)" draggable="false">
+              </div>
 
-          <!-- Standing Info Layer (Speech & Emote Stack) -->
-          <div class="standing-info-container">
-            <!-- Speech Bubble -->
-            <div *ngIf="standingSpeechVisible && visibleSpeechText" class="standing-speech">
-               <div class="speech-bubble" 
-                    [class.pos-left]="standingSide === 'left'"
-                    [class.pos-right]="standingSide === 'right'">
-                 {{ visibleSpeechText }}
-               </div>
-            </div>
 
-            <!-- Floating Emote -->
-            <div *ngIf="standingEmoteVisible && standingEmoteText" class="standing-emote">
-              <div class="emote-float-wrapper">
-                <div class="emote-inner">
-                  {{ standingEmoteText }}
+              <!-- Standing Info Layer (Speech & Emote Stack) -->
+              <div class="standing-info-container">
+                <!-- Speech Bubble -->
+                <div *ngIf="data.speechVisible && data.speechText" class="standing-speech"
+                     [style.transform]="'translate(' + data.speechOffsetX + 'vw, -' + data.speechOffsetY + 'vh)'">
+                   <div class="speech-bubble" 
+                        [class.pos-left]="data.side === 'left'"
+                        [class.pos-right]="data.side === 'right'">
+                     {{ data.speechText }}
+                   </div>
                 </div>
               </div>
-            </div>
-          </div>
 
-        </div>
+              <!-- Floating Emote -->
+              <div *ngIf="data.emoteVisible && data.emoteText" class="standing-emote"
+                   [style.transform]="'translate(' + data.emoteOffsetX + 'vw, -' + data.emoteOffsetY + 'vh)'">
+                <div class="emote-float-wrapper">
+                  <div class="emote-inner">
+                    {{ data.emoteText }}
+                  </div>
+                </div>
+              </div>
+
+            </div>
+          </ng-container>
+        </ng-container>
       </ng-container>
 
       <ng-container *ngSwitchDefault>

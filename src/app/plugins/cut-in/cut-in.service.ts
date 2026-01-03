@@ -119,10 +119,9 @@ export class CutInService {
         owner: this,
         name: `cutin-${cutIn.identifier}`,
         keyword: cutIn.keyword,
+        isLocalOnly: true,
         callback: (message) => {
-          if (message.isSendFromSelf) {
-            this.playbackService.play(cutIn);
-          }
+          this.playbackService.play(cutIn);
         }
       });
     }

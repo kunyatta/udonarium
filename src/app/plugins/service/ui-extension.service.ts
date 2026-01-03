@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 
-export type ExtensionLocation = 'main-menu' | 'main-menu-bottom' | 'context-menu' | 'chat-window' | 'character-sheet' | 'chat-input' | 'chat-input-quick';
+export type ExtensionLocation = 'main-menu' | 'main-menu-bottom' | 'context-menu' | 'chat-window' | 'character-sheet' | 'chat-input' | 'chat-input-quick' | 'chat-send';
 
 export interface ExtensionAction {
   name: string;
@@ -13,12 +13,15 @@ export interface ExtensionAction {
   priority?: number; // 小さいほど前（左/上）に表示
 }
 
+export type ExtensionFilter = (input: any, context?: any) => any;
+
 @Injectable({
   providedIn: 'root'
 })
 export class UIExtensionService {
 
   private actions: Map<ExtensionLocation, ExtensionAction[]> = new Map();
+  private filters: Map<ExtensionLocation, ExtensionFilter[]> = new Map();
   private _updateSource = new Subject<void>();
   readonly onUpdate$: Observable<void> = this._updateSource.asObservable();
 
@@ -78,8 +81,26 @@ export class UIExtensionService {
     if (!context) {
       return sortedActions;
     }
-    return sortedActions.filter(action => {
-      return action.condition ? action.condition(context) : true;
-    });
-  }
-}
+        return sortedActions.filter(action => {
+          return action.condition ? action.condition(context) : true;
+        });
+      }
+    
+      registerFilter(location: ExtensionLocation, filter: ExtensionFilter) {
+        if (!this.filters.has(location)) {
+          this.filters.set(location, []);
+        }
+        this.filters.get(location).push(filter);
+      }
+    
+      applyFilters(location: ExtensionLocation, input: any, context?: any): any {
+        const filters = this.filters.get(location);
+        if (!filters) return input;
+        let result = input;
+        for (const filter of filters) {
+          result = filter(result, context);
+        }
+        return result;
+      }
+    }
+    

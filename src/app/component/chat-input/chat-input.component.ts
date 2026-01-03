@@ -305,7 +305,11 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     }
     // ----- MODIFICATION END (kunyatta) for ChatHistory -----
 
-    this.chat.emit({ text: this.text, gameType: this.gameType, sendFrom: this.sendFrom, sendTo: this.sendTo });
+    // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+    // this.chat.emit({ text: this.text, gameType: this.gameType, sendFrom: this.sendFrom, sendTo: this.sendTo });
+    let sendText = this.uiExtensionService.applyFilters('chat-send', this.text, ObjectStore.instance.get(this.sendFrom));
+    this.chat.emit({ text: sendText, gameType: this.gameType, sendFrom: this.sendFrom, sendTo: this.sendTo });
+    // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
 
     this.text = '';
     this.previousWritingLength = this.text.length;
