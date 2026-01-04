@@ -35,8 +35,10 @@ export class CombatStateService {
 
   // --- Chat Analysis Cache ---
   // キー: 送信者名(message.name)、値: 解析されたデータ
-  private lastTargetsCache = new Map<string, string[]>(); // キャラクターIDの配列
-  private lastDiceResultCache = new Map<string, number>();
+  // ターゲット検知も名前の部分一致検索が必要なため、履歴リストとして保持する
+  private lastTargetsHistory: { name: string, targetIds: string[], timestamp: number }[] = [];
+  // BCDice結果は名前の部分一致検索が必要なため、Mapではなく履歴リストとして保持する
+  private lastDiceResultHistory: { name: string, result: number, timestamp: number }[] = [];
 
   // --- State Observables ---
   // コンテナの状態を反映するBehaviorSubject
@@ -251,7 +253,13 @@ export class CombatStateService {
           .filter(char => char.location.name === 'table');
         
         const foundIds = tabletopChars
-          .filter(char => text.includes(char.name))
+          .filter(char => {
+            // 発言者と同じ名前のキャラクターはターゲットから除外する（「〇〇の攻撃！」などの自称を避ける）
+            if (char.name === message.name) return false;
+            
+            const isMatch = text.includes(char.name);
+            return isMatch;
+          })
           .map(char => {
              // 永続IDを優先、なければ標準ID
              const pid = char.detailDataElement.getFirstElementByName(PERSISTENT_ID_TAG)?.value.toString();
@@ -260,7 +268,16 @@ export class CombatStateService {
 
         if (foundIds.length > 0) {
           // メッセージの送信者名（キャラクター名等）に関連付けてキャッシュ
-          this.lastTargetsCache.set(message.name, foundIds);
+          // 履歴リストに追加 (最新が先頭)
+          this.lastTargetsHistory.unshift({
+            name: message.name,
+            targetIds: foundIds,
+            timestamp: Date.now()
+          });
+          // 最新50件に制限
+          if (this.lastTargetsHistory.length > 50) {
+            this.lastTargetsHistory.pop();
+          }
         }
       }
     });
@@ -275,10 +292,16 @@ export class CombatStateService {
         const match = text.match(/[＞>→]\s*(\d+)$/);
         if (match && match[1]) {
           const result = parseInt(match[1], 10);
-          // BCDiceのメッセージ名(message.name)には通常「キャラクター名 : 命令」が含まれる
-          // そのため、コロンの前をキャラクター名として抽出する
-          const charName = message.name.split(/\s*[:：]/)[0];
-          this.lastDiceResultCache.set(charName, result);
+          // 履歴リストに追加 (最新が先頭)
+          this.lastDiceResultHistory.unshift({
+            name: message.name, // "キャラクター名 : コマンド" が入っている
+            result: result,
+            timestamp: Date.now()
+          });
+          // 最新50件に制限
+          if (this.lastDiceResultHistory.length > 50) {
+            this.lastDiceResultHistory.pop();
+          }
         }
       }
     });
@@ -944,11 +967,13 @@ export class CombatStateService {
   findTargetsFromChat(caster: GameCharacter, _availableChatTabs?: ChatTab[]): GameCharacter[] {
     if (!caster) return [];
 
-    const cachedIds = this.lastTargetsCache.get(caster.name);
-    if (!cachedIds || cachedIds.length === 0) return [];
+    // 履歴リストから術者名が含まれる最新のメッセージを探す
+    const entry = this.lastTargetsHistory.find(h => h.name.includes(caster.name));
+    
+    if (!entry || !entry.targetIds || entry.targetIds.length === 0) return [];
 
     // IDからキャラクターオブジェクトを解決して返す
-    return cachedIds
+    return entry.targetIds
       .map(id => this.characterDataService.resolveCharacter(id))
       .filter((c): c is GameCharacter => c !== null && c.identifier !== caster.identifier);
   }
@@ -962,8 +987,9 @@ export class CombatStateService {
   findDiceResultFromChat(caster: GameCharacter, _availableChatTabs?: ChatTab[]): number | null {
     if (!caster) return null;
 
-    const result = this.lastDiceResultCache.get(caster.name);
-    return result !== undefined ? result : null;
+    // 履歴リストから術者名が含まれる最新のメッセージを探す
+    const entry = this.lastDiceResultHistory.find(h => h.name.includes(caster.name));
+    return entry ? entry.result : null;
   }
 
 }
