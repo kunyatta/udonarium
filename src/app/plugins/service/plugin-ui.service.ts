@@ -4,6 +4,7 @@ import { PanelService, PanelOption as OriginalPanelOption } from '../../service/
 import { PointerDeviceService } from '../../service/pointer-device.service';
 import { UIPanelComponent } from '../../component/ui-panel/ui-panel.component';
 import { AutoLayoutPanelComponent } from '../components/auto-layout-panel/auto-layout-panel.component';
+import { EventSystem } from '@udonarium/core/system';
 
 // 元のPanelOptionを拡張して、カスタムプロパティを含めます。
 export interface PluginPanelOption extends OriginalPanelOption {
@@ -12,6 +13,7 @@ export interface PluginPanelOption extends OriginalPanelOption {
   inputs?: { [key: string]: any };
   layout?: 'full-auto' | 'hybrid'; // layoutオプションを復活
   position?: 'center' | 'default'; // 中央表示オプションを追加
+  keepOnRoomLoad?: boolean; // ルームロード時にパネルを維持するかどうか
 }
 
 // シングルトン機能を必要としないプラグインのために、元のPanelOptionを再エクスポートします。
@@ -22,10 +24,11 @@ export { OriginalPanelOption as PanelOption };
 })
 export class PluginUiService {
 
-  private openPanels: Map<string, ComponentRef<UIPanelComponent>> = new Map();
+  private openPanels: Map<string, { ref: ComponentRef<UIPanelComponent>, option: PluginPanelOption }> = new Map();
   private singletonPanelIds: Map<any, string> = new Map();
   private parentPanelCount = 0;
   private lastPanelId: string;
+  private lastPanelOption: PluginPanelOption;
 
   constructor(
     private modalService: ModalService,
@@ -34,19 +37,25 @@ export class PluginUiService {
   ) {
     // onPanelOpenコールバックをフックして、開かれたパネルを追跡する
     PanelService.onPanelOpen = (panelRef: ComponentRef<UIPanelComponent>, componentType: any) => {
-      this.handlePanelOpen(this.lastPanelId, panelRef, componentType);
+      this.handlePanelOpen(this.lastPanelId, panelRef, componentType, this.lastPanelOption);
       this.lastPanelId = null;
+      this.lastPanelOption = null;
     };
+
+    // ルームロード時にプラグインパネルを一括で閉じる
+    EventSystem.register(this).on('XML_LOADED', () => {
+      this.closeAllOnRoomLoad();
+    });
   }
 
-  private handlePanelOpen(panelId: string, panelRef: ComponentRef<UIPanelComponent>, componentType: any): void {
+  private handlePanelOpen(panelId: string, panelRef: ComponentRef<UIPanelComponent>, componentType: any, option: PluginPanelOption): void {
     if (!panelId) return;
 
     // コンテキストチェック (instance.contextが存在するか確認)
     const instance = panelRef.instance as any;
     const isParentPanel = instance.context?.panelType === 'parent';
 
-    this.openPanels.set(panelId, panelRef);
+    this.openPanels.set(panelId, { ref: panelRef, option: option || {} });
 
     panelRef.onDestroy(() => {
       this.openPanels.delete(panelId);
@@ -59,17 +68,28 @@ export class PluginUiService {
     });
   }
 
+  private closeAllOnRoomLoad(): void {
+    // 逆順にコピーして処理（削除による影響を最小限にするため、およびMap変更への対応）
+    const panelEntries = Array.from(this.openPanels.entries());
+    for (const [panelId, data] of panelEntries) {
+      if (!data.option?.keepOnRoomLoad) {
+        data.ref.destroy();
+      }
+    }
+  }
+
   open<T>(component: Type<T>, option: PluginPanelOption = {}): T {
     // シングルトンが指定されている場合、既存のパネルがあれば閉じる
     if (option.isSingleton) {
       const existingPanelId = this.singletonPanelIds.get(component);
       if (existingPanelId && this.openPanels.has(existingPanelId)) {
-        this.openPanels.get(existingPanelId)?.destroy();
+        this.openPanels.get(existingPanelId).ref.destroy();
       }
     }
 
     const panelId = crypto.randomUUID();
     this.lastPanelId = panelId;
+    this.lastPanelOption = option;
 
     if (option.isSingleton) {
       this.singletonPanelIds.set(component, panelId);
@@ -182,9 +202,9 @@ export class PluginUiService {
   }
   
   resizePanel(panelId: string, width: number, height: number): void {
-    const panelRef = this.openPanels.get(panelId);
-    if (panelRef) {
-      const panelComponent = panelRef.instance;
+    const data = this.openPanels.get(panelId);
+    if (data) {
+      const panelComponent = data.ref.instance;
       // パネルのChrome（タイトルバー、パディング、ボーダーなど）のおおよそのサイズ
       // UIPanelComponentのCSS/HTML構造に基づく
       // titleBar: 25px, padding: 8px * 2 = 16px, border: 2px?
@@ -200,9 +220,9 @@ export class PluginUiService {
   }
 
   updatePanel(panelId: string, option: { width?: number, height?: number, left?: number, top?: number }): void {
-    const panelRef = this.openPanels.get(panelId);
-    if (panelRef) {
-      const panelComponent = panelRef.instance;
+    const data = this.openPanels.get(panelId);
+    if (data) {
+      const panelComponent = data.ref.instance;
       const PANEL_CHROME_WIDTH = 36; 
       const PANEL_CHROME_HEIGHT = 45;
 
@@ -224,15 +244,15 @@ export class PluginUiService {
   close(component: Type<any>): void {
     const panelId = this.singletonPanelIds.get(component);
     if (panelId && this.openPanels.has(panelId)) {
-      this.openPanels.get(panelId)?.destroy();
+      this.openPanels.get(panelId).ref.destroy();
     }
   }
 
   find<T>(component: Type<T>): T | undefined {
     const panelId = this.singletonPanelIds.get(component);
     if (panelId && this.openPanels.has(panelId)) {
-      const panelRef = this.openPanels.get(panelId);
-      const instance = panelRef.instance;
+      const data = this.openPanels.get(panelId);
+      const instance = data.ref.instance;
       
       if (instance instanceof AutoLayoutPanelComponent) {
         // AutoLayoutPanel内の動的コンポーネントを取得
