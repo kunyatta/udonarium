@@ -220,7 +220,7 @@ export class CombatFlowPanelComponent implements OnInit, OnDestroy {
 
     const actions: ContextMenuAction[] = [
       {
-        name: '戦闘コントローラを開く',
+        name: '戦闘コントローラを表示',
         action: () => {
           this.pluginUiService.openAtCursor(CombatFlowControllerComponent, { 
             isSingleton: false,

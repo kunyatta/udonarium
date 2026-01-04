@@ -11,6 +11,8 @@ export interface ExtensionAction {
   condition?: (context?: any) => boolean;
   separator?: boolean;
   priority?: number; // 小さいほど前（左/上）に表示
+  /** 何番目のセパレーターの直前に挿入するか (コンテキストメニュー用) */
+  insertBeforeSeparator?: number;
 }
 
 export type ExtensionFilter = (input: any, context?: any) => any;

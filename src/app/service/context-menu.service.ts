@@ -67,13 +67,55 @@ export class ContextMenuService {
       if (context) {
         const extensions = this.uiExtensionService.getActions('context-menu', context);
         if (extensions && extensions.length > 0) {
-          childPanelService.actions.push(ContextMenuSeparator);
+          // 挿入場所ごとにグループ化
+          const insertionMap: Map<number | 'end', ExtensionAction[]> = new Map();
           extensions.forEach(ext => {
-            childPanelService.actions.push({
-              name: ext.name,
-              action: () => ext.action(context, position)
-            });
+            const key = ext.insertBeforeSeparator != null ? ext.insertBeforeSeparator : 'end';
+            if (!insertionMap.has(key)) insertionMap.set(key, []);
+            insertionMap.get(key).push(ext);
           });
+
+          // 指定位置（セパレーターの直前）に挿入
+          for (const [separatorCount, group] of insertionMap.entries()) {
+            if (separatorCount === 'end') continue;
+
+            let currentSeparatorCount = 0;
+            let targetIndex = -1;
+            for (let i = 0; i < childPanelService.actions.length; i++) {
+              if (childPanelService.actions[i].type === ContextMenuType.SEPARATOR) {
+                currentSeparatorCount++;
+                if (currentSeparatorCount === separatorCount) {
+                  targetIndex = i;
+                  break;
+                }
+              }
+            }
+
+            if (targetIndex !== -1) {
+              const items = group.map(ext => ({
+                name: ext.name,
+                action: () => ext.action(context, position)
+              }));
+              // セクションの終わりに入れるため、項目の前に区切り線を入れたい場合はext.separatorで対応
+              childPanelService.actions.splice(targetIndex, 0, ...items);
+            } else {
+              // 指定のセパレーターが見つからなければ末尾グループへ合流
+              if (!insertionMap.has('end')) insertionMap.set('end', []);
+              insertionMap.get('end').push(...group);
+            }
+          }
+
+          // 指定なし、またはフォールバック分を末尾に追加
+          const trailing = insertionMap.get('end');
+          if (trailing && trailing.length > 0) {
+            childPanelService.actions.push(ContextMenuSeparator);
+            trailing.forEach(ext => {
+              childPanelService.actions.push({
+                name: ext.name,
+                action: () => ext.action(context, position)
+              });
+            });
+          }
         }
       }
       // ----- MODIFICATION END (kunyatta) for PluginSystem -----

@@ -64,7 +64,7 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
     });
 
     this.uiExtensionService.registerAction('context-menu', {
-      name: '戦闘コントローラを開く',
+      name: '戦闘コントローラを表示',
       action: (context: GameCharacter, pointer) => {
         this.pluginUiService.open(this.component, {
           title: this.name,
@@ -76,7 +76,8 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
           inputs: { initialCasterIdentifier: context.identifier }
         });
       },
-      condition: (context) => context instanceof GameCharacter
+      condition: (context) => context instanceof GameCharacter,
+      insertBeforeSeparator: 1
     });
 
     // ルームロード時に監視が重複しないよう、既存の監視があれば解除
