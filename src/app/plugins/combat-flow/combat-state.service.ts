@@ -19,6 +19,9 @@ import { CombatLogService } from './combat-log.service';
 import { ChatTab } from '@udonarium/chat-tab';
 import { ChatTabList } from '@udonarium/chat-tab-list';
 import { PLUGIN_ID, FILE_NAME_HINT, PERSISTENT_ID_TAG, DEFAULT_DAMAGE_CHECK_CONFIG } from './combat-flow.constants';
+import { PluginMapperService } from '../service/plugin-mapper.service';
+import { CombatFlowConfig } from './combat-flow-config.model';
+import { ChatListenerService } from '../service/chat-listener.service';
 
 @Injectable({
   providedIn: 'root'
@@ -27,23 +30,31 @@ export class CombatStateService {
   // コンテナへの参照（Observerによって更新される）
   private container: PluginDataContainer | null = null;
 
+  // 全体設定オブジェクト
+  private config: CombatFlowConfig = new CombatFlowConfig();
+
+  // --- Chat Analysis Cache ---
+  // キー: 送信者名(message.name)、値: 解析されたデータ
+  private lastTargetsCache = new Map<string, string[]>(); // キャラクターIDの配列
+  private lastDiceResultCache = new Map<string, number>();
+
   // --- State Observables ---
   // コンテナの状態を反映するBehaviorSubject
   private _isCombat$ = new BehaviorSubject<boolean>(false);
   private _round$ = new BehaviorSubject<number>(1);
   private _currentIndex$ = new BehaviorSubject<number>(0);
   private _combatants$ = new BehaviorSubject<Combatant[]>([]);
-  private _displayDataTags$ = new BehaviorSubject<string>('HP MP'); // 初期値を'HP MP'に変更
+  private _displayDataTags$ = new BehaviorSubject<string>(this.config.displayDataTags);
 
   readonly isCombat$ = this._isCombat$.asObservable();
   readonly round$ = this._round$.asObservable();
   readonly currentIndex$ = this._currentIndex$.asObservable();
   readonly combatants$ = this._combatants$.asObservable();
-  readonly displayDataTags$ = this._displayDataTags$.asObservable(); // 追加
+  readonly displayDataTags$ = this._displayDataTags$.asObservable();
 
-  private _systemLogSenderName = new BehaviorSubject<string>('');
+  private _systemLogSenderName = new BehaviorSubject<string>(this.config.systemLogSenderName);
   readonly systemLogSenderName$ = this._systemLogSenderName.asObservable();
-
+  
   // 派生データ: 現在の手番のキャラクターID
   readonly currentCharacterId$ = combineLatest([this._currentIndex$, this._combatants$]).pipe(
     map(([index, combatants]) => {
@@ -102,9 +113,12 @@ export class CombatStateService {
     private characterDataService: CharacterDataService,
     private dictionaryService: StatusEffectDictionaryService,
     private combatLogService: CombatLogService,
+    private pluginMapper: PluginMapperService,
+    private chatListener: ChatListenerService,
     private ngZone: NgZone
   ) {
     this.initialize();
+    this.registerChatListeners();
 
     // --- キャラクター選択関連の初期化 ---
     const characterUpdateTrigger$ = new BehaviorSubject<void>(undefined);
@@ -223,6 +237,54 @@ export class CombatStateService {
   }
 
   /**
+   * チャットリスナーを登録し、メッセージ受信時にターゲットやダイス結果をキャッシュする
+   */
+  private registerChatListeners(): void {
+    // ターゲット検知ルール
+    this.chatListener.addRule({
+      owner: this,
+      name: 'CombatFlow-TargetDetector',
+      callback: (message) => {
+        const text = message.value?.toString() || '';
+        // テーブル上の全キャラクターを検索対象にする
+        const tabletopChars = ObjectStore.instance.getObjects<GameCharacter>(GameCharacter)
+          .filter(char => char.location.name === 'table');
+        
+        const foundIds = tabletopChars
+          .filter(char => text.includes(char.name))
+          .map(char => {
+             // 永続IDを優先、なければ標準ID
+             const pid = char.detailDataElement.getFirstElementByName(PERSISTENT_ID_TAG)?.value.toString();
+             return pid || char.identifier;
+          });
+
+        if (foundIds.length > 0) {
+          // メッセージの送信者名（キャラクター名等）に関連付けてキャッシュ
+          this.lastTargetsCache.set(message.name, foundIds);
+        }
+      }
+    });
+
+    // ダイス結果検知ルール
+    this.chatListener.addRule({
+      owner: this,
+      name: 'CombatFlow-DiceDetector',
+      from: 'System-BCDice',
+      callback: (message) => {
+        const text = message.value?.toString() || '';
+        const match = text.match(/[＞>→]\s*(\d+)$/);
+        if (match && match[1]) {
+          const result = parseInt(match[1], 10);
+          // BCDiceのメッセージ名(message.name)には通常「キャラクター名 : 命令」が含まれる
+          // そのため、コロンの前をキャラクター名として抽出する
+          const charName = message.name.split(/\s*[:：]/)[0];
+          this.lastDiceResultCache.set(charName, result);
+        }
+      }
+    });
+  }
+
+  /**
    * コンテナのDataElementから最新の状態を読み取り、Subjectを更新する
    */
   private updateStateFromContainer(): void {
@@ -249,28 +311,97 @@ export class CombatStateService {
     // 今回はシンプルに毎回流す（View側でAsyncPipeを使っているなら大きな問題にはならない）
     this._combatants$.next(combatants);
 
-    // --- 設定項目（戦闘状態に依存しないもの）の読み込み ---
-    // これらも将来的には PluginMapperService でクラスにマッピングする
-    
+    // 2. 設定項目の読み込み (PluginMapperService + Migration)
     // container.state プロパティ（ゲッター）にアクセスすると、
     // 存在しない場合に勝手に作成されてしまう副作用があるため、
     // children から直接 'state' DataElement を探し、なければ何もしない。
     const stateElement = this.container.children.find(child => child instanceof DataElement && child.name === 'state') as DataElement;
-
     if (!stateElement) return;
 
-    // 表示パラメータ設定
-    const displayDataTags = stateElement.getFirstElementByName('displayDataTags')?.value.toString() || 'HP MP';
-    if (this._displayDataTags$.value !== displayDataTags) {
-      this._displayDataTags$.next(displayDataTags);
+    const configElement = stateElement.getFirstElementByName('config');
+    if (configElement) {
+      // 新しい構造: mapperを使って一括ロード
+      this.config = this.pluginMapper.fromElement<CombatFlowConfig>(configElement);
+    } else {
+      // 旧構造: マイグレーション
+      this.migrateConfig(stateElement);
     }
 
-    // システムログ送信元
-    const systemLogSenderName = stateElement.getFirstElementByName('systemLogSenderName')?.value.toString() || '';
-    if (this._systemLogSenderName.value !== systemLogSenderName) {
-      this._systemLogSenderName.next(systemLogSenderName);
-      EventSystem.trigger('SYSTEM_LOG_SENDER_NAME_CHANGED', systemLogSenderName);
+    // 3. 内部Stateへの反映
+    if (this._displayDataTags$.value !== this.config.displayDataTags) {
+      this._displayDataTags$.next(this.config.displayDataTags);
     }
+
+    if (this._systemLogSenderName.value !== this.config.systemLogSenderName) {
+      this._systemLogSenderName.next(this.config.systemLogSenderName);
+      EventSystem.trigger('SYSTEM_LOG_SENDER_NAME_CHANGED', this.config.systemLogSenderName);
+    }
+  }
+
+  /**
+   * バラバラに保存されていた古い設定を読み込み、configオブジェクトに統合する。
+   */
+  private migrateConfig(stateElement: DataElement): void {
+    const config = new CombatFlowConfig();
+
+    // 旧 displayDataTags
+    const oldTags = stateElement.getFirstElementByName('displayDataTags')?.value.toString();
+    if (oldTags) config.displayDataTags = oldTags;
+
+    // 旧 systemLogSenderName
+    const oldSender = stateElement.getFirstElementByName('systemLogSenderName')?.value.toString();
+    if (oldSender) config.systemLogSenderName = oldSender;
+
+    // 旧 damage-check-config (ここは少し複雑)
+    const oldDamageRoot = stateElement.getFirstElementByName('damage-check-config');
+    if (oldDamageRoot) {
+      config.damageCheckConfig.referenceParams = oldDamageRoot.getFirstElementByName('referenceParams')?.value.toString() || config.damageCheckConfig.referenceParams;
+      
+      const btnRoot = oldDamageRoot.getFirstElementByName('buttonConfig');
+      if (btnRoot) {
+        config.damageCheckConfig.buttonConfig.showAsIs = btnRoot.getFirstElementByName('showAsIs')?.value === 'true';
+        config.damageCheckConfig.buttonConfig.showReduce = btnRoot.getFirstElementByName('showReduce')?.value === 'true';
+        config.damageCheckConfig.buttonConfig.showHalve = btnRoot.getFirstElementByName('showHalve')?.value === 'true';
+        config.damageCheckConfig.buttonConfig.showZero = btnRoot.getFirstElementByName('showZero')?.value === 'true';
+        config.damageCheckConfig.buttonConfig.showCustom = btnRoot.getFirstElementByName('showCustom')?.value === 'true';
+      }
+    }
+
+    this.config = config;
+    // 読み込み直後に一度保存して、次から新構造にする
+    this.saveConfig();
+  }
+
+  /**
+   * 現在の設定オブジェクトをコンテナに保存します。
+   */
+  private saveConfig(): void {
+    if (!this.container) {
+      this.container = this.pluginHelper.getOrCreateContainer(PLUGIN_ID, FILE_NAME_HINT);
+    }
+
+    // mapperを使ってオブジェクトを一括XML変換
+    const configElement = this.pluginMapper.toElement('config', this.config);
+
+    // 既存の 'config' 要素があれば差し替え、なければ追加
+    let existing = this.container.state.getFirstElementByName('config');
+    if (existing) {
+      // 子要素を全削除して入れ替える (mapperの作法)
+      [...existing.children].forEach(c => existing!.removeChild(c));
+      [...configElement.children].forEach(c => existing!.appendChild(c));
+      existing.update();
+    } else {
+      this.container.state.appendChild(configElement);
+    }
+
+    // 旧形式の要素が残っていれば削除（クリーンアップ）
+    const oldElements = ['displayDataTags', 'systemLogSenderName', 'damage-check-config'];
+    oldElements.forEach(name => {
+      const old = this.container!.state.getFirstElementByName(name);
+      if (old) this.container!.state.removeChild(old);
+    });
+
+    this.container.state.update();
   }
 
   // --- Public Actions ---
@@ -510,20 +641,9 @@ export class CombatStateService {
   }
 
   updateDisplayDataTags(tags: string): void {
-    if (!this.container) {
-      this.container = this.pluginHelper.getOrCreateContainer(PLUGIN_ID, FILE_NAME_HINT);
-    }
-    
-    // engine-state ではなく、設定として state 直下に保存するように変更
-    let tagsElement = this.container.state.getFirstElementByName('displayDataTags');
-    if (!tagsElement) {
-      tagsElement = DataElement.create('displayDataTags', tags, {});
-      this.container.state.appendChild(tagsElement);
-    } else {
-      tagsElement.value = tags;
-    }
-    this.container.state.update(); // 変更を通知
-    this._displayDataTags$.next(tags); // 即座に反映
+    this.config.displayDataTags = tags;
+    this.saveConfig();
+    this._displayDataTags$.next(tags);
   }
   
   // --- 状態操作 ---
@@ -794,74 +914,14 @@ export class CombatStateService {
     console.log(`[CombatStateService] ${caster.name} が ${targets.map(c => c.name).join(', ')} の ${paramName} を ${value > 0 ? '+' : ''}${value} した！`);
   }
 
-  getDamageCheckConfig(): { referenceParams: string, buttonConfig: { showAsIs: boolean, showReduce: boolean, showHalve: boolean, showZero: boolean, showCustom: boolean } } {
-    if (!this.container) {
-      return { ...DEFAULT_DAMAGE_CHECK_CONFIG };
-    }
-
-    const configRoot = this.container.state.getFirstElementByName('damage-check-config');
-    if (!configRoot) {
-      return { ...DEFAULT_DAMAGE_CHECK_CONFIG };
-    }
-
-    const referenceParams = configRoot.getFirstElementByName('referenceParams')?.value.toString() || DEFAULT_DAMAGE_CHECK_CONFIG.referenceParams;
-    const buttonConfigRoot = configRoot.getFirstElementByName('buttonConfig');
-    
-    const buttonConfig = {
-      showAsIs: buttonConfigRoot?.getFirstElementByName('showAsIs')?.value === 'true',
-      showReduce: buttonConfigRoot?.getFirstElementByName('showReduce')?.value === 'true',
-      showHalve: buttonConfigRoot?.getFirstElementByName('showHalve')?.value === 'true',
-      showZero: buttonConfigRoot?.getFirstElementByName('showZero')?.value === 'true',
-      showCustom: buttonConfigRoot?.getFirstElementByName('showCustom')?.value === 'true'
-    };
-
-    if (!buttonConfigRoot) {
-      Object.assign(buttonConfig, DEFAULT_DAMAGE_CHECK_CONFIG.buttonConfig);
-    }
-
-    return { referenceParams, buttonConfig };
+  getDamageCheckConfig(): CombatFlowConfig['damageCheckConfig'] {
+    // 既にロード済みのconfigを返すだけで良い
+    return this.config.damageCheckConfig;
   }
 
-  saveDamageCheckConfig(config: { referenceParams: string, buttonConfig: { [key: string]: boolean } }): void {
-    if (!this.container) {
-      this.container = this.pluginHelper.getOrCreateContainer(PLUGIN_ID, FILE_NAME_HINT);
-    }
-
-    let configRoot = this.container.state.getFirstElementByName('damage-check-config');
-    if (!configRoot) {
-      configRoot = DataElement.create('damage-check-config', '', {});
-      this.container.state.appendChild(configRoot);
-    }
-
-    let refParamsElem = configRoot.getFirstElementByName('referenceParams');
-    if (!refParamsElem) {
-      refParamsElem = DataElement.create('referenceParams', config.referenceParams, {});
-      configRoot.appendChild(refParamsElem);
-    } else {
-      refParamsElem.value = config.referenceParams;
-    }
-
-    let buttonConfigRoot = configRoot.getFirstElementByName('buttonConfig');
-    if (!buttonConfigRoot) {
-      buttonConfigRoot = DataElement.create('buttonConfig', '', {});
-      configRoot.appendChild(buttonConfigRoot);
-    }
-
-    const updateButtonConfig = (key: string, value: boolean) => {
-      let elem = buttonConfigRoot.getFirstElementByName(key);
-      if (!elem) {
-        elem = DataElement.create(key, String(value), {});
-        buttonConfigRoot.appendChild(elem);
-      } else {
-        elem.value = String(value);
-      }
-    };
-
-    updateButtonConfig('showAsIs', config.buttonConfig.showAsIs);
-    updateButtonConfig('showReduce', config.buttonConfig.showReduce);
-    updateButtonConfig('showHalve', config.buttonConfig.showHalve);
-    updateButtonConfig('showZero', config.buttonConfig.showZero);
-    updateButtonConfig('showCustom', config.buttonConfig.showCustom);
+  saveDamageCheckConfig(config: CombatFlowConfig['damageCheckConfig']): void {
+    this.config.damageCheckConfig = config;
+    this.saveConfig();
   }
   
   /**
@@ -869,84 +929,41 @@ export class CombatStateService {
    * @param name 送信元として設定するキャラクター名
    */
   saveSystemLogSenderName(name: string): void {
-    if (!this.container) {
-      this.container = this.pluginHelper.getOrCreateContainer(PLUGIN_ID, FILE_NAME_HINT);
-    }
-
-    const stateElement = this.container.state;
-    let nameElement = stateElement.getFirstElementByName('systemLogSenderName');
-    if (!nameElement) {
-      nameElement = DataElement.create('systemLogSenderName', name, {});
-      stateElement.appendChild(nameElement);
-    } else {
-      nameElement.value = name;
-    }
-    stateElement.update(); // 変更を通知
-    this._systemLogSenderName.next(name); // BehaviorSubjectも更新
+    this.config.systemLogSenderName = name;
+    this.saveConfig();
+    this._systemLogSenderName.next(name);
     EventSystem.trigger('SYSTEM_LOG_SENDER_NAME_CHANGED', name);
   }
 
   /**
-   * チャットログを解析し、指定された術者の直近の発言に含まれるキャラクターをターゲットとして返します。
+   * キャッシュされた解析結果から、指定された術者の直近の発言に含まれるキャラクターをターゲットとして返します。
    * @param caster 術者となるキャラクター
-   * @param availableChatTabs 解析対象のチャットタブ
+   * @param _availableChatTabs (互換性のために残すが使用しない)
    * @returns ターゲット候補のキャラクター配列
    */
-  findTargetsFromChat(caster: GameCharacter, availableChatTabs: ChatTab[]): GameCharacter[] {
+  findTargetsFromChat(caster: GameCharacter, _availableChatTabs?: ChatTab[]): GameCharacter[] {
     if (!caster) return [];
 
-    // 戦闘参加者（候補）のリストを取得 (術者自身は除外する)
-    const combatantCharacters = this.combatants
-      .map(c => this.characterDataService.getGameCharacter(c.characterId))
-      .filter(c => c !== null && c.identifier !== caster.identifier) as GameCharacter[];
-      
-    if (combatantCharacters.length === 0) return [];
+    const cachedIds = this.lastTargetsCache.get(caster.name);
+    if (!cachedIds || cachedIds.length === 0) return [];
 
-    // 直近のメッセージを検索
-    const casterMessages = availableChatTabs
-      .flatMap(tab => tab.chatMessages.slice(-50))
-      .filter(msg => msg.name === caster.name)
-      .sort((a, b) => b.timestamp - a.timestamp)
-      .slice(0, 10);
-
-    for (const msg of casterMessages) {
-      const messageValue = msg.value.toString(); // valueはnumberの可能性もあるためtoString
-      const foundTargets = combatantCharacters.filter(character => messageValue.includes(character.name));
-      if (foundTargets.length > 0) {
-        return foundTargets; // 最初に見つかったメッセージのターゲットを返す
-      }
-    }
-
-    return [];
+    // IDからキャラクターオブジェクトを解決して返す
+    return cachedIds
+      .map(id => this.characterDataService.resolveCharacter(id))
+      .filter((c): c is GameCharacter => c !== null && c.identifier !== caster.identifier);
   }
 
   /**
-   * チャットログを解析し、指定された術者の直近のダイスロール結果を数値として返します。
+   * キャッシュされた解析結果から、指定された術者の直近のダイスロール結果を数値として返します。
    * @param caster 術者となるキャラクター
-   * @param availableChatTabs 解析対象のチャットタブ
+   * @param _availableChatTabs (互換性のために残すが使用しない)
    * @returns ダイス結果の合計値。見つからなければnull。
    */
-  findDiceResultFromChat(caster: GameCharacter, availableChatTabs: ChatTab[]): number | null {
+  findDiceResultFromChat(caster: GameCharacter, _availableChatTabs?: ChatTab[]): number | null {
     if (!caster) return null;
 
-    const allMessages = availableChatTabs.flatMap(tab => tab.chatMessages.slice(-50));
-    allMessages.sort((a, b) => b.timestamp - a.timestamp);
-
-    // BCDiceの結果は通常 System-BCDice から送信されるが、Udonariumの実装によっては
-    // キャラクター名が含まれるメッセージとして扱われる場合もある。
-    // ここでは name にキャラクター名が含まれているシステムメッセージを探す。
-    const bcdiceMessage = allMessages.find(msg => 
-      msg.from === 'System-BCDice' && msg.name.includes(caster.name)
-    );
-
-    if (bcdiceMessage) {
-      const match = bcdiceMessage.value.toString().match(/[＞>→]\s*(\d+)$/);
-      if (match && match[1]) {
-        return parseInt(match[1], 10);
-      }
-    }
-
-    return null;
+    const result = this.lastDiceResultCache.get(caster.name);
+    return result !== undefined ? result : null;
   }
 
 }
