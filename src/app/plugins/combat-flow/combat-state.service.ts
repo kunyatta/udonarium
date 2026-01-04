@@ -230,44 +230,35 @@ export class CombatStateService {
       return;
     }
 
+    // 1. ターンエンジンの状態を取得 (PluginHelper経由ではなく専用サービス経由で取得)
+    // コンテナ内のXML構造を知っているのはTurnBasedEngineServiceだけにする
+    const engineState = this.turnEngine.getState(this.container);
+
+    this._isCombat$.next(engineState.isPlaying);
+    this._round$.next(engineState.round);
+    this._currentIndex$.next(engineState.currentIndex);
+
+    const combatants: Combatant[] = engineState.participants.map(p => ({
+      characterId: p.id,
+      initiative: 0, // 今のところイニシアティブ値は保持していないので0固定
+      hasActed: p.hasActed
+    }));
+    
+    // 配列の中身が変わった場合のみ通知したいが、BehaviorSubject.nextは常に通知するので
+    // 受け取り側で distinctUntilChanged 等で制御するか、ここでチェックするか。
+    // 今回はシンプルに毎回流す（View側でAsyncPipeを使っているなら大きな問題にはならない）
+    this._combatants$.next(combatants);
+
+    // --- 設定項目（戦闘状態に依存しないもの）の読み込み ---
+    // これらも将来的には PluginMapperService でクラスにマッピングする
+    
     // container.state プロパティ（ゲッター）にアクセスすると、
     // 存在しない場合に勝手に作成されてしまう副作用があるため、
     // children から直接 'state' DataElement を探し、なければ何もしない。
     const stateElement = this.container.children.find(child => child instanceof DataElement && child.name === 'state') as DataElement;
 
-    if (!stateElement) {
-      // まだstate要素がロードされていない、または存在しない場合は何もしない
-      // (最後の状態を維持し、不必要な状態リセットを防ぐ)
-      return;
-    }
+    if (!stateElement) return;
 
-    const engineRoot = stateElement.getFirstElementByName('engine-state');
-    
-    if (engineRoot) {
-      const isPlaying = engineRoot.getFirstElementByName('isPlaying')?.value === 'true';
-      const round = Number(engineRoot.getFirstElementByName('round')?.value) || 1;
-      const currentIndex = Number(engineRoot.getFirstElementByName('currentIndex')?.value) || 0;
-      
-      this._isCombat$.next(isPlaying);
-      this._round$.next(round);
-      this._currentIndex$.next(currentIndex);
-
-      const idsRoot = engineRoot.getFirstElementByName('participantIds');
-      if (idsRoot) {
-        const combatants: Combatant[] = idsRoot.children.map(el => ({
-          characterId: (el as DataElement).getFirstElementByName('id')?.value.toString() || (el as DataElement).value.toString(), // 後方互換: 新構造なら子要素、旧構造ならvalue
-          initiative: 0,
-          hasActed: (el as DataElement).getFirstElementByName('hasActed')?.value === 'true'
-        }));
-        this._combatants$.next(combatants);
-      } else {
-        this._combatants$.next([]);
-      }
-    }
-
-    // --- 設定項目（戦闘状態に依存しないもの）の読み込み ---
-    // getFirstElementByName は再帰的なので、古いデータ（engine-state内や冗長なstate内）にあっても見つけられる
-    
     // 表示パラメータ設定
     const displayDataTags = stateElement.getFirstElementByName('displayDataTags')?.value.toString() || 'HP MP';
     if (this._displayDataTags$.value !== displayDataTags) {

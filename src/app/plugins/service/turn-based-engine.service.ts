@@ -2,10 +2,42 @@ import { Injectable } from '@angular/core';
 import { PluginDataContainer } from '../../class/plugin-data-container';
 import { DataElement } from '@udonarium/data-element';
 
+export interface EngineState {
+  isPlaying: boolean;
+  round: number;
+  currentIndex: number;
+  participants: { id: string, hasActed: boolean }[];
+}
+
 @Injectable({ providedIn: 'root' })
 export class TurnBasedEngineService {
 
   constructor() { }
+
+  /**
+   * 現在のエンジン状態を取得します。
+   * コンテナ内のDataElement構造を隠蔽し、プレーンなオブジェクトとして返します。
+   */
+  getState(container: PluginDataContainer): EngineState {
+    const engineRoot = this.findOrCreateEngineRoot(container);
+    
+    const isPlaying = engineRoot.getFirstElementByName('isPlaying')?.value === 'true';
+    const round = Number(engineRoot.getFirstElementByName('round')?.value) || 1;
+    const currentIndex = Number(engineRoot.getFirstElementByName('currentIndex')?.value) || 0;
+    
+    const idsRoot = engineRoot.getFirstElementByName('participantIds');
+    const participants = idsRoot ? idsRoot.children.map(el => ({
+      id: (el as DataElement).getFirstElementByName('id')?.value.toString() || (el as DataElement).value.toString(),
+      hasActed: (el as DataElement).getFirstElementByName('hasActed')?.value === 'true'
+    })) : [];
+
+    return {
+      isPlaying,
+      round,
+      currentIndex,
+      participants
+    };
+  }
 
   // --- リスト操作API ---
   addParticipant(container: PluginDataContainer, id: string): void {
