@@ -10,6 +10,7 @@ import { OverlayTestPluginModule } from '../app/plugins/overlay-test-plugin/over
 import { CutInModule } from '../app/plugins/cut-in/cut-in.module';
 import { DynamicStandPluginModule } from '../app/plugins/dynamic-stand/dynamic-stand.module';
 import { LogoutModule } from '../app/plugins/logout/logout.module';
+import { RollResultChartModule } from '../app/plugins/roll-result-chart/roll-result-chart.module';
 
 export const environment = {
   production: false,
@@ -25,6 +26,7 @@ export const environment = {
     TurnEngineTestModule,
     OverlayTestPluginModule,
     DynamicStandPluginModule,
+    RollResultChartModule,
     LogoutModule
   ]
 };
