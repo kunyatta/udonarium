@@ -10,7 +10,7 @@ const STORE_KEYS = {
   COLOR: 'udonarium_user_color',
   ICON_BLOB: 'udonarium_user_icon_blob',
   ICON_ID: 'udonarium_user_icon_id',
-  PLUGINS: 'udonarium_plugins_data' // ----- MODIFICATION (kunyatta) -----
+  PLUGINS: 'udonarium_plugins_data'
 };
 
 export interface PluginPersistenceHooks {
@@ -23,10 +23,8 @@ export interface PluginPersistenceHooks {
 })
 export class UserPersistenceService {
   private isInitialized = false;
-  // ----- MODIFICATION START (kunyatta) for Plugin Persistence -----
   private pluginRegistry: Map<string, PluginPersistenceHooks> = new Map();
   private restoredPluginsData: { [id: string]: any } = {};
-  // ----- MODIFICATION END (kunyatta) -----
 
   constructor() {
     // IndexedDBの設定

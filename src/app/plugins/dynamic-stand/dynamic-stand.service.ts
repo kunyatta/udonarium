@@ -7,7 +7,7 @@ import {
   DYNAMIC_STAND_SECTION_NAME,
   StandSetting,
   StandGlobalConfig,
-  StandingUnit,
+  StandingActor,
   DEFAULT_HEAD_OFFSET,
   DEFAULT_AUTO_X_RATIO
 } from './dynamic-stand.model';
@@ -31,7 +31,8 @@ export class DynamicStandPluginService implements OnDestroy {
   readonly PLUGIN_ID = 'dynamic-stand';
   config: StandGlobalConfig = new StandGlobalConfig();
   
-  localActors: any[] = [];
+  // 型定義を適用
+  localActors: StandingActor[] = [];
   
   private stageObject: OverlayObject = null;
   private readonly STAGE_ID = 'DYNAMIC_STAND_STAGE_GLOBAL';
@@ -116,7 +117,6 @@ export class DynamicStandPluginService implements OnDestroy {
   private getOrCreateStageObject(): OverlayObject {
     this.stageObject = ObjectStore.instance.get<OverlayObject>(this.STAGE_ID);
     if (!this.stageObject) {
-      console.log(`[DynamicStand] Creating Stage Object...`);
       this.stageObject = new OverlayObject(this.STAGE_ID);
       this.stageObject.initialize();
       this.stageObject.type = 'standing-stage';
@@ -155,7 +155,7 @@ export class DynamicStandPluginService implements OnDestroy {
     });
     
     if (nextActors.length !== prevCount || changed) {
-      this.localActors = nextActors; // リスト更新
+      this.localActors = nextActors;
       this.repositionAll();
     }
   }
@@ -176,9 +176,6 @@ export class DynamicStandPluginService implements OnDestroy {
       a.left = 100 - this.config.edgeOffset - this.config.standWidth - (idx * this.config.slideWidth);
     });
   }
-
-
-  
 
   private processChatMessage(message: ChatMessage) {
     if (this.isCutInBlocked) return;
@@ -237,7 +234,8 @@ export class DynamicStandPluginService implements OnDestroy {
     const side = (this.localActors.filter(a => a.side === 'left').length <= this.localActors.filter(a => a.side === 'right').length) ? 'left' : 'right';
     const headY = this.config.standHeight * (1 - (setting.headOffset ?? DEFAULT_HEAD_OFFSET) / 100);
     
-    const actor = {
+    // 型安全なオブジェクト生成
+    const actor: StandingActor = {
       characterId: characterId,
       side: side,
       timestamp: Date.now(),
@@ -254,7 +252,8 @@ export class DynamicStandPluginService implements OnDestroy {
       emoteOffsetX: (side === 'left') ? (this.config.standWidth * 0.2) : -(this.config.standWidth * 0.2),
       emoteOffsetY: headY + setting.offsetY + 2,
       opacity: 1.0,
-      left: 0 
+      left: 0,
+      isDisappearing: false
     };
 
     this.localActors = [...this.localActors, actor];

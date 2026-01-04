@@ -10,6 +10,7 @@ import { ImageFile } from '@udonarium/core/file-storage/image-file';
 import { AudioPlayer, VolumeType } from '@udonarium/core/file-storage/audio-player';
 import { AudioStorage } from '@udonarium/core/file-storage/audio-storage';
 import { DynamicStandPluginService } from '../../dynamic-stand/dynamic-stand.service';
+import { StandingActor } from '../../dynamic-stand/dynamic-stand.model';
 
 @Component({
   selector: 'app-overlay',
@@ -28,36 +29,49 @@ export class OverlayComponent implements OnInit, OnDestroy {
   protected audioPlayer: AudioPlayer = new AudioPlayer();
   private expirationTimer: any;
   
-  // --- Typing Logic ---
+  // --- タイピング演出の管理 (Typing Logic) ---
   private visibleTexts: Map<string, string> = new Map();
   private typingTimers: Map<string, any> = new Map();
-  private readonly TYPING_SPEED = 60; // 1文字 60ms
+  private readonly TYPING_SPEED = 60; // 1文字あたりの表示速度 (ms)
 
   constructor(
     private changeDetector: ChangeDetectorRef,
     public dynamicStandService: DynamicStandPluginService
   ) {}
 
-  get stageActors(): any[] {
+  /**
+   * 現在の舞台に存在するアクターのリストを取得します。
+   * 取得と同時にタイピング演出の更新チェックを行います。
+   */
+  get stageActors(): StandingActor[] {
     const actors = this.dynamicStandService.localActors;
     actors.forEach(actor => this.updateActorTyping(actor));
     return actors;
   }
 
-  getActorData(actor: any): any {
+  /**
+   * テンプレートからアクターのデータを取得するためのヘルパー。
+   */
+  getActorData(actor: StandingActor): StandingActor {
     return actor;
   }
 
-  private updateActorTyping(actor: any) {
+  /**
+   * アクターごとのタイピング演出（文字送り）を管理します。
+   * 前回の表示状態と比較し、差分がある場合にタイマーを起動します。
+   */
+  private updateActorTyping(actor: StandingActor) {
     const id = actor.characterId;
     const targetText = actor.speechText || '';
     let currentVisible = this.visibleTexts.get(id) || '';
 
+    // セリフがリセットされたか、全く別のテキストになった場合はクリア
     if (!targetText.startsWith(currentVisible)) {
       currentVisible = '';
       this.visibleTexts.set(id, '');
     }
 
+    // 文字送りが必要な場合
     if (currentVisible.length < targetText.length) {
       if (!this.typingTimers.has(id)) {
         const timer = setInterval(() => {
@@ -82,16 +96,25 @@ export class OverlayComponent implements OnInit, OnDestroy {
     }
   }
 
-  getVisibleSpeechText(actor: any): string {
+  /**
+   * アクターの現在表示可能なセリフ（タイピング中の文字列）を取得します。
+   */
+  getVisibleSpeechText(actor: StandingActor): string {
     return this.visibleTexts.get(actor.characterId) || '';
   }
 
+  /**
+   * 画像識別子からURLを取得します。
+   */
   getActorImageUrl(imageIdentifier: string): string {
     if (!imageIdentifier) return '';
     const file = ImageStorage.instance.get(imageIdentifier);
     return file ? file.url : '';
   }
 
+  /**
+   * ローカルでパネルを閉じます（クリックで閉じる設定が有効な場合）。
+   */
   closeLocal() {
     if (this.overlayObject && !this.overlayObject.isClickToClose) return;
     this.isVisible = false;
@@ -99,12 +122,17 @@ export class OverlayComponent implements OnInit, OnDestroy {
     this.changeDetector.markForCheck();
   }
 
+  // --- レイアウト計算用プロパティ ---
   get left() { return (this.overlayObject?.left || 0) + 'vw'; }
   get top() { return (this.overlayObject?.top || 0) + 'vh'; }
   get width() { return this.overlayObject && this.overlayObject.width > 0 ? this.overlayObject.width + 'vw' : 'auto'; }
   get height() { return this.overlayObject && this.overlayObject.height > 0 ? this.overlayObject.height + 'vh' : 'auto'; }
   get zIndex() { return this.overlayObject?.zIndex || 2000000; }
   get opacity() { return this.overlayObject?.opacity ?? 1; }
+  
+  /**
+   * アンカー位置に基づいたトランスフォーム属性を計算します。
+   */
   get transform() {
     const scale = this.overlayObject?.scale ?? 1;
     const scaleX = this.overlayObject?.scaleX ?? 1;
@@ -124,6 +152,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
     }
     return `translate(${translateX}, ${translateY}) scale(${scale * scaleX}, ${scale})`;
   }
+
   get transition() {
     if (!this.overlayObject) return 'none';
     return `all ${this.overlayObject.transitionDuration}ms ${this.overlayObject.transitionEasing}`;
@@ -132,6 +161,9 @@ export class OverlayComponent implements OnInit, OnDestroy {
   @HostBinding('style.pointer-events') get pointerEvents() { return this.isVisible ? 'auto' : 'none'; }
   @HostBinding('style.display') get display() { return this.isVisible ? 'block' : 'none'; }
 
+  /**
+   * ビデオ再生準備完了時の処理。動画の長さに合わせて寿命を設定します。
+   */
   onPlayerReady(event: any) {
     if (!this.overlayObject || !this.overlayObject.isMine) return;
     const duration = event.target.getDuration();
@@ -145,6 +177,9 @@ export class OverlayComponent implements OnInit, OnDestroy {
     if (event && event.data === 0) this.closeLocal();
   }
 
+  /**
+   * オーバーレイ全体のスタイルを決定します。舞台（standing-stage）の場合は全画面化します。
+   */
   get wrapperStyle() {
     if (!this.overlayObject) return { display: 'none' };
     if (this.overlayObject.type === 'standing-stage') return { 'width': '100vw', 'height': '100vh', 'pointer-events': 'none' };
@@ -161,6 +196,9 @@ export class OverlayComponent implements OnInit, OnDestroy {
     return widthPx ? (widthPx * 9) / 16 : undefined;
   }
 
+  /**
+   * 表示する画像のURLを取得します。
+   */
   get imageUrl(): string {
     if (!this.overlayObject) return '';
     if (this.overlayObject.imageIdentifier && this.overlayObject.type !== 'video') {
@@ -193,6 +231,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
         this.changeDetector.markForCheck();
       })
       .on('UPDATE_GAME_OBJECT', event => {
+        // 舞台オブジェクトそのもの、あるいはその子要素が更新された場合に再描画を促す
         if (this.overlayObject && this.overlayObject.type === 'standing-stage') {
           const updatedObj = ObjectStore.instance.get<ObjectNode>(event.data.identifier);
           if (updatedObj && (updatedObj.identifier === this.overlayObject.identifier || updatedObj.parentId === this.overlayObject.identifier)) {
@@ -210,6 +249,9 @@ export class OverlayComponent implements OnInit, OnDestroy {
       });
   }
 
+  /**
+   * 寿命監視タイマーを開始します。
+   */
   private startExpirationTimer() {
     this.stopExpirationTimer();
     if (!this.overlayObject || this.overlayObject.expirationTime <= 0) return;
@@ -221,6 +263,9 @@ export class OverlayComponent implements OnInit, OnDestroy {
 
   private stopExpirationTimer() { if (this.expirationTimer) { clearInterval(this.expirationTimer); this.expirationTimer = null; } }
 
+  /**
+   * オブジェクトに紐づく効果音がある場合、再生します。
+   */
   private playAudioIfSet() {
     if (!this.overlayObject || !this.isVisible) return;
     const content = this.overlayObject.content;
@@ -237,17 +282,30 @@ export class OverlayComponent implements OnInit, OnDestroy {
     }
   }
 
+  /**
+   * 寿命（有効期限）をチェックし、期限切れの場合はオブジェクトを破棄または非表示にします。
+   */
   private checkExpiration() {
     if (!this.overlayObject || this.overlayObject.expirationTime <= 0) return;
+
+    // ----- MODIFICATION (Gemini) -----
+    // 舞台オブジェクト（standing-stage）はサービス側でアクターの寿命を管理するため、
+    // ここでの個別の寿命チェック（オブジェクト自体の破棄）はスキップする。
+    if (this.overlayObject.type === 'standing-stage') return;
+    // ---------------------------------
+
     const now = Date.now();
     const timeLeft = this.overlayObject.expirationTime - now;
     if (this.overlayObject.isMine) {
       if (timeLeft > 500) { if (!this.isVisible) { this.isVisible = true; this.changeDetector.markForCheck(); } }
       else if (timeLeft <= 500 && timeLeft > 0) { this.isVisible = false; this.changeDetector.markForCheck(); }
     } else {
+      // 他人のオブジェクトの場合、安全のため広めのバッファを持って消去
       if (timeLeft < -30000 && this.isVisible) { this.isVisible = false; this.changeDetector.markForCheck(); }
       if (this.overlayObject.opacity > 0.1 && !this.isVisible && timeLeft > -30000) { this.isVisible = true; this.changeDetector.markForCheck(); }
     }
+    
+    // 期限切れかつ所有者の場合、物理的に削除する
     if (timeLeft <= 0 && this.overlayObject.isMine) {
       const obj = this.overlayObject;
       this.overlayObject = null;
