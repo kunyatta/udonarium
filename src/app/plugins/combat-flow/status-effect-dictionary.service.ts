@@ -1,15 +1,137 @@
-import { Injectable } from '@angular/core';
+import { Injectable, OnDestroy } from '@angular/core';
 import { PluginDataContainer } from '../../class/plugin-data-container';
 import { DataElement } from '@udonarium/data-element';
 import { XmlUtil } from '@udonarium/core/system/util/xml-util';
 import { StatusEffect, Effect, VisualEffect } from './status-effect.model';
+import { EventSystem } from '@udonarium/core/system';
+import { PluginHelperService } from '../service/plugin-helper.service';
 
 @Injectable({
   providedIn: 'root'
 })
-export class StatusEffectDictionaryService {
+export class StatusEffectDictionaryService implements OnDestroy {
 
-  constructor() { }
+  private readonly PLUGIN_ID = 'combat-flow';
+
+  constructor(
+    private pluginHelper: PluginHelperService
+  ) {
+    this.registerEvents();
+  }
+
+  ngOnDestroy() {
+    EventSystem.unregister(this);
+  }
+
+  private registerEvents() {
+    EventSystem.register(this)
+      .on('XML_LOADED', event => {
+        const xmlElement: Element = event.data.xmlElement;
+        if (!xmlElement) return;
+
+        // エクスポート機能で保存されたステータス効果データ（<data name="status-effect-data">）を検知
+        if (xmlElement.tagName === 'data' && xmlElement.getAttribute('name') === 'status-effect-data') {
+          console.log('[StatusEffectDictionary] Importing status effect data...');
+          this.importStatusEffectData(xmlElement);
+        }
+      });
+  }
+
+  /**
+   * インポートされたXML要素からステータス効果を取り込み、辞書に追加します。
+   */
+  private importStatusEffectData(rootElement: Element) {
+    // 1. まず既存のコンテナを探す (優先度: status-effect-dictionary > default)
+    let container = this.pluginHelper.findContainer(this.PLUGIN_ID, 'status-effect-dictionary') 
+                 || this.pluginHelper.findContainer(this.PLUGIN_ID, 'default');
+
+    // 2. 見つからなければ、正規のヒントで新規作成する
+    if (!container) {
+      console.log('[StatusEffectDictionary] Container not found. Creating new one with hint "status-effect-dictionary"...');
+      container = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID, 'status-effect-dictionary');
+    }
+
+    // 子要素の <template> を探して取り込む
+    Array.from(rootElement.children).forEach(child => {
+      if (child.tagName === 'data' && child.getAttribute('name') === 'template') {
+        // DataElementに変換してから StatusEffect オブジェクトに戻す
+        // ここでは簡易的に、parseXmlToContainer で使っているパーサーロジックを再利用したいが、
+        // privateメソッド内にあるため、似た処理を記述する。
+        // 本当は toStatusEffect(DataElement) を使いたいが、Element -> DataElement 変換が必要。
+        // 面倒なので Element から直接 StatusEffect をパースするヘルパーを作るか、
+        // 既存の toStatusEffect を使うために一回 DataElement 化するか。
+        // DataElement.create などの静的メソッドはないので、XML文字列からパースさせるのが手っ取り早いか？
+        // いや、既に Element があるので、それを走査する。
+
+        try {
+          // 1. Element -> StatusEffect
+          const effect = this.parseEffectElement(child);
+          // 2. IDをリセット（新規コピーとして扱う）
+          const { id, ...effectData } = effect;
+          // 3. 辞書に追加
+          this.addTemplate(container, effectData);
+          console.log(`[StatusEffectDictionary] Imported: ${effect.name}`);
+        } catch (e) {
+          console.error('[StatusEffectDictionary] Failed to import effect:', e);
+        }
+      }
+    });
+  }
+
+  /**
+   * DOM Element から StatusEffect オブジェクトを復元します。
+   * parseXmlToContainer 内のロジックを抽出・共通化したもの。
+   */
+  private parseEffectElement(element: Element): StatusEffect {
+    const getChildVal = (parent: Element, name: string) => {
+      const el = Array.from(parent.children).find(child => child.tagName === 'data' && child.getAttribute('name') === name);
+      return el ? XmlUtil.decodeEntityReference(el.textContent || '') : null;
+    };
+
+    const visualEffects: VisualEffect[] = [];
+    const visualEffectsRoot = Array.from(element.children).find(child => child.tagName === 'data' && child.getAttribute('name') === 'visualEffects');
+    if (visualEffectsRoot) {
+      Array.from(visualEffectsRoot.children).forEach(child => {
+        if (child.tagName === 'data' && child.getAttribute('name') === 'visualEffect') {
+          visualEffects.push({
+            type: child.getAttribute('type') || '',
+            value: child.getAttribute('value') || ''
+          });
+        }
+      });
+    }
+
+    const effects: Effect[] = [];
+    const effectsRoot = Array.from(element.children).find(child => child.tagName === 'data' && child.getAttribute('name') === 'effects');
+    if (effectsRoot) {
+      Array.from(effectsRoot.children).forEach(child => {
+        if (child.tagName === 'data' && child.getAttribute('name') === 'effect') {
+          effects.push({
+            type: child.getAttribute('type') as any,
+            target: child.getAttribute('target') || '',
+            value: Number(child.getAttribute('value')) || 0
+          });
+        }
+      });
+    }
+
+    const duration = Number(getChildVal(element, 'duration') || 0);
+    const isPermanentVal = getChildVal(element, 'isPermanent');
+    const isPermanent = isPermanentVal !== null
+      ? (isPermanentVal === 'true')
+      : (duration === -1);
+
+    return {
+      id: element.getAttribute('identifier') || crypto.randomUUID(),
+      name: getChildVal(element, 'name') || '',
+      emoji: getChildVal(element, 'emoji') || '',
+      description: getChildVal(element, 'description') || '',
+      duration: duration,
+      isPermanent: isPermanent,
+      visualEffects: visualEffects,
+      effects: effects
+    };
+  }
 
   // --- 読み取りメソッド ---
   
@@ -77,7 +199,7 @@ export class StatusEffectDictionaryService {
   // --- インポート / エクスポート ---
 
   /**
-   * assets/status-effect-dictionary.xml (または .json) から初期データを読み込みます。
+   * assets/status-effect-dictionary.xml から初期データを読み込みます。
    * 既にデータが存在する場合は何もしません。
    */
   async loadDefaultDictionary(container: PluginDataContainer): Promise<void> {
@@ -87,76 +209,23 @@ export class StatusEffectDictionaryService {
       return;
     }
 
-    // 1. XMLの読み込みを試行
+    // XMLの読み込みを試行
     try {
       const response = await fetch('assets/status-effect-dictionary.xml');
       if (response.ok) {
         const xmlText = await response.text();
-        this.importFromXml(container, xmlText);
-        return;
+        this.parseXmlToContainer(container, xmlText);
       }
     } catch (e) {
-      // 無視して次へ
-    }
-
-    // 2. JSONの読み込みを試行（フォールバック）
-    try {
-      const response = await fetch('assets/status-effect-dictionary.json');
-      if (response.ok) {
-        const jsonText = await response.text();
-        this.importFromJson(container, jsonText);
-        return;
-      }
-    } catch (e) {
-      // エラーは無視してデフォルト状態になる
-    }
-        
-  }
-
-  /**
-   * JSON文字列から辞書データをインポートします（全置換）。
-   */
-  importFromJson(container: PluginDataContainer, jsonString: string): void {
-    try {
-      const json = JSON.parse(jsonString);
-      const effects = json.effects || [];
-      
-      const dictionaryRoot = this.findOrCreateDictionaryRoot(container);
-      // 全削除
-      const childrenToRemove = [...dictionaryRoot.children];
-      childrenToRemove.forEach(child => dictionaryRoot.removeChild(child));
-
-      // 追加
-      for (const effectData of effects) {
-        const duration = effectData.initialRounds || 0;
-        // JSONにisPermanentがなく、durationが-1なら永続とする（後方互換性）
-        const isPermanent = effectData.isPermanent !== undefined 
-          ? effectData.isPermanent 
-          : (duration === -1);
-
-        const effect: StatusEffect = {
-          id: effectData.identifier || crypto.randomUUID(),
-          name: effectData.name || 'Unknown',
-          emoji: effectData.emoji || '❓',
-          description: effectData.description || '',
-          duration: duration, 
-          isPermanent: isPermanent,
-          visualEffects: effectData.visualEffects || [],
-          effects: effectData.effects || []
-        };
-        const element = this.createTemplateElement(effect);
-        dictionaryRoot.appendChild(element);
-      }
-    } catch (e) {
-      console.error('Failed to import JSON:', e);
-      throw e;
+      console.error('Failed to load default dictionary:', e);
     }
   }
 
   /**
-   * XML文字列から辞書データをインポートします（全置換）。
+   * XML文字列から辞書データを解析してコンテナに展開します（全置換）。
+   * 主に初期データロード用。
    */
-  importFromXml(container: PluginDataContainer, xmlString: string): void {
+  private parseXmlToContainer(container: PluginDataContainer, xmlString: string): void {
     const xmlElement = XmlUtil.xml2element(xmlString);
     if (!xmlElement) {
       throw new Error('Invalid XML');
@@ -173,62 +242,9 @@ export class StatusEffectDictionaryService {
     childrenToRemove.forEach(child => dictionaryRoot.removeChild(child));
 
     // <data name="template"> の子要素を走査して StatusEffect に変換し、再構築
-    // DOM Element から StatusEffect オブジェクトへの変換ヘルパー
-    const parseEffectElement = (element: Element): StatusEffect => {
-      const getChildVal = (parent: Element, name: string) => {
-        const el = Array.from(parent.children).find(child => child.tagName === 'data' && child.getAttribute('name') === name);
-        return el ? XmlUtil.decodeEntityReference(el.textContent || '') : null; // nullを返せるように変更
-      };
-
-      const visualEffects: VisualEffect[] = [];
-      const visualEffectsRoot = Array.from(element.children).find(child => child.tagName === 'data' && child.getAttribute('name') === 'visualEffects');
-      if (visualEffectsRoot) {
-        Array.from(visualEffectsRoot.children).forEach(child => {
-          if (child.tagName === 'data' && child.getAttribute('name') === 'visualEffect') {
-            visualEffects.push({
-              type: child.getAttribute('type') || '',
-              value: child.getAttribute('value') || ''
-            });
-          }
-        });
-      }
-
-      const effects: Effect[] = [];
-      const effectsRoot = Array.from(element.children).find(child => child.tagName === 'data' && child.getAttribute('name') === 'effects');
-      if (effectsRoot) {
-        Array.from(effectsRoot.children).forEach(child => {
-          if (child.tagName === 'data' && child.getAttribute('name') === 'effect') {
-            effects.push({
-              type: child.getAttribute('type') as any,
-              target: child.getAttribute('target') || '',
-              value: Number(child.getAttribute('value')) || 0
-            });
-          }
-        });
-      }
-
-      const duration = Number(getChildVal(element, 'duration') || 0);
-      const isPermanentVal = getChildVal(element, 'isPermanent');
-      // isPermanentタグがない場合、durationが-1なら永続とする（後方互換性）
-      const isPermanent = isPermanentVal !== null 
-        ? (isPermanentVal === 'true') 
-        : (duration === -1);
-
-      return {
-        id: element.getAttribute('identifier') || crypto.randomUUID(),
-        name: getChildVal(element, 'name') || '',
-        emoji: getChildVal(element, 'emoji') || '',
-        description: getChildVal(element, 'description') || '',
-        duration: duration,
-        isPermanent: isPermanent,
-        visualEffects: visualEffects,
-        effects: effects
-      };
-    };
-
     Array.from(xmlElement.children).forEach(child => {
       if (child.tagName === 'data' && child.getAttribute('name') === 'template') {
-        const statusEffect = parseEffectElement(child);
+        const statusEffect = this.parseEffectElement(child);
         const newElement = this.createTemplateElement(statusEffect);
         dictionaryRoot.appendChild(newElement);
       }
@@ -242,6 +258,13 @@ export class StatusEffectDictionaryService {
     const dictionaryRoot = this.findOrCreateDictionaryRoot(container);
     // <dictionary>...</dictionary> の形式で出力
     return dictionaryRoot.toXml();
+  }
+
+  /**
+   * ステータス効果オブジェクトをエクスポート用の DataElement に変換します。
+   */
+  exportEffectToElement(effect: StatusEffect): DataElement {
+    return this.createTemplateElement(effect);
   }
 
   /**

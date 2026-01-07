@@ -54,6 +54,9 @@ export class CombatStateService {
   readonly combatants$ = this._combatants$.asObservable();
   readonly displayDataTags$ = this._displayDataTags$.asObservable();
 
+  private _damageCheckConfig$ = new BehaviorSubject<CombatFlowConfig['damageCheckConfig']>(this.config.damageCheckConfig);
+  readonly damageCheckConfig$ = this._damageCheckConfig$.asObservable();
+
   private _systemLogSenderName = new BehaviorSubject<string>(this.config.systemLogSenderName);
   readonly systemLogSenderName$ = this._systemLogSenderName.asObservable();
   
@@ -354,6 +357,9 @@ export class CombatStateService {
     if (this._displayDataTags$.value !== this.config.displayDataTags) {
       this._displayDataTags$.next(this.config.displayDataTags);
     }
+
+    // Always update the damage check config subject as it might be mutated in place
+    this._damageCheckConfig$.next(this.config.damageCheckConfig);
 
     if (this._systemLogSenderName.value !== this.config.systemLogSenderName) {
       this._systemLogSenderName.next(this.config.systemLogSenderName);
@@ -945,6 +951,7 @@ export class CombatStateService {
   saveDamageCheckConfig(config: CombatFlowConfig['damageCheckConfig']): void {
     this.config.damageCheckConfig = config;
     this.saveConfig();
+    this._damageCheckConfig$.next(this.config.damageCheckConfig);
   }
   
   /**

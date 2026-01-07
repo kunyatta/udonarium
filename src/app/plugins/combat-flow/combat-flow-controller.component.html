@@ -2,7 +2,6 @@
   <div class="tab-header">
     <button (click)="activeTab = 'combat'" [class.active]="activeTab === 'combat'">戦闘</button>
     <button (click)="activeTab = 'list'" [class.active]="activeTab === 'list'">戦況</button>
-    <button (click)="activeTab = 'settings'" [class.active]="activeTab === 'settings'">管理・設定</button>
   </div>
 
   <div class="tab-content">
@@ -250,89 +249,9 @@
       </ng-container>
       <hr>
     </div>
+  </div>
 
-    <!-- =============================================== -->
-    <!-- 管理・設定タブ                                  -->
-    <!-- =============================================== -->
-    <div [hidden]="activeTab !== 'settings'">
-      <h4>ステータス効果の管理</h4>
-      <div class="buttons">
-        <button (click)="openStatusEffectEditor()">新規作成</button>
-        <ng-container *ngIf="!isProduction">
-          <button (click)="fileInput.click()">インポート</button>
-          <button (click)="exportStatusEffectDictionary()">エクスポート</button>
-          <input #fileInput type="file" style="display: none" accept=".json,.xml" (change)="onImportStatusEffectDictionary(fileInput)">
-        </ng-container>
-      </div>
-      <div class="status-effect-list-container character-list-container">
-        <div *ngIf="statusEffectTemplates.length === 0" class="list-placeholder">
-          登録済みの効果がありません。
-        </div>
-        <div *ngFor="let effect of statusEffectTemplates" class="character-item">
-          <span class="effect-name-preview">
-            <span class="status-icon-preview">
-              <span *ngIf="effect.emoji">{{ effect.emoji }}</span>
-            </span>
-            <span>{{ effect.name }}</span>
-          </span>
-          <span class="effect-actions">
-            <button class="icon-button" title="編集" (click)="openStatusEffectEditor(effect)"><i class="material-icons">edit</i></button>
-            <button class="icon-button danger" title="削除" (click)="deleteStatusEffect(effect)"><i class="material-icons">delete</i></button>
-          </span>
-        </div>
-      </div>
-      <hr>
-      
-      <h4>表示パラメータ設定</h4>
-      <p>カードに表示するパラメータのタグ名をスペース区切りで入力します。(例: HP MP 敏捷度)</p>
-      <input type="text" class="param-input" [ngModel]="displayDataTags" (ngModelChange)="onDisplayDataTagsChange($event)" placeholder="例: HP MP 敏捷度">
-      <hr>
-
-      <h4>チャット設定</h4>
-      <div class="form-group">
-        <label>ログ出力先タブ</label>
-        <select [(ngModel)]="messageTargetTabId" (ngModelChange)="onMessageTargetTabChange($event)" class="param-input">
-          <option *ngFor="let tab of availableChatTabs" [value]="tab.identifier">{{ tab.name }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>システムログ送信元</label>
-        <select [(ngModel)]="selectedLogSenderName" (ngModelChange)="onSystemLogSenderNameChange($event)" class="param-input">
-          <option value="">指定なし（操作者）</option>
-          <option *ngFor="let char of (availableLogSenders$ | async)" [value]="char.name">{{ char.name }}</option>
-        </select>
-      </div>
-      <hr>
-
-      <h4>パネル操作</h4>
-      <div class="buttons">
-        <button (click)="toggleCombatPanel()">戦闘パネル 表示/非表示</button>
-      </div>
-      <hr>
-
-      <h4>ダメージ適用確認設定</h4>
-      <div class="form-group">
-        <label>軽減参照パラメータ</label>
-        <input type="text" class="param-input" [(ngModel)]="damageCheckConfig.referenceParams" (change)="saveDamageCheckConfig()" placeholder="例: 防護点">
-      </div>
-      <div class="checkbox-group">
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showAsIs" (change)="toggleDamageCheckButton('showAsIs')"> 「そのまま」ボタン
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showReduce" (change)="toggleDamageCheckButton('showReduce')"> 「軽減」ボタン
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showHalve" (change)="toggleDamageCheckButton('showHalve')"> 「半減」ボタン
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showZero" (change)="toggleDamageCheckButton('showZero')"> 「無効」ボタン
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showCustom" (change)="toggleDamageCheckButton('showCustom')"> 「カスタム」入力
-        </label>
-      </div>
-      <hr>
-    </div>
+  <div class="footer-controls">
+    <button class="icon-button settings-button" (click)="openSettings()" title="設定"><i class="material-icons">settings</i></button>
   </div>
 </div>

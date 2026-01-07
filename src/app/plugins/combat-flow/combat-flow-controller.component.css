@@ -433,4 +433,4 @@ button.danger:hover:not(:disabled) {
 .applied-effect-item .effect-duration {
   color: #666;
   font-size: 0.9em;
-}
+}.footer-controls { flex-shrink: 0; display: flex; justify-content: flex-end; padding: 4px; background-color: transparent; border-top: 1px solid rgba(0, 0, 0, 0.1); } .footer-controls .settings-button { background: transparent; border: none; color: #777; padding: 4px; } .footer-controls .settings-button:hover { color: #333; background-color: rgba(0,0,0,0.05); }

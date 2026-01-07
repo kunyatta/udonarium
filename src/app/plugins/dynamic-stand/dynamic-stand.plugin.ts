@@ -9,9 +9,9 @@ import { DynamicStandSettingComponent } from './dynamic-stand-setting.component'
 @Injectable()
 export class DynamicStandPlugin implements IPluginWithUI {
   readonly pluginName = 'dynamic-stand-plugin';
-  readonly name = '動的立ち絵';
+  readonly name = '立ち絵';
   readonly type = 'panel'; // 設定画面用
-  readonly icon = 'face';
+  readonly icon = 'recent_actors';
 
   readonly component = DynamicStandSettingComponent; 
   readonly width: number = 400;

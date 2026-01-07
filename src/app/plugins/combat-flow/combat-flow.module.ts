@@ -7,16 +7,16 @@ import { CombatFlowPlugin } from './combat-flow.plugin';
 import { CombatFlowPanelComponent } from './combat-flow-panel.component';
 import { CombatFlowControllerComponent } from './combat-flow-controller.component';
 import { CombatStateService } from './combat-state.service';
-import { StatusEffectEditorComponent } from './status-effect-editor.component';
 import { StatusEffectDictionaryService } from './status-effect-dictionary.service';
 import { DamageCheckPanelComponent } from './damage-check-panel.component'; // Import DamageCheckPanelComponent
+import { CombatFlowSettingsComponent } from './combat-flow-settings.component';
 
 @NgModule({
   declarations: [
     CombatFlowPanelComponent,
     CombatFlowControllerComponent,
-    StatusEffectEditorComponent,
-    DamageCheckPanelComponent // Add DamageCheckPanelComponent to declarations
+    DamageCheckPanelComponent, // Add DamageCheckPanelComponent to declarations
+    CombatFlowSettingsComponent
   ],
   imports: [
     CommonModule,

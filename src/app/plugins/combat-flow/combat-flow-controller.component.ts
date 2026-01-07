@@ -6,18 +6,14 @@ import { PluginHelperService } from '../service/plugin-helper.service';
 import { PluginDataObserverService } from '../service/plugin-data-observer.service';
 import { CombatFlowPanelComponent } from './combat-flow-panel.component';
 import { PluginDataContainer } from '../../class/plugin-data-container';
-import { EventSystem } from '@udonarium/core/system';
 import { StatusEffectDictionaryService } from './status-effect-dictionary.service';
 import { StatusEffect, ActiveStatusEffect } from './status-effect.model';
-import { StatusEffectEditorComponent } from './status-effect-editor.component';
+import { CombatFlowSettingsComponent } from './combat-flow-settings.component';
 import { CombatStateService } from './combat-state.service';
 import { CharacterDataService } from '../service/character-data.service';
 import { CombatLogService } from './combat-log.service';
 import { environment } from '../../../environments/environment';
-import { saveAs } from 'file-saver';
 import { GameCharacter } from '@udonarium/game-character';
-import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
-import { Network } from '@udonarium/core/system';
 import { ChatTab } from '@udonarium/chat-tab';
 import { ChatTabList } from '@udonarium/chat-tab-list';
 import { DamageCheckPanelComponent } from './damage-check-panel.component';
@@ -52,8 +48,6 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
   }
 
   activeTab: string = 'combat';
-  displayDataTags: string = 'HP MP'; // デフォルト値を設定
-  messageTargetTabId: string = ''; // チャット送信先タブID
 
   get availableChatTabs(): ChatTab[] {
     return ChatTabList.instance.chatTabs;
@@ -91,10 +85,6 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
   readonly addableCharacters$ = this.combatStateService.addableCharacters$;
   readonly selectedParticipantIdsToAdd$ = this.combatStateService.selectedParticipantIdsToAdd$;
 
-  // システムログ送信元関連
-  availableLogSenders$: Observable<GameCharacter[]>;
-  selectedLogSenderName: string = '';
-
   // UIハイライト用
   highlightCaster = false;
   highlightTarget = false;
@@ -102,8 +92,6 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
   highlightValue = false;
 
   // 表示用コンバタントリスト (名前解決済み)
-  // combatants$だけではキャラクターデータのロード完了(XML_LOADED)に反応できないため、
-  // charactersForSelection$ (XML_LOADEDで発火) をトリガーとして組み合わせる。
   readonly combatantsWithDetails$ = combineLatest([
     this.combatants$,
     this.charactersForSelection$.pipe(startWith([]))
@@ -149,18 +137,6 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
 
   availableParameters: { key: string, name: string }[] = []; 
 
-  // ダメージ適用確認パネル設定
-  damageCheckConfig = {
-    referenceParams: '防護点',
-    buttonConfig: {
-      showAsIs: true,
-      showReduce: true,
-      showHalve: true,
-      showZero: true,
-      showCustom: true
-    }
-  };
-
   constructor(
     private combatStateService: CombatStateService,
     private pluginUiService: PluginUiService,
@@ -172,19 +148,9 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
     private ngZone: NgZone,
     private changeDetectorRef: ChangeDetectorRef
   ) {
-    this.combatStateService.displayDataTags$.subscribe(tags => {
-      this.displayDataTags = tags;
-      this.changeDetectorRef.markForCheck();
-    });
   }
 
   ngOnInit(): void {
-    // チャット送信先の初期値を設定
-    if (this.availableChatTabs.length > 0) {
-      this.messageTargetTabId = this.availableChatTabs[0].identifier;
-      this.combatLogService.setTargetTabIdentifier(this.messageTargetTabId);
-    }
-
     // 辞書用コンテナの取得（なければ作成）
     this.dictionaryContainer = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID, 'status-effect-dictionary');
     
@@ -196,7 +162,6 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
       container => {
         this.dictionaryContainer = container; // コンテナがルームロードで入れ替わる可能性があるので参照を更新
         this.updateTemplates();
-        this.loadDamageCheckConfig(); // 設定もリロード
         // 初期データをロード（初回のみ）
         this.dictionaryService.loadDefaultDictionary(this.dictionaryContainer).then(() => {
           this.updateTemplates();
@@ -206,39 +171,6 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
 
     // 初期術者の適用（Inputsがない場合もデフォルト選択を走らせる）
     this.applyInitialCaster();
-
-    // 設定の読み込み
-    this.loadDamageCheckConfig();
-
-    // システムログ送信元キャラクターの監視と初期化
-    this.availableLogSenders$ = this.combatStateService.charactersForSelection$.pipe( // charactersForSelection$ はトリガーとして使用
-      map(() => {
-        const allCharacters = ObjectStore.instance.getObjects<GameCharacter>(GameCharacter);
-        
-        // テーブル上、またはインベントリにある全てのキャラクターを対象とする
-        const relevantCharacters = allCharacters.filter(char => 
-          char.location.name !== 'graveyard' // 墓場以外
-        );
-
-        // 名前でユニーク化し、ソートする
-        const uniqueCharsByName = new Map<string, GameCharacter>();
-        relevantCharacters.forEach(char => {
-          if (!uniqueCharsByName.has(char.name)) { // 同名キャラは最初の1つを採用
-            uniqueCharsByName.set(char.name, char);
-          }
-        });
-
-        return Array.from(uniqueCharsByName.values()).sort((a, b) => a.name.localeCompare(b.name, 'ja'));
-      }),
-      shareReplay(1)
-    );
-
-    this.combatStateService.systemLogSenderName$.pipe(
-      takeUntil(this.unsubscribe$)
-    ).subscribe(name => {
-      this.selectedLogSenderName = name;
-      this.changeDetectorRef.markForCheck();
-    });
 
     // 戦闘開始時に術者を自動選択する（維持できるなら維持する）
     this.combatStateService.isCombat$.pipe(
@@ -339,45 +271,6 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
     this.changeDetectorRef.markForCheck();
   }
 
-  // --- 辞書インポート/エクスポート ---
-
-  onImportStatusEffectDictionary(input: HTMLInputElement): void {
-    if (!this.dictionaryContainer || !input.files || input.files.length === 0) return;
-    const file = input.files[0];
-    const reader = new FileReader();
-
-    reader.onload = (e) => {
-      const content = e.target?.result as string;
-      if (!content) return;
-
-      try {
-        if (file.name.endsWith('.json')) {
-          this.dictionaryService.importFromJson(this.dictionaryContainer, content);
-        } else if (file.name.endsWith('.xml')) {
-          this.dictionaryService.importFromXml(this.dictionaryContainer, content);
-        } else {
-          alert('対応していないファイル形式です (.json, .xml)');
-          return;
-        }
-        this.updateTemplates();
-        alert('インポートが完了しました');
-      } catch (error) {
-        console.error('Import failed:', error);
-        alert('インポートに失敗しました');
-      }
-    };
-
-    reader.readAsText(file);
-    input.value = ''; // Reset input
-  }
-
-  exportStatusEffectDictionary(): void {
-    if (!this.dictionaryContainer) return;
-    const xml = this.dictionaryService.exportToXml(this.dictionaryContainer);
-    const blob = new Blob([xml], { type: 'text/xml' });
-    saveAs(blob, 'status-effect-dictionary.xml');
-  }
-
   // CombatStateServiceのstartCombatを呼び出す
   startCombat(): void {
     this.combatStateService.startCombat();
@@ -418,41 +311,13 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
     this.combatStateService.resetRound();
   }
 
-  openStatusEffectEditor(effect?: StatusEffect): void {
-    const title = effect ? 'ステータス効果の編集' : 'ステータス効果の新規作成';
-    this.pluginUiService.openAtCursor(StatusEffectEditorComponent, {
-      title: title,
-      width: 480, // 旧実装の値を使用
-      height: 640, // 旧実装の値を使用
-      isSingleton: false, // 複数開けるようにする
-      // layout: 'full-auto', // 自動レイアウトを無効にする
-      inputs: { // エディタコンポーネントにデータを渡す
-        effect: effect,
-        pluginId: this.PLUGIN_ID,
-        fileNameHint: 'status-effect-dictionary'
-      }
-    });
-  }
-
-  deleteStatusEffect(effect: StatusEffect): void {
-    if (!this.dictionaryContainer || !confirm(`「${effect.name}」を削除しますか？`)) return;
-    this.dictionaryService.removeTemplate(this.dictionaryContainer, effect.id);
-    this.updateTemplates();
-  }
-
-  toggleCombatPanel(): void {
-    const panel = this.pluginUiService.find(CombatFlowPanelComponent);
-    if (panel) {
-      this.pluginUiService.close(CombatFlowPanelComponent);
-    } else {
-      this.pluginUiService.open(CombatFlowPanelComponent, {
-        title: '戦闘パネル',
-        width: 800,
-        height: 300,
-        isSingleton: true,
-        layout: 'full-auto'
-      });
-    }
+  openSettings(): void {
+    const option: PluginPanelOption = {
+      title: '戦闘設定',
+      width: 600,
+      height: 500
+    };
+    this.pluginUiService.open(CombatFlowSettingsComponent, option);
   }
 
   getCharacterName(characterId: string): string {
@@ -504,35 +369,6 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
       this.combatStateService.addParticipants(Array.from(selectedIds));
       this.isAddingParticipant = false; // 追加後にモードを終了
     });
-  }
-
-  onDisplayDataTagsChange(tags: string): void {
-    this.combatStateService.updateDisplayDataTags(tags);
-  }
-
-  onMessageTargetTabChange(tabIdentifier: string): void {
-    this.messageTargetTabId = tabIdentifier;
-    this.combatLogService.setTargetTabIdentifier(tabIdentifier);
-  }
-
-  onSystemLogSenderNameChange(name: string): void {
-    this.combatStateService.setSystemLogSenderName(name);
-  }
-
-  // --- ダメージ適用確認パネル設定 ---
-
-  loadDamageCheckConfig(): void {
-    this.damageCheckConfig = this.combatStateService.getDamageCheckConfig();
-    this.changeDetectorRef.markForCheck();
-  }
-
-  saveDamageCheckConfig(): void {
-    this.combatStateService.saveDamageCheckConfig(this.damageCheckConfig);
-  }
-
-  toggleDamageCheckButton(key: string): void {
-    this.damageCheckConfig.buttonConfig[key] = !this.damageCheckConfig.buttonConfig[key];
-    this.saveDamageCheckConfig();
   }
 
   // --- 戦闘操作UI用メソッド ---
@@ -623,7 +459,7 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
         targets: targets,
         baseValue: this.parameterValue,
         targetParamName: elementName,
-        config: this.damageCheckConfig
+        config: this.combatStateService.getDamageCheckConfig() // ローカルではなくServiceから取得
       }
     });
   }

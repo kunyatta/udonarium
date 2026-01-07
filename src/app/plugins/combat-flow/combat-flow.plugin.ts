@@ -13,7 +13,7 @@ import { GameCharacter } from '@udonarium/game-character';
 export const COMBAT_FLOW_UI_DEFAULTS = {
   CONTROLLER: {
     width: 480,
-    height: 720,
+    height: 660,
     title: '戦闘コントローラ'
   },
   PANEL: {

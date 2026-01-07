@@ -12,6 +12,7 @@ import { DataSummarySetting } from '@udonarium/data-summary-setting';
 import { Room } from '@udonarium/room';
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store'; // ----- MODIFICATION (kunyatta) for PluginSystem -----
 import { PluginDataContainer } from '../class/plugin-data-container'; // ----- MODIFICATION (kunyatta) for PluginSystem -----
+import { DataElement } from '@udonarium/data-element'; // ----- MODIFICATION (kunyatta) for PluginSystem -----
 
 import Beautify from 'vkbeautify';
 
@@ -84,6 +85,42 @@ export class SaveDataService {
   saveGameObjectAsync(gameObject: GameObject, fileName: string = 'xml_data', updateCallback?: UpdateCallback): Promise<void> {
     return SaveDataService.queue.add((resolve, reject) => resolve(this._saveGameObjectAsync(gameObject, fileName, updateCallback)));
   }
+
+  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  /**
+   * 任意の DataElement を単一のXMLファイルとしてZIP圧縮して保存します。
+   * プラグインが独自のデータ単位（例：ステータス効果単体、特定の設定セットなど）をエクスポートするために使用します。
+   *
+   * @param element 保存対象の DataElement
+   * @param xmlFileName ZIP内に格納されるXMLファイル名（拡張子なし）
+   * @param zipFileName ダウンロードされるZIPファイル名（拡張子なし）
+   */
+  saveDataElementAsync(element: DataElement, xmlFileName: string = 'data', zipFileName: string = 'data'): Promise<void> {
+    return SaveDataService.queue.add((resolve, reject) => resolve(this._saveDataElementAsync(element, xmlFileName, zipFileName)));
+  }
+
+  private _saveDataElementAsync(element: DataElement, xmlFileName: string, zipFileName: string): Promise<void> {
+    // DataElementは既にXML構造を持っているので、そのまま文字列化する
+    let xml: string = this.convertToXml(element.toXml());
+    return this._saveXmlAsZipAsync(xml, xmlFileName, zipFileName);
+  }
+
+  /**
+   * 任意の XML 文字列を単一のXMLファイルとしてZIP圧縮して保存します。
+   * タグ名をカスタマイズしたい場合など、DataElementを経由しない保存に使用します。
+   */
+  saveXmlAsZipAsync(xml: string, xmlFileName: string = 'data', zipFileName: string = 'data'): Promise<void> {
+    return SaveDataService.queue.add((resolve, reject) => resolve(this._saveXmlAsZipAsync(this.convertToXml(xml), xmlFileName, zipFileName)));
+  }
+
+  private _saveXmlAsZipAsync(xml: string, xmlFileName: string, zipFileName: string): Promise<void> {
+    let files: File[] = [];
+    files.push(new File([xml], xmlFileName + '.xml', { type: 'text/plain' }));
+    files = files.concat(this.searchImageFiles(xml));
+
+    return this.saveAsync(files, this.appendTimestamp(zipFileName));
+  }
+  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
 
   private _saveGameObjectAsync(gameObject: GameObject, fileName: string = 'xml_data', updateCallback?: UpdateCallback): Promise<void> {
     let files: File[] = [];
