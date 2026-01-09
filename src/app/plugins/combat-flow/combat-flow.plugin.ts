@@ -9,6 +9,7 @@ import { EventSystem } from '@udonarium/core/system';
 import { PluginDataContainer } from '../../class/plugin-data-container';
 import { UIExtensionService } from '../service/ui-extension.service';
 import { GameCharacter } from '@udonarium/game-character';
+import { PLUGIN_ID } from './combat-flow.constants';
 
 export const COMBAT_FLOW_UI_DEFAULTS = {
   CONTROLLER: {
@@ -25,7 +26,7 @@ export const COMBAT_FLOW_UI_DEFAULTS = {
 
 @Injectable()
 export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
-  readonly pluginName: string = 'combat-flow';
+  readonly pluginName: string = PLUGIN_ID;
   readonly name: string = COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.title;
   readonly type: 'panel' = 'panel';
   readonly icon: string = 'swords'; // ----- MODIFICATION (kunyatta) -----
@@ -34,7 +35,7 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
   width: number = COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.width;
   height: number = COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.height;
 
-  private readonly PLUGIN_ID = 'combat-flow';
+  private readonly PLUGIN_ID = PLUGIN_ID;
   private readonly FILE_NAME_HINT = 'default';
   private observer: { unsubscribe: () => void };
 

@@ -3,7 +3,10 @@
 // --- システム定数 ---
 export const PLUGIN_ID = 'combat-flow';
 export const FILE_NAME_HINT = 'default';
+export const DICTIONARY_FILE_NAME_HINT = 'status-effect-dictionary';
 export const PERSISTENT_ID_TAG = '_combat_flow_persistent_id';
+export const DATA_TAG_STATUS_EFFECT_DATA = 'status-effect-data';
+export const DATA_TAG_STATUS_EFFECTS = 'status_effects';
 
 // --- ダメージ適用パネル関連 ---
 export enum DamageApplyMode {

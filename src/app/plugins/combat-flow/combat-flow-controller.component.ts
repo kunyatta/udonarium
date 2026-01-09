@@ -17,6 +17,7 @@ import { GameCharacter } from '@udonarium/game-character';
 import { ChatTab } from '@udonarium/chat-tab';
 import { ChatTabList } from '@udonarium/chat-tab-list';
 import { DamageCheckPanelComponent } from './damage-check-panel.component';
+import { DICTIONARY_FILE_NAME_HINT, PLUGIN_ID } from './combat-flow.constants';
 
 @Component({
   selector: 'app-combat-flow-controller',
@@ -60,7 +61,7 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
     return environment.production;
   }
 
-  private readonly PLUGIN_ID = 'combat-flow';
+  private readonly PLUGIN_ID = PLUGIN_ID;
   private readonly FILE_NAME_HINT = 'default';
   private observer: { unsubscribe: () => void };
   private dictionaryContainer: PluginDataContainer | null = null; // DictionaryService用コンテナ
@@ -152,13 +153,13 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // 辞書用コンテナの取得（なければ作成）
-    this.dictionaryContainer = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID, 'status-effect-dictionary');
+    this.dictionaryContainer = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID, DICTIONARY_FILE_NAME_HINT);
     
     // 辞書コンテナの更新監視を開始
     this.observer = this.observerService.observe(
       this,
       this.PLUGIN_ID,
-      'status-effect-dictionary', // fileNameHintも指定
+      DICTIONARY_FILE_NAME_HINT, // fileNameHintも指定
       container => {
         this.dictionaryContainer = container; // コンテナがルームロードで入れ替わる可能性があるので参照を更新
         this.updateTemplates();

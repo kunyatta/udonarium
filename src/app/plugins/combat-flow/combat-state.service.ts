@@ -18,7 +18,7 @@ import { StatusEffectDictionaryService } from './status-effect-dictionary.servic
 import { CombatLogService } from './combat-log.service';
 import { ChatTab } from '@udonarium/chat-tab';
 import { ChatTabList } from '@udonarium/chat-tab-list';
-import { PLUGIN_ID, FILE_NAME_HINT, PERSISTENT_ID_TAG, DEFAULT_DAMAGE_CHECK_CONFIG } from './combat-flow.constants';
+import { PLUGIN_ID, FILE_NAME_HINT, PERSISTENT_ID_TAG, DEFAULT_DAMAGE_CHECK_CONFIG, DATA_TAG_STATUS_EFFECTS } from './combat-flow.constants';
 import { PluginMapperService } from '../service/plugin-mapper.service';
 import { CombatFlowConfig } from './combat-flow-config.model';
 import { ChatListenerService } from '../service/chat-listener.service';
@@ -470,7 +470,7 @@ export class CombatStateService {
       // this.removeTurnHighlightFromCharacter(character);
 
       // status_effects の削除
-      const statusEffectsRoot = character.detailDataElement.getFirstElementByName('status_effects');
+      const statusEffectsRoot = character.detailDataElement.getFirstElementByName(DATA_TAG_STATUS_EFFECTS);
       if (statusEffectsRoot) {
         character.detailDataElement.removeChild(statusEffectsRoot);
       }
@@ -541,7 +541,7 @@ export class CombatStateService {
     for (const character of allCharacters) {
       if (!character.detailDataElement) continue;
 
-      const statusEffectsRoot = character.detailDataElement.getFirstElementByName('status_effects');
+      const statusEffectsRoot = character.detailDataElement.getFirstElementByName(DATA_TAG_STATUS_EFFECTS);
       if (!statusEffectsRoot) continue;
 
       const childrenToRemove: DataElement[] = [];
@@ -605,7 +605,7 @@ export class CombatStateService {
     for (const character of allCharacters) {
       if (!character.detailDataElement) continue;
 
-      const statusEffectsRoot = character.detailDataElement.getFirstElementByName('status_effects');
+      const statusEffectsRoot = character.detailDataElement.getFirstElementByName(DATA_TAG_STATUS_EFFECTS);
       if (!statusEffectsRoot) continue;
 
       const childrenToRemove: DataElement[] = [];
@@ -730,9 +730,9 @@ export class CombatStateService {
     const character = this.characterDataService.getGameCharacter(targetPersistentId);
     if (!character || !character.detailDataElement) return;
 
-    let statusEffectsRoot = character.detailDataElement.getFirstElementByName('status_effects');
+    let statusEffectsRoot = character.detailDataElement.getFirstElementByName(DATA_TAG_STATUS_EFFECTS);
     if (!statusEffectsRoot) {
-      statusEffectsRoot = DataElement.create('status_effects', '', {});
+      statusEffectsRoot = DataElement.create(DATA_TAG_STATUS_EFFECTS, '', {});
       character.detailDataElement.appendChild(statusEffectsRoot);
     }
 
@@ -749,7 +749,7 @@ export class CombatStateService {
     const character = this.characterDataService.getGameCharacter(targetPersistentId);
     if (!character || !character.detailDataElement) return;
 
-    const statusEffectsRoot = character.detailDataElement.getFirstElementByName('status_effects');
+    const statusEffectsRoot = character.detailDataElement.getFirstElementByName(DATA_TAG_STATUS_EFFECTS);
     if (!statusEffectsRoot) return;
 
     const targetElement = statusEffectsRoot.children.find(child => child.identifier === effectInstanceId);
@@ -770,7 +770,7 @@ export class CombatStateService {
     const character = this.characterDataService.getGameCharacter(targetPersistentId);
     if (!character || !character.detailDataElement) return;
 
-    const statusEffectsRoot = character.detailDataElement.getFirstElementByName('status_effects');
+    const statusEffectsRoot = character.detailDataElement.getFirstElementByName(DATA_TAG_STATUS_EFFECTS);
     if (!statusEffectsRoot) return;
 
     const targetElement = statusEffectsRoot.children.find(child => child.identifier === effectInstanceId);
@@ -824,7 +824,7 @@ export class CombatStateService {
       return [];
     }
 
-    const statusEffectsRoot = character.detailDataElement.getFirstElementByName('status_effects');
+    const statusEffectsRoot = character.detailDataElement.getFirstElementByName(DATA_TAG_STATUS_EFFECTS);
     if (!statusEffectsRoot) {
       return [];
     }

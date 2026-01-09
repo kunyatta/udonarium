@@ -18,6 +18,7 @@ import { PluginDataContainer } from '../../class/plugin-data-container';
 import { CharacterDataService } from '../service/character-data.service';
 import { SaveDataService } from '../../service/save-data.service';
 import { DataElement } from '@udonarium/data-element';
+import { DICTIONARY_FILE_NAME_HINT, PLUGIN_ID, DATA_TAG_STATUS_EFFECT_DATA } from './combat-flow.constants';
 
 @Component({
   selector: 'app-combat-flow-settings',
@@ -29,7 +30,7 @@ export class CombatFlowSettingsComponent implements OnInit, OnDestroy {
   private unsubscribe$ = new Subject<void>();
 
   // --- ステータス効果管理用 ---
-  private readonly PLUGIN_ID = 'combat-flow';
+  private readonly PLUGIN_ID = PLUGIN_ID;
   private dictionaryContainer: PluginDataContainer | null = null;
   statusEffectTemplates: StatusEffect[] = [];
   selectedEffectIndex: number = -1;
@@ -93,10 +94,10 @@ export class CombatFlowSettingsComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     // ステータス効果辞書の初期化
-    this.dictionaryContainer = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID, 'status-effect-dictionary');
+    this.dictionaryContainer = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID, DICTIONARY_FILE_NAME_HINT);
     
     // 辞書更新の監視
-    this.observerService.observe(this, this.PLUGIN_ID, 'status-effect-dictionary', container => {
+    this.observerService.observe(this, this.PLUGIN_ID, DICTIONARY_FILE_NAME_HINT, container => {
       this.dictionaryContainer = container;
       this.updateTemplates();
       // 初回ロード
@@ -246,7 +247,7 @@ export class CombatFlowSettingsComponent implements OnInit, OnDestroy {
     this.syncFormModelWithUi();
 
     const effectElement = this.dictionaryService.exportEffectToElement(this.editingEffect);
-    const rootElement = DataElement.create('status-effect-data', '', {}, '');
+    const rootElement = DataElement.create(DATA_TAG_STATUS_EFFECT_DATA, '', {}, '');
     rootElement.appendChild(effectElement);
 
     this.saveDataService.saveDataElementAsync(rootElement, 'status-effect', `ステータス効果_${this.editingEffect.name}`);

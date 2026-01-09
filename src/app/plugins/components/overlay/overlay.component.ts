@@ -255,6 +255,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
   private startExpirationTimer() {
     this.stopExpirationTimer();
     if (!this.overlayObject || this.overlayObject.expirationTime <= 0) return;
+    if (this.overlayObject.type === 'standing-stage') return; // 舞台オブジェクトはサービス側で管理するためタイマー不要
     this.expirationTimer = setInterval(() => {
       this.checkExpiration();
       if (!this.overlayObject) this.stopExpirationTimer();
@@ -287,12 +288,6 @@ export class OverlayComponent implements OnInit, OnDestroy {
    */
   private checkExpiration() {
     if (!this.overlayObject || this.overlayObject.expirationTime <= 0) return;
-
-    // ----- MODIFICATION (Gemini) -----
-    // 舞台オブジェクト（standing-stage）はサービス側でアクターの寿命を管理するため、
-    // ここでの個別の寿命チェック（オブジェクト自体の破棄）はスキップする。
-    if (this.overlayObject.type === 'standing-stage') return;
-    // ---------------------------------
 
     const now = Date.now();
     const timeLeft = this.overlayObject.expirationTime - now;

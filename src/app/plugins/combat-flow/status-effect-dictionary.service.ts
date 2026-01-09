@@ -5,13 +5,14 @@ import { XmlUtil } from '@udonarium/core/system/util/xml-util';
 import { StatusEffect, Effect, VisualEffect } from './status-effect.model';
 import { EventSystem } from '@udonarium/core/system';
 import { PluginHelperService } from '../service/plugin-helper.service';
+import { DICTIONARY_FILE_NAME_HINT, PLUGIN_ID, DATA_TAG_STATUS_EFFECT_DATA } from './combat-flow.constants';
 
 @Injectable({
   providedIn: 'root'
 })
 export class StatusEffectDictionaryService implements OnDestroy {
 
-  private readonly PLUGIN_ID = 'combat-flow';
+  private readonly PLUGIN_ID = PLUGIN_ID;
 
   constructor(
     private pluginHelper: PluginHelperService
@@ -30,7 +31,7 @@ export class StatusEffectDictionaryService implements OnDestroy {
         if (!xmlElement) return;
 
         // エクスポート機能で保存されたステータス効果データ（<data name="status-effect-data">）を検知
-        if (xmlElement.tagName === 'data' && xmlElement.getAttribute('name') === 'status-effect-data') {
+        if (xmlElement.tagName === 'data' && xmlElement.getAttribute('name') === DATA_TAG_STATUS_EFFECT_DATA) {
           console.log('[StatusEffectDictionary] Importing status effect data...');
           this.importStatusEffectData(xmlElement);
         }
@@ -42,13 +43,13 @@ export class StatusEffectDictionaryService implements OnDestroy {
    */
   private importStatusEffectData(rootElement: Element) {
     // 1. まず既存のコンテナを探す (優先度: status-effect-dictionary > default)
-    let container = this.pluginHelper.findContainer(this.PLUGIN_ID, 'status-effect-dictionary') 
+    let container = this.pluginHelper.findContainer(this.PLUGIN_ID, DICTIONARY_FILE_NAME_HINT) 
                  || this.pluginHelper.findContainer(this.PLUGIN_ID, 'default');
 
     // 2. 見つからなければ、正規のヒントで新規作成する
     if (!container) {
-      console.log('[StatusEffectDictionary] Container not found. Creating new one with hint "status-effect-dictionary"...');
-      container = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID, 'status-effect-dictionary');
+      console.log(`[StatusEffectDictionary] Container not found. Creating new one with hint "${DICTIONARY_FILE_NAME_HINT}"...`);
+      container = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID, DICTIONARY_FILE_NAME_HINT);
     }
 
     // 子要素の <template> を探して取り込む
