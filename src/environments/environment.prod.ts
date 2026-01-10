@@ -5,6 +5,7 @@ import { SimpleAlarmModule } from '../app/plugins/simple-alarm/simple-alarm.modu
 import { CutInModule } from '../app/plugins/cut-in/cut-in.module';
 import { DynamicStandPluginModule } from '../app/plugins/dynamic-stand/dynamic-stand.module';
 import { RollResultChartModule } from '../app/plugins/roll-result-chart/roll-result-chart.module';
+import { TargetSelectorModule } from '../app/plugins/target-selector/target-selector.module';
 import { LogoutModule } from '../app/plugins/logout/logout.module';
 
 export const environment = {
@@ -17,6 +18,7 @@ export const environment = {
     CutInModule,
     DynamicStandPluginModule,
     RollResultChartModule,
+    TargetSelectorModule,
     LogoutModule
   ]
 };

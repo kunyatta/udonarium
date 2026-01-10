@@ -11,6 +11,7 @@ import { CutInModule } from '../app/plugins/cut-in/cut-in.module';
 import { DynamicStandPluginModule } from '../app/plugins/dynamic-stand/dynamic-stand.module';
 import { LogoutModule } from '../app/plugins/logout/logout.module';
 import { RollResultChartModule } from '../app/plugins/roll-result-chart/roll-result-chart.module';
+import { TargetSelectorModule } from '../app/plugins/target-selector/target-selector.module';
 
 export const environment = {
   production: false,
@@ -27,6 +28,7 @@ export const environment = {
     OverlayTestPluginModule,
     DynamicStandPluginModule,
     RollResultChartModule,
+    TargetSelectorModule,
     LogoutModule
   ]
 };
