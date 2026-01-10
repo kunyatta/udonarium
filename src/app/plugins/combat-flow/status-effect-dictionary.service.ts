@@ -26,14 +26,14 @@ export class StatusEffectDictionaryService implements OnDestroy {
 
   private registerEvents() {
     EventSystem.register(this)
-      .on('XML_LOADED', event => {
+      .on('XML_LOADED', async event => {
         const xmlElement: Element = event.data.xmlElement;
         if (!xmlElement) return;
 
         // エクスポート機能で保存されたステータス効果データ（<data name="status-effect-data">）を検知
         if (xmlElement.tagName === 'data' && xmlElement.getAttribute('name') === DATA_TAG_STATUS_EFFECT_DATA) {
           console.log('[StatusEffectDictionary] Importing status effect data...');
-          this.importStatusEffectData(xmlElement);
+          await this.importStatusEffectData(xmlElement);
         }
       });
   }
@@ -41,7 +41,7 @@ export class StatusEffectDictionaryService implements OnDestroy {
   /**
    * インポートされたXML要素からステータス効果を取り込み、辞書に追加します。
    */
-  private importStatusEffectData(rootElement: Element) {
+  private async importStatusEffectData(rootElement: Element) {
     // 1. まず既存のコンテナを探す (優先度: status-effect-dictionary > default)
     let container = this.pluginHelper.findContainer(this.PLUGIN_ID, DICTIONARY_FILE_NAME_HINT) 
                  || this.pluginHelper.findContainer(this.PLUGIN_ID, 'default');
@@ -51,6 +51,9 @@ export class StatusEffectDictionaryService implements OnDestroy {
       console.log(`[StatusEffectDictionary] Container not found. Creating new one with hint "${DICTIONARY_FILE_NAME_HINT}"...`);
       container = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID, DICTIONARY_FILE_NAME_HINT);
     }
+
+    // インポート前にデフォルトをロード（空の場合のみ）
+    await this.loadDefaultDictionary(container);
 
     // 子要素の <template> を探して取り込む
     Array.from(rootElement.children).forEach(child => {
