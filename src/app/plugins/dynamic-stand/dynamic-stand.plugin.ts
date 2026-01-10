@@ -60,6 +60,7 @@ export class DynamicStandPlugin implements IPluginWithUI {
       condition: (context) => {
         return true; 
       },
+      description: 'チャットの「台詞」に反応する立ち絵機能をオンオフします',
       priority: 10
     });
   }

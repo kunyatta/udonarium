@@ -14,7 +14,7 @@ export interface EmoteData {
   identifier?: string;
   icon: string;
   label: string;
-  soundIdentifier?: string; // 将来用
+  soundIdentifier?: string;
 }
 
 @Injectable({
@@ -226,8 +226,9 @@ export class EmoteManagerService implements OnDestroy {
 
   private registerUI() {
     this.uiExtension.registerAction('chat-input', {
-      name: 'エモート',
+      name: '▼',
       icon: 'sentiment_satisfied_alt',
+      description: '立ち絵用のエモートパレットを開きます',
       action: (context: any, pointer: { x: number, y: number }) => this.openEmoteMenu(context, pointer),
       priority: 20
     });
