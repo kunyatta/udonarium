@@ -43,8 +43,13 @@ export class PluginUiService {
     };
 
     // ルームロード時にプラグインパネルを一括で閉じる
-    EventSystem.register(this).on('XML_LOADED', () => {
-      this.closeAllOnRoomLoad();
+    EventSystem.register(this).on('XML_LOADED', event => {
+      const xmlElement: Element = event.data.xmlElement;
+      // ルームデータ（<data name="room"> または <room>）が読み込まれた時のみ、全パネルを閉じる
+      // 部分的なデータロード（プラグイン設定や画像追加）ではパネルを維持する（Udonarium標準挙動準拠）
+      if (xmlElement && (xmlElement.getAttribute('name') === 'room' || xmlElement.tagName === 'room')) {
+        this.closeAllOnRoomLoad();
+      }
     });
   }
 
