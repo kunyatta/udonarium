@@ -4,9 +4,10 @@ import { Subject, Observable } from 'rxjs';
 export type ExtensionLocation = 'main-menu' | 'main-menu-bottom' | 'context-menu' | 'chat-window' | 'character-sheet' | 'chat-input' | 'chat-input-quick' | 'chat-send';
 
 export interface ExtensionAction {
-  name: string;
+  name: string | ((context?: any) => string); // ----- MODIFICATION (Gemini) for TargetSelectorPlugin -----
   icon?: string | ((context?: any) => string);
   iconClass?: string; // ----- MODIFICATION (kunyatta) -----
+  description?: string | ((context?: any) => string);
   action: (context?: any, pointer?: { x: number, y: number }) => void;
   condition?: (context?: any) => boolean;
   separator?: boolean;

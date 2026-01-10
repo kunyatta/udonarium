@@ -217,6 +217,20 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     return action.icon(object);
   }
 
+  getExtensionDescription(action: ExtensionAction): string {
+    if (!action.description) return '';
+    if (typeof action.description === 'string') return action.description;
+    
+    let object = ObjectStore.instance.get(this.sendFrom);
+    return action.description(object);
+  }
+
+  getExtensionName(action: ExtensionAction): string {
+    if (typeof action.name === 'string') return action.name;
+    let object = ObjectStore.instance.get(this.sendFrom);
+    return action.name(object);
+  }
+
   insertEmote(emote: string) {
     const textArea: HTMLTextAreaElement = this.textAreaElementRef.nativeElement;
     const start = textArea.selectionStart;

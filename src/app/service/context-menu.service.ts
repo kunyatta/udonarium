@@ -93,7 +93,7 @@ export class ContextMenuService {
 
             if (targetIndex !== -1) {
               const items = group.map(ext => ({
-                name: ext.name,
+                name: typeof ext.name === 'function' ? ext.name(context) : ext.name,
                 action: () => ext.action(context, position)
               }));
               // セクションの終わりに入れるため、項目の前に区切り線を入れたい場合はext.separatorで対応
@@ -111,7 +111,7 @@ export class ContextMenuService {
             childPanelService.actions.push(ContextMenuSeparator);
             trailing.forEach(ext => {
               childPanelService.actions.push({
-                name: ext.name,
+                name: typeof ext.name === 'function' ? ext.name(context) : ext.name,
                 action: () => ext.action(context, position)
               });
             });
