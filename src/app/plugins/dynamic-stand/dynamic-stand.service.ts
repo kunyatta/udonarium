@@ -207,7 +207,7 @@ export class DynamicStandPluginService implements OnDestroy {
       finalSpeechText = existing.speechText + '\n' + speechText;
     }
 
-    const emoteRegex = /(\p{Extended_Pictographic}|[!?！？])/u;
+    const emoteRegex = /(\p{Extended_Pictographic}|[！？])/u;
     const emoteMatch = textWithoutKeyword.match(emoteRegex);
     const emoteKeyword = emoteMatch ? emoteMatch[0] : '';
 
