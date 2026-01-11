@@ -5,7 +5,10 @@
     </div>
   </ng-container>
   <ng-container *ngIf="isCombat$ | async">
-    <h4 class="round-indicator">Round {{ (round$ | async) | number:'2.0-0' }}</h4>
+    <h4 class="round-indicator">
+      <button class="help-button" (click)="openHelp($event)" title="操作ヘルプを表示">?</button>
+      <span>Round {{ (round$ | async) | number:'2.0-0' }}</span>
+    </h4>
     <div class="combatants-container">
       <div *ngFor="let vm of (viewModels$ | async); let i = index" 
            class="combatant-card" 

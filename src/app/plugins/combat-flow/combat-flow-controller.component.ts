@@ -5,6 +5,7 @@ import { PluginUiService, PluginPanelOption } from '../service/plugin-ui.service
 import { PluginHelperService } from '../service/plugin-helper.service';
 import { PluginDataObserverService } from '../service/plugin-data-observer.service';
 import { CombatFlowPanelComponent } from './combat-flow-panel.component';
+import { CombatFlowControllerHelpComponent } from './combat-flow-controller-help.component';
 import { PluginDataContainer } from '../../class/plugin-data-container';
 import { StatusEffectDictionaryService } from './status-effect-dictionary.service';
 import { StatusEffect, ActiveStatusEffect } from './status-effect.model';
@@ -310,6 +311,16 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
   // CombatStateServiceのresetRoundを呼び出す
   resetRound(): void {
     this.combatStateService.resetRound();
+  }
+
+  openHelp(event: MouseEvent): void {
+    event.stopPropagation();
+    this.pluginUiService.openAtCursor(CombatFlowControllerHelpComponent, {
+      title: '戦闘操作クイックガイド',
+      width: 340,
+      height: 380,
+      isSingleton: true
+    });
   }
 
   openSettings(): void {

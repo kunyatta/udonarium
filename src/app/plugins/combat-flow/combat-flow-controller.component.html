@@ -33,7 +33,7 @@
       </ng-container>
       <!-- 戦闘中のUI -->
       <ng-container *ngIf="isCombat$ | async">
-        <h4>戦闘操作</h4>
+        <h4 class="title-with-help">戦闘操作 <button class="help-button-mini" (click)="openHelp($event)" title="操作ヘルプ">?</button></h4>
         
         <!-- 行動宣言エリア (仮) -->
         <div class="action-declaration">

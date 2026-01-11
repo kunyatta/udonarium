@@ -153,6 +153,10 @@
 }
 
 .round-indicator {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
   padding: 6px 10px;
   border: 1px solid #666;
   background-color: #333;
@@ -165,4 +169,30 @@
   height: fit-content;
   margin-top: auto;
   margin-bottom: auto;
+}
+
+.help-button {
+  position: absolute;
+  right: 6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 1px solid #aaa;
+  background-color: #555;
+  color: #fff;
+  font-size: 12px;
+  font-weight: bold;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  line-height: 1;
+  transition: all 0.2s;
+}
+
+.help-button:hover {
+  background-color: #777;
+  border-color: #fff;
+  transform: scale(1.1);
 }

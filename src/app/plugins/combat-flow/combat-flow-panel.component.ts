@@ -13,6 +13,7 @@ import { EventSystem } from '@udonarium/core/system';
 import { ContextMenuService, ContextMenuAction } from 'service/context-menu.service';
 import { PluginUiService } from '../service/plugin-ui.service';
 import { CombatFlowControllerComponent } from './combat-flow-controller.component';
+import { CombatFlowHelpComponent } from './combat-flow-help.component';
 import { COMBAT_FLOW_UI_DEFAULTS } from './combat-flow.plugin';
 import { GameCharacterSheetComponent } from 'component/game-character-sheet/game-character-sheet.component';
 import { ChatPaletteComponent } from 'component/chat-palette/chat-palette.component';
@@ -210,6 +211,16 @@ export class CombatFlowPanelComponent implements OnInit, OnDestroy {
   }
 
   // --- User Actions ---
+
+  openHelp(event: MouseEvent): void {
+    event.stopPropagation();
+    this.pluginUiService.openAtCursor(CombatFlowHelpComponent, {
+      title: '戦闘パネルの操作ヘルプ',
+      width: 320,
+      height: 330,
+      isSingleton: true
+    });
+  }
 
   onClickCharacter(event: MouseEvent, combatant: Combatant): void {
     if (event.ctrlKey || event.metaKey) {
