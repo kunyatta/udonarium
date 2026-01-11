@@ -61,7 +61,8 @@
       <!-- クイックアクション用（アイコンのみ・枠なし） -->
       <button *ngFor="let quick of chatInputQuickExtensions" (click)="quick.action({ character: $any(ObjectStore.instance.get(sendFrom)), component: this }); $event.stopPropagation()"
         [title]="getExtensionDescription(quick) || getExtensionName(quick)"
-        style="background: transparent; border: none; padding: 0 4px; cursor: pointer; font-size: 1.2rem; min-width: 28px; height: 24px; display: inline-flex; align-items: center; justify-content: center; color: white; opacity: 0.8;">
+        style="background: transparent; border: none; padding: 0 4px; cursor: pointer; font-size: 1.2rem; min-width: 28px; height: 24px; display: inline-flex; align-items: center; justify-content: center; opacity: 0.8;"
+        [style.color]="getExtensionColor(quick) || 'white'">
         <i style="font-style: normal;">{{ getExtensionIcon(quick) }}</i>
         <span *ngIf="!quick.icon">{{ getExtensionName(quick) }}</span>
       </button>

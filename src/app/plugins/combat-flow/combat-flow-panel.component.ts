@@ -17,6 +17,7 @@ import { COMBAT_FLOW_UI_DEFAULTS } from './combat-flow.plugin';
 import { GameCharacterSheetComponent } from 'component/game-character-sheet/game-character-sheet.component';
 import { ChatPaletteComponent } from 'component/chat-palette/chat-palette.component';
 import { ActiveStatusEffect, StatusEffect, VisualEffect } from './status-effect.model';
+import { TabletopSelectionService, SelectionState } from 'service/tabletop-selection.service';
 
 interface CombatantViewModel {
   combatant: Combatant;
@@ -25,6 +26,7 @@ interface CombatantViewModel {
   parameters: DataElement[]; // 表示用パラメータ
   isCurrentTurn: boolean;
   activeStatusEffects: ActiveStatusEffect[]; // 追加
+  isSelected: boolean; // 追加
 }
 
 @Component({
@@ -51,7 +53,8 @@ export class CombatFlowPanelComponent implements OnInit, OnDestroy {
     private changeDetectorRef: ChangeDetectorRef,
     private ngZone: NgZone,
     private contextMenuService: ContextMenuService,
-    private pluginUiService: PluginUiService
+    private pluginUiService: PluginUiService,
+    private selectionService: TabletopSelectionService
   ) {
     this.viewModels$ = combineLatest([
       this.combatStateService.combatants$,
@@ -100,6 +103,10 @@ export class CombatFlowPanelComponent implements OnInit, OnDestroy {
         if (event.data.aliasName === 'data') {
            this.ngZone.run(() => this.refreshTrigger$.next());
         }
+      })
+      .on('UPDATE_SELECTION', event => {
+        // 全体、または表示中のキャラクターの選択状態が変わった際に更新
+        this.ngZone.run(() => this.refreshTrigger$.next());
       });
   }
 
@@ -122,13 +129,17 @@ export class CombatFlowPanelComponent implements OnInit, OnDestroy {
     // ステータス効果を取得
     const activeStatusEffects = this.getActiveStatusEffects(character.identifier);
 
+    // 選択状態を取得
+    const isSelected = this.selectionService.state(character) !== SelectionState.NONE;
+
     return of({
       combatant: combatant,
       character: character,
       image$: image$,
       parameters: parameters,
       isCurrentTurn: combatant.characterId === currentCharacterId,
-      activeStatusEffects: activeStatusEffects
+      activeStatusEffects: activeStatusEffects,
+      isSelected: isSelected
     });
   }
 
@@ -200,7 +211,19 @@ export class CombatFlowPanelComponent implements OnInit, OnDestroy {
 
   // --- User Actions ---
 
-  onClickCharacter(combatant: Combatant): void {
+  onClickCharacter(event: MouseEvent, combatant: Combatant): void {
+    if (event.ctrlKey || event.metaKey) {
+      event.stopPropagation();
+      const character = this.characterDataService.getGameCharacter(combatant.characterId);
+      if (character) {
+        if (this.selectionService.state(character) === SelectionState.NONE) {
+          this.selectionService.add(character);
+        } else {
+          this.selectionService.remove(character);
+        }
+      }
+      return;
+    }
     this.combatStateService.setTurnToCharacter(combatant.characterId);
   }
 

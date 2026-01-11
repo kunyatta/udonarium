@@ -61,6 +61,25 @@
   line-height: 1;
 }
 
+.acted-icon i {
+  font-size: 20px;
+}
+
+.selected-icon {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  color: #000;
+  text-shadow: 0 0 3px #fff, 0 0 3px #fff;
+  z-index: 10;
+  line-height: 1;
+  pointer-events: none;
+}
+
+.selected-icon i {
+  font-size: 20px;
+}
+
 .character-image {
   width: 80px;
   height: 80px;

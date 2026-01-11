@@ -7,6 +7,7 @@ export interface ExtensionAction {
   name: string | ((context?: any) => string); // ----- MODIFICATION (Gemini) for TargetSelectorPlugin -----
   icon?: string | ((context?: any) => string);
   iconClass?: string; // ----- MODIFICATION (kunyatta) -----
+  color?: string | ((context?: any) => string); // ----- MODIFICATION (Gemini) for StyleSupport -----
   description?: string | ((context?: any) => string);
   action: (context?: any, pointer?: { x: number, y: number }) => void;
   condition?: (context?: any) => boolean;

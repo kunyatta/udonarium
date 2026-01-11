@@ -217,6 +217,14 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     return action.icon(object);
   }
 
+  getExtensionColor(action: ExtensionAction): string {
+    if (!action.color) return '';
+    if (typeof action.color === 'string') return action.color;
+    
+    let object = ObjectStore.instance.get(this.sendFrom);
+    return action.color(object);
+  }
+
   getExtensionDescription(action: ExtensionAction): string {
     if (!action.description) return '';
     if (typeof action.description === 'string') return action.description;

@@ -12,9 +12,13 @@
            [class.active]="vm.isCurrentTurn"
            [class.has-acted]="vm.combatant.hasActed"
            [ngStyle]="getCombinedCardNgStyle(vm.activeStatusEffects)"
-           (click)="onClickCharacter(vm.combatant)"
+           (click)="onClickCharacter($event, vm.combatant)"
            (dblclick)="onDoubleClickCharacter(vm.combatant)"
            (contextmenu)="onRightClickCharacter($event, vm.combatant)">
+
+        <div *ngIf="vm.isSelected" class="selected-icon">
+          <i class="material-icons">location_searching</i>
+        </div>
 
         <div *ngIf="vm.combatant.hasActed" class="acted-icon">
           <i class="material-icons">check_circle</i>

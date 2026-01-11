@@ -29,6 +29,7 @@ export class EmoteManagerService implements OnDestroy {
   
   // デフォルト値
   private readonly defaultEmotes: EmoteData[] = [
+    { icon: '「」', label: '台詞' },
     { icon: '😊', label: '笑顔' },
     { icon: '😢', label: '悲しみ' },
     { icon: '💢', label: '怒り' },
@@ -214,6 +215,7 @@ export class EmoteManagerService implements OnDestroy {
       this.uiExtension.registerAction('chat-input-quick', {
         name: emote.label,
         icon: () => emote.icon,
+        color: 'black',
         action: (context: any) => {
           if (context && context.component && typeof context.component.insertEmote === 'function') {
             context.component.insertEmote(emote.icon);
