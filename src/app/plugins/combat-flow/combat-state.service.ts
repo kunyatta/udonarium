@@ -292,7 +292,8 @@ export class CombatStateService {
       from: 'System-BCDice',
       callback: (message) => {
         const text = message.value?.toString() || '';
-        const match = text.match(/[＞>→]\s*(\d+)$/);
+        // 行末の空白を許容するように修正
+        const match = text.match(/[＞>→]\s*(\d+)\s*$/);
         if (match && match[1]) {
           const result = parseInt(match[1], 10);
           // 履歴リストに追加 (最新が先頭)
