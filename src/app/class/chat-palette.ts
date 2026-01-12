@@ -19,6 +19,22 @@ export class ChatPalette extends ObjectNode {
   // ----- MODIFICATION START (kunyatta) for ColorSupport -----
   @SyncVar() color: string = '#000000';
   // ----- MODIFICATION END (kunyatta) for ColorSupport -----
+
+  // ----- MODIFICATION START (Gemini) for Compatibility -----
+  // XML属性の読み込みフック。古いデータ互換性のため paletteColor を color に読み替える
+  parseAttributes(attributes: NamedNodeMap) {
+    super.parseAttributes(attributes);
+    if (attributes.getNamedItem('paletteColor')) {
+      const paletteColor = attributes.getNamedItem('paletteColor').value;
+      if (this.color === '#000000' || this.color === '') {
+        this.color = paletteColor;
+      }
+      // 読み込み後は不要なので属性から削除し、次回の保存時に出力されないようにする
+      this.removeAttribute('paletteColor');
+    }
+  }
+  // ----- MODIFICATION END (Gemini) for Compatibility -----
+
   //TODO: キャラシ項目のコピー
 
   get paletteLines(): PaletteLine[] {

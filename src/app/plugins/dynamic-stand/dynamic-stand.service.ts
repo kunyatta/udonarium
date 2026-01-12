@@ -52,9 +52,7 @@ export class DynamicStandPluginService implements OnDestroy {
     private pluginMapper: PluginMapperService,
     private uiExtensionService: UIExtensionService,
     private ngZone: NgZone
-  ) {
-    console.log(`[DynamicStand] Service Constructed. Instance: ${Math.random().toString(36).substr(2, 5)}`);
-  }
+  ) { }
 
   ngOnDestroy() {
     if (this.observerSubscription) this.observerSubscription.unsubscribe();
@@ -62,7 +60,6 @@ export class DynamicStandPluginService implements OnDestroy {
   }
 
   initialize() {
-    console.log(`[DynamicStand] Initializing (Keyword-Driven Mode)...`);
     setTimeout(() => this.getOrCreateStageObject(), 1000);
     
     // 頻度を上げてチェックの漏れを防ぐ
@@ -76,6 +73,12 @@ export class DynamicStandPluginService implements OnDestroy {
           const character = ObjectStore.instance.get<GameCharacter>(event.data.identifier);
           if (character) this.ensureStandSetting(character);
         }
+      })
+      .on('XML_LOADED', () => {
+        setTimeout(() => {
+          const characters = ObjectStore.instance.getObjects<GameCharacter>(GameCharacter);
+          characters.forEach(c => this.ensureStandSetting(c));
+        }, 1000);
       })
       .on('CUT_IN_PLAYING', event => {
         if (event.data) { this.isCutInBlocked = true; this.localActors = []; } 
@@ -195,8 +198,6 @@ export class DynamicStandPluginService implements OnDestroy {
 
     if (!character) return;
 
-    console.log(`[DynamicStand] Trigger Detected from ${message.name}! Text: ${message.text}`);
-
     const textWithoutKeyword = message.text.split('💬').join('').trim();
     const speechMatch = textWithoutKeyword.match(/[「『](.+?)[」』]/);
     const speechText = speechMatch ? speechMatch[1] : '';
@@ -224,7 +225,6 @@ export class DynamicStandPluginService implements OnDestroy {
     }
 
     if (selected.imageIdentifier) {
-      console.log(`[DynamicStand] Rendering Actor locally: ${character.name}`);
       this.renderLocalStand(character.identifier, selected, filteredSpeech, (selected.emote === emoteKeyword) ? '' : emoteKeyword);
     }
   }
@@ -277,31 +277,52 @@ export class DynamicStandPluginService implements OnDestroy {
   }
 
   private ensureStandSetting(character: GameCharacter) {
-    const section = character.detailDataElement.children.find(c => c instanceof DataElement && c.name === DYNAMIC_STAND_SECTION_NAME);
-    if (!section) this.addStandSetting(character);
-    else this.refreshStandDimensions(character);
+    try {
+      if (!character) return;
+      if (!character.detailDataElement) {
+        return;
+      }
+      const section = character.detailDataElement.children.find(c => c instanceof DataElement && c.name === DYNAMIC_STAND_SECTION_NAME);
+      if (!section) this.addStandSetting(character);
+      else this.refreshStandDimensions(character);
+    } catch (e) {
+    }
   }
 
   addStandSetting(character: GameCharacter) {
-    let section = character.detailDataElement.children.find(c => c instanceof DataElement && c.name === DYNAMIC_STAND_SECTION_NAME) as DataElement;
-    if (!section) {
-      section = DataElement.create(DYNAMIC_STAND_SECTION_NAME, '', {}, DYNAMIC_STAND_SECTION_NAME + '_' + character.identifier);
-      character.detailDataElement.appendChild(section);
+    try {
+      if (!character.detailDataElement) {
+        if (!character.rootDataElement) {
+           return;
+        }
+        character.rootDataElement.appendChild(DataElement.create('detail', '', {}, 'detail_' + character.identifier));
+      }
+
+      let section = character.detailDataElement.children.find(c => c instanceof DataElement && c.name === DYNAMIC_STAND_SECTION_NAME) as DataElement;
+      if (!section) {
+        section = DataElement.create(DYNAMIC_STAND_SECTION_NAME, '', {}, DYNAMIC_STAND_SECTION_NAME + '_' + character.identifier);
+        character.detailDataElement.appendChild(section);
+      }
+      const indices = section.children.filter((c): c is DataElement => c instanceof DataElement).map(c => parseInt(c.name)).filter(n => !isNaN(n));
+      const nextIndex = indices.length > 0 ? Math.max(...indices) + 1 : 1;
+      const group = DataElement.create(nextIndex.toString(), '', {}, nextIndex.toString() + '_' + character.identifier);
+      group.appendChild(DataElement.create('emote', nextIndex === 1 ? '' : 'エモート名', {}, 'emote_' + group.identifier));
+      
+      const imageIdElement = character.imageDataElement ? character.imageDataElement.getFirstElementByName('imageIdentifier') : null;
+      const imageId = imageIdElement ? imageIdElement.value : '';
+      
+      group.appendChild(DataElement.create('imageIdentifier', imageId as string, { type: 'imageIdentifier' }, 'img_' + group.identifier));
+      group.appendChild(DataElement.create('imageWidth', 0, { type: 'number' }, 'w_' + group.identifier));
+      group.appendChild(DataElement.create('imageHeight', 0, { type: 'number' }, 'h_' + group.identifier));
+      group.appendChild(DataElement.create('headOffset', DEFAULT_HEAD_OFFSET, { type: 'number' }, 'ho_' + group.identifier));
+      group.appendChild(DataElement.create('side', 'auto', {}, 'side_' + group.identifier));
+      group.appendChild(DataElement.create('offsetX', 0, { type: 'number' }, 'ox_' + group.identifier));
+      group.appendChild(DataElement.create('offsetY', 0, { type: 'number' }, 'oy_' + group.identifier));
+      section.appendChild(group);
+      this.refreshStandDimensions(character);
+      section.update(); character.detailDataElement.update(); character.update();
+    } catch (e) {
     }
-    const indices = section.children.filter((c): c is DataElement => c instanceof DataElement).map(c => parseInt(c.name)).filter(n => !isNaN(n));
-    const nextIndex = indices.length > 0 ? Math.max(...indices) + 1 : 1;
-    const group = DataElement.create(nextIndex.toString(), '', {}, nextIndex.toString() + '_' + character.identifier);
-    group.appendChild(DataElement.create('emote', nextIndex === 1 ? '' : 'エモート名', {}, 'emote_' + group.identifier));
-    group.appendChild(DataElement.create('imageIdentifier', character.imageFile ? character.imageFile.identifier : '', { type: 'imageIdentifier' }, 'img_' + group.identifier));
-    group.appendChild(DataElement.create('imageWidth', 0, { type: 'number' }, 'w_' + group.identifier));
-    group.appendChild(DataElement.create('imageHeight', 0, { type: 'number' }, 'h_' + group.identifier));
-    group.appendChild(DataElement.create('headOffset', DEFAULT_HEAD_OFFSET, { type: 'number' }, 'ho_' + group.identifier));
-    group.appendChild(DataElement.create('side', 'auto', {}, 'side_' + group.identifier));
-    group.appendChild(DataElement.create('offsetX', 0, { type: 'number' }, 'ox_' + group.identifier));
-    group.appendChild(DataElement.create('offsetY', 0, { type: 'number' }, 'oy_' + group.identifier));
-    section.appendChild(group);
-    this.refreshStandDimensions(character);
-    section.update(); character.detailDataElement.update(); character.update();
   }
 
   private refreshStandDimensions(character: GameCharacter) {
