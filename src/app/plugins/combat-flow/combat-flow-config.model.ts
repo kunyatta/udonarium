@@ -9,6 +9,7 @@ export class DamageCheckButtonConfig {
 }
 
 export class DamageCheckConfig {
+  showDamageCheckPanel: boolean = true; // 追加
   referenceParams: string = '防護点';
   buttonConfig: DamageCheckButtonConfig = new DamageCheckButtonConfig();
 }

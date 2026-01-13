@@ -540,21 +540,35 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
     // キーから要素名を抽出 (例: "HP.currentValue" -> "HP")
     const elementName = this.selectedParameterName.split('.')[0];
 
-    // ダメージ適用確認パネルを開く
-    this.pluginUiService.openAtCursor(DamageCheckPanelComponent, {
-      title: 'ダメージ・回復適用確認',
-      width: 450, // 適当な初期値、AutoLayoutPanelが調整
-      height: 300, // 適当な初期値
-      layout: 'full-auto',
-      isSingleton: true, // ★追加
-      inputs: {
-        casterId: this.selectedCasterId,
-        targets: targets,
-        baseValue: this.parameterValue,
-        targetParamName: elementName,
-        config: this.combatStateService.getDamageCheckConfig() // ローカルではなくServiceから取得
-      }
-    });
+    // ダメージ適用確認設定を取得
+    const config = this.combatStateService.getDamageCheckConfig();
+
+    if (config.showDamageCheckPanel) {
+      // ダメージ適用確認パネルを開く
+      this.pluginUiService.openAtCursor(DamageCheckPanelComponent, {
+        title: 'ダメージ・回復適用確認',
+        width: 450, // 適当な初期値、AutoLayoutPanelが調整
+        height: 300, // 適当な初期値
+        layout: 'full-auto',
+        isSingleton: true,
+        inputs: {
+          casterId: this.selectedCasterId,
+          targets: targets,
+          baseValue: this.parameterValue,
+          targetParamName: elementName,
+          config: config // ローカルではなくServiceから取得
+        }
+      });
+    } else {
+      // パネルを開かずに直接実行
+      const targetIds = Array.from(this.selectedTargetIds);
+      this.combatStateService.applyParameterChange(
+        this.selectedCasterId,
+        targetIds,
+        elementName,
+        this.parameterValue
+      );
+    }
   }
 
   onCasterChange(): void {

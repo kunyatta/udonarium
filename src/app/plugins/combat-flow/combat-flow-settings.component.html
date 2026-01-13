@@ -46,8 +46,12 @@
       </div>
       <hr>
 
-      <h4>ダメージ適用確認設定</h4>
-      <div class="form-group">
+      <h4>ダメージ適用確認設定
+        <label class="checkbox-label" style="font-size: 0.8em; margin-left: 10px; font-weight: normal;">
+          <input type="checkbox" [(ngModel)]="damageCheckConfig.showDamageCheckPanel" (change)="saveDamageCheckConfig()"> 有効にする
+        </label>
+      </h4>
+      <div class="form-group" [class.disabled]="!damageCheckConfig.showDamageCheckPanel">
         <label>軽減参照パラメータ</label>
         <input type="text" class="param-input" [(ngModel)]="damageCheckConfig.referenceParams" (change)="saveDamageCheckConfig()" placeholder="例: 防護点">
       </div>

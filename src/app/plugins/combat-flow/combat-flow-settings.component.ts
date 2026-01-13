@@ -19,6 +19,7 @@ import { CharacterDataService } from '../service/character-data.service';
 import { SaveDataService } from '../../service/save-data.service';
 import { DataElement } from '@udonarium/data-element';
 import { DICTIONARY_FILE_NAME_HINT, PLUGIN_ID, DATA_TAG_STATUS_EFFECT_DATA } from './combat-flow.constants';
+import { DamageCheckConfig } from './combat-flow-config.model';
 
 @Component({
   selector: 'app-combat-flow-settings',
@@ -63,16 +64,7 @@ export class CombatFlowSettingsComponent implements OnInit, OnDestroy {
   displayDataTags: string = 'HP MP';
 
   // --- ダメージ適用確認設定 ---
-  damageCheckConfig = {
-    referenceParams: '防護点',
-    buttonConfig: {
-      showAsIs: true,
-      showReduce: true,
-      showHalve: true,
-      showZero: true,
-      showCustom: true
-    }
-  };
+  damageCheckConfig: DamageCheckConfig = new DamageCheckConfig();
 
   constructor(
     private panelService: PanelService,

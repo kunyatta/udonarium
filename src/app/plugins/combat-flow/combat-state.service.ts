@@ -941,7 +941,8 @@ export class CombatStateService {
       this.characterDataService.applyParameterChange(targetChar, paramName, value);
     });
 
-    console.log(`[CombatStateService] ${caster.name} が ${targets.map(c => c.name).join(', ')} の ${paramName} を ${value > 0 ? '+' : ''}${value} した！`);
+    // ログ出力
+    this.combatLogService.logParameterChange(caster, targets, paramName, value);
   }
 
   getDamageCheckConfig(): CombatFlowConfig['damageCheckConfig'] {
