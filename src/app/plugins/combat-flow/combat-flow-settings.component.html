@@ -1,18 +1,76 @@
 <div class="container">
   <div class="tab-header">
     <button 
-      [class.active]="activeTab === 'status-effects'" 
-      (click)="activeTab = 'status-effects'">
-      ステータス効果管理
-    </button>
-    <button 
       [class.active]="activeTab === 'settings'" 
       (click)="activeTab = 'settings'">
       設定
     </button>
+    <button 
+      [class.active]="activeTab === 'status-effects'" 
+      (click)="activeTab = 'status-effects'">
+      ステータス効果管理
+    </button>
   </div>
 
   <div class="tab-content" [class.no-padding]="activeTab === 'status-effects'">
+    
+    <!-- =============================================== -->
+    <!-- 設定タブ                                        -->
+    <!-- =============================================== -->
+    <div [hidden]="activeTab !== 'settings'" class="settings-panel">
+      
+      <h4>表示パラメータ設定</h4>
+      <p>カードに表示するパラメータのタグ名をスペース区切りで入力します。(例: HP MP 敏捷度)</p>
+      <input type="text" class="param-input" [ngModel]="displayDataTags" (ngModelChange)="onDisplayDataTagsChange($event)" placeholder="例: HP MP 敏捷度">
+      <hr>
+
+      <h4>チャット設定</h4>
+      <div class="form-group">
+        <label>ログ出力先タブ</label>
+        <select [(ngModel)]="messageTargetTabId" (ngModelChange)="onMessageTargetTabChange($event)" class="param-input">
+          <option *ngFor="let tab of availableChatTabs" [value]="tab.identifier">{{ tab.name }}</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>システムログ送信元</label>
+        <select [(ngModel)]="selectedLogSenderName" (ngModelChange)="onSystemLogSenderNameChange($event)" class="param-input">
+          <option value="">指定なし（操作者）</option>
+          <option *ngFor="let char of (availableLogSenders$ | async)" [value]="char.name">{{ char.name }}</option>
+        </select>
+      </div>
+      <hr>
+
+      <h4>パネル操作</h4>
+      <div class="buttons">
+        <button (click)="toggleCombatPanel()">戦闘パネル 表示/非表示</button>
+      </div>
+      <hr>
+
+      <h4>ダメージ適用確認設定</h4>
+      <div class="form-group">
+        <label>軽減参照パラメータ</label>
+        <input type="text" class="param-input" [(ngModel)]="damageCheckConfig.referenceParams" (change)="saveDamageCheckConfig()" placeholder="例: 防護点">
+      </div>
+      <div class="checkbox-group">
+        <label class="checkbox-label">
+          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showAsIs" (change)="toggleDamageCheckButton('showAsIs')"> 「そのまま」ボタン
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showReduce" (change)="toggleDamageCheckButton('showReduce')"> 「軽減」ボタン
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showHalve" (change)="toggleDamageCheckButton('showHalve')"> 「半減」ボタン
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showZero" (change)="toggleDamageCheckButton('showZero')"> 「無効」ボタン
+        </label>
+        <label class="checkbox-label">
+          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showCustom" (change)="toggleDamageCheckButton('showCustom')"> 「カスタム」入力
+        </label>
+      </div>
+      <hr>
+    </div>
+
     <!-- =============================================== -->
     <!-- ステータス効果管理タブ (2カラム)                -->
     <!-- =============================================== -->
@@ -164,63 +222,6 @@
           <p>左側のリストから効果を選択するか、<br>新規作成してください。</p>
         </div>
       </div>
-    </div>
-
-    <!-- =============================================== -->
-    <!-- 設定タブ                                        -->
-    <!-- =============================================== -->
-    <div [hidden]="activeTab !== 'settings'" class="settings-panel">
-      
-      <h4>表示パラメータ設定</h4>
-      <p>カードに表示するパラメータのタグ名をスペース区切りで入力します。(例: HP MP 敏捷度)</p>
-      <input type="text" class="param-input" [ngModel]="displayDataTags" (ngModelChange)="onDisplayDataTagsChange($event)" placeholder="例: HP MP 敏捷度">
-      <hr>
-
-      <h4>チャット設定</h4>
-      <div class="form-group">
-        <label>ログ出力先タブ</label>
-        <select [(ngModel)]="messageTargetTabId" (ngModelChange)="onMessageTargetTabChange($event)" class="param-input">
-          <option *ngFor="let tab of availableChatTabs" [value]="tab.identifier">{{ tab.name }}</option>
-        </select>
-      </div>
-      <div class="form-group">
-        <label>システムログ送信元</label>
-        <select [(ngModel)]="selectedLogSenderName" (ngModelChange)="onSystemLogSenderNameChange($event)" class="param-input">
-          <option value="">指定なし（操作者）</option>
-          <option *ngFor="let char of (availableLogSenders$ | async)" [value]="char.name">{{ char.name }}</option>
-        </select>
-      </div>
-      <hr>
-
-      <h4>パネル操作</h4>
-      <div class="buttons">
-        <button (click)="toggleCombatPanel()">戦闘パネル 表示/非表示</button>
-      </div>
-      <hr>
-
-      <h4>ダメージ適用確認設定</h4>
-      <div class="form-group">
-        <label>軽減参照パラメータ</label>
-        <input type="text" class="param-input" [(ngModel)]="damageCheckConfig.referenceParams" (change)="saveDamageCheckConfig()" placeholder="例: 防護点">
-      </div>
-      <div class="checkbox-group">
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showAsIs" (change)="toggleDamageCheckButton('showAsIs')"> 「そのまま」ボタン
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showReduce" (change)="toggleDamageCheckButton('showReduce')"> 「軽減」ボタン
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showHalve" (change)="toggleDamageCheckButton('showHalve')"> 「半減」ボタン
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showZero" (change)="toggleDamageCheckButton('showZero')"> 「無効」ボタン
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showCustom" (change)="toggleDamageCheckButton('showCustom')"> 「カスタム」入力
-        </label>
-      </div>
-      <hr>
     </div>
   </div>
 </div>

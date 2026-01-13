@@ -26,7 +26,7 @@ import { DICTIONARY_FILE_NAME_HINT, PLUGIN_ID, DATA_TAG_STATUS_EFFECT_DATA } fro
   styleUrls: ['./combat-flow-settings.component.css']
 })
 export class CombatFlowSettingsComponent implements OnInit, OnDestroy {
-  activeTab: 'status-effects' | 'settings' = 'status-effects';
+  activeTab: 'status-effects' | 'settings' = 'settings';
   private unsubscribe$ = new Subject<void>();
 
   // --- ステータス効果管理用 ---
