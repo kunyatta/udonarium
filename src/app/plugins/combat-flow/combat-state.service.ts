@@ -354,6 +354,11 @@ export class CombatStateService {
       this.migrateConfig(stateElement);
     }
 
+    // レガシーデータ対応: 未定義の場合はデフォルト(true)を適用
+    if (this.config.damageCheckConfig.showDamageCheckPanel === undefined) {
+      this.config.damageCheckConfig.showDamageCheckPanel = true;
+    }
+
     // 3. 内部Stateへの反映
     if (this._displayDataTags$.value !== this.config.displayDataTags) {
       this._displayDataTags$.next(this.config.displayDataTags);
