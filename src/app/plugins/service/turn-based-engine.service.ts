@@ -53,6 +53,7 @@ export class TurnBasedEngineService {
     participant.appendChild(DataElement.create('id', id, {}));
     participant.appendChild(DataElement.create('hasActed', 'false', {}));
     idsRoot.appendChild(participant);
+    container.update();
   }
 
   removeParticipant(container: PluginDataContainer, id: string): void {
@@ -60,8 +61,11 @@ export class TurnBasedEngineService {
     const target = idsRoot.children.find(child => 
       (child as DataElement).getFirstElementByName('id')?.value === id
     );
+
     if (target) {
       idsRoot.removeChild(target);
+      target.destroy(); // 削除した要素を破棄し、DELETE_GAME_OBJECTイベントを発行させる
+      container.update(); // コンテナ全体の更新を通知
     }
   }
 
@@ -84,6 +88,7 @@ export class TurnBasedEngineService {
     } else {
       currentIndexElem.value = newIndex;
     }
+    container.update();
   }
 
   prevTurn(container: PluginDataContainer): void {
@@ -111,11 +116,13 @@ export class TurnBasedEngineService {
     } else {
       currentIndexElem.value = newIndex;
     }
+    container.update();
   }
 
   setRound(container: PluginDataContainer, round: number): void {
     const engineRoot = this.findOrCreateEngineRoot(container);
     engineRoot.getFirstElementByName('round').value = Math.max(1, round);
+    container.update();
   }
 
   nextRound(container: PluginDataContainer): void {
@@ -132,11 +139,13 @@ export class TurnBasedEngineService {
 
     const round = engineRoot.getFirstElementByName('round');
     if (!round.value) round.value = 1;
+    container.update();
   }
 
   stop(container: PluginDataContainer): void {
     const engineRoot = this.findOrCreateEngineRoot(container);
     engineRoot.getFirstElementByName('isPlaying').value = 'false';
+    container.update();
   }
 
   reset(container: PluginDataContainer): void {
@@ -148,6 +157,7 @@ export class TurnBasedEngineService {
     const idsRoot = this.findOrCreateIdsRoot(container);
     // コピーしてから削除しないとイテレータが壊れる可能性があるため
     [...idsRoot.children].forEach(child => idsRoot.removeChild(child));
+    container.update();
   }
 
   private startNewRound(container: PluginDataContainer): void {
@@ -176,6 +186,7 @@ export class TurnBasedEngineService {
       if (hasActed) {
         hasActed.value = hasActed.value === 'true' ? 'false' : 'true';
       }
+      container.update();
     }
   }
   
@@ -187,6 +198,7 @@ export class TurnBasedEngineService {
     if (index !== -1) {
       const engineRoot = this.findOrCreateEngineRoot(container);
       engineRoot.getFirstElementByName('currentIndex').value = index;
+      container.update();
     }
   }
 
@@ -234,6 +246,7 @@ export class TurnBasedEngineService {
       // DOM上で再配置（一度削除してから追加し直すのが確実）
       children.forEach(child => idsRoot.removeChild(child));
       children.forEach(child => idsRoot.appendChild(child));
+      container.update();
     }
   }
 
@@ -253,6 +266,7 @@ export class TurnBasedEngineService {
       // DOM上で再配置
       children.forEach(child => idsRoot.removeChild(child));
       children.forEach(child => idsRoot.appendChild(child));
+      container.update();
     }
   }
 }

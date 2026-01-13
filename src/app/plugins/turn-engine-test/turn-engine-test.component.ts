@@ -69,13 +69,12 @@ export class TurnEngineTestComponent implements OnInit, OnDestroy {
   private updateUiFromContainer(): void {
     if (!this.container) return;
 
-    const engineRoot = this.turnEngine['findOrCreateEngineRoot'](this.container); // privateメソッドにアクセス
-    const idsRoot = this.turnEngine['findOrCreateIdsRoot'](this.container);     // privateメソッドにアクセス
+    const state = this.turnEngine.getState(this.container);
 
-    this.isPlaying = engineRoot.getFirstElementByName('isPlaying')?.value === 'true';
-    this.currentIndex = Number(engineRoot.getFirstElementByName('currentIndex')?.value) || 0;
-    this.round = Number(engineRoot.getFirstElementByName('round')?.value) || 1;
-    this.participantIds = idsRoot.children.map(el => el.value as string);
+    this.isPlaying = state.isPlaying;
+    this.currentIndex = state.currentIndex;
+    this.round = state.round;
+    this.participantIds = state.participants.map(p => p.id);
     
     this.changeDetectorRef.markForCheck();
   }

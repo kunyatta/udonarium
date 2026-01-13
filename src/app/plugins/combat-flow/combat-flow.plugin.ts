@@ -73,7 +73,7 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
           height: this.height,
           left: pointer ? pointer.x - this.width / 2 : undefined,
           top: pointer ? pointer.y - this.height / 2 : undefined,
-          isSingleton: true,
+          isSingleton: false,
           inputs: { initialCasterIdentifier: context.identifier }
         });
       },

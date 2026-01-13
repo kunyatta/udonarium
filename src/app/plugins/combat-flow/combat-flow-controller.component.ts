@@ -20,6 +20,13 @@ import { ChatTabList } from '@udonarium/chat-tab-list';
 import { DamageCheckPanelComponent } from './damage-check-panel.component';
 import { DICTIONARY_FILE_NAME_HINT, PLUGIN_ID } from './combat-flow.constants';
 
+interface UnifiedListItem {
+  type: 'participant' | 'separator' | 'standby';
+  characterId?: string;
+  name?: string;
+  isParticipating?: boolean;
+}
+
 @Component({
   selector: 'app-combat-flow-controller',
   templateUrl: './combat-flow-controller.component.html',
@@ -127,8 +134,21 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
     shareReplay(1)
   );
 
-  isAddingParticipant: boolean = false; // 途中参加UIの表示フラグ
-  
+  // 術者候補リスト (戦闘中なら参加者、戦闘前なら参加予定者)
+  readonly activeCasterCandidates$ = combineLatest([
+    this.isCombat$,
+    this.combatantsWithDetails$,
+    this.scheduledParticipantIdsWithDetails$
+  ]).pipe(
+    map(([isCombat, combatants, scheduled]) => {
+      return isCombat ? combatants : scheduled;
+    }),
+    shareReplay(1)
+  );
+
+  // 統合リスト用のインターフェース
+  readonly unifiedParticipantList$: Observable<UnifiedListItem[]>;
+
   // --- 戦闘操作UI用プロパティ ---
   operationMode: 'statusEffect' | 'parameter' = 'parameter';
   selectedCasterId: string | null = null;
@@ -150,6 +170,57 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
     private ngZone: NgZone,
     private changeDetectorRef: ChangeDetectorRef
   ) {
+    // 統合リストの構築
+    this.unifiedParticipantList$ = combineLatest([
+      this.isCombat$,
+      this.combatantsWithDetails$,            // 戦闘中の参加者
+      this.scheduledParticipantIdsWithDetails$, // 戦闘前の参加予定者
+      this.addableCharacters$,                // 戦闘中の待機者 (途中参加候補)
+      this.charactersForSelection$            // 戦闘前の全キャラ (ここから待機者を計算)
+    ]).pipe(
+      map(([isCombat, combatants, scheduled, addable, allChars]) => {
+        const list: UnifiedListItem[] = [];
+
+        if (isCombat) {
+          // --- 戦闘中 ---
+          // 1. 参加者
+          combatants.forEach(c => {
+            list.push({ type: 'participant', characterId: c.characterId, name: c.name, isParticipating: true });
+          });
+          
+          // 2. セパレータ
+          list.push({ type: 'separator' });
+
+          // 3. 待機者 (途中参加候補)
+          // addableCharacters$ は既にフィルタリング済み
+          addable.forEach(c => {
+            list.push({ type: 'standby', characterId: c.identifier, name: c.name, isParticipating: false });
+          });
+
+        } else {
+          // --- 戦闘前 ---
+          // 1. 参加予定者 (順序付き)
+          scheduled.forEach(c => {
+            list.push({ type: 'participant', characterId: c.characterId, name: c.name, isParticipating: true });
+          });
+
+          // 2. セパレータ
+          list.push({ type: 'separator' });
+
+          // 3. 待機者 (全キャラ - 参加予定者)
+          // IDセットを作成して除外
+          const scheduledIds = new Set(scheduled.map(c => c.characterId));
+          // 名前順などでソートしたほうが親切だが、とりあえず元の順序
+          allChars.forEach(c => {
+            if (!scheduledIds.has(c.identifier)) {
+               list.push({ type: 'standby', characterId: c.identifier, name: c.name, isParticipating: false });
+            }
+          });
+        }
+        return list;
+      }),
+      shareReplay(1)
+    );
   }
 
   ngOnInit(): void {
@@ -364,23 +435,33 @@ export class CombatFlowControllerComponent implements OnInit, OnDestroy {
     });
   }
 
-  toggleAddParticipantMode(): void {
-    this.isAddingParticipant = !this.isAddingParticipant;
-    if (!this.isAddingParticipant) {
-      // 追加モードを終了する際に、選択状態をクリア
-      this.combatStateService.clearParticipantSelectionToAdd();
+  toggleParticipantStatus(item: UnifiedListItem, event: MouseEvent): void {
+    event.preventDefault(); // UIの即時反映をキャンセルし、データ更新後の再描画に任せる
+    
+    if (item.type === 'separator' || !item.characterId) return;
+
+    console.log('toggleParticipantStatus', item.name, item.isParticipating, 'isCombat:', this.combatStateService.isCombat);
+
+    if (item.isParticipating) {
+      // 参加中 -> 待機へ (削除)
+      if (this.combatStateService.isCombat) {
+        if (confirm(`${item.name} を戦闘から除外しますか？`)) {
+          console.log('Removing participant:', item.characterId);
+          this.combatStateService.removeParticipant(item.characterId);
+        }
+      } else {
+        // 戦闘前は確認なしで解除
+        this.combatStateService.toggleCharacterSelection(item.characterId);
+      }
+    } else {
+      // 待機中 -> 参加へ (追加)
+      if (this.combatStateService.isCombat) {
+        console.log('Adding participant:', item.characterId);
+        this.combatStateService.addParticipants([item.characterId]);
+      } else {
+        this.combatStateService.toggleCharacterSelection(item.characterId);
+      }
     }
-  }
-
-  toggleParticipantSelectionToAdd(characterId: string): void {
-    this.combatStateService.toggleParticipantSelectionToAdd(characterId);
-  }
-
-  addSelectedParticipants(): void {
-    this.selectedParticipantIdsToAdd$.pipe(take(1)).subscribe((selectedIds: Set<string>) => {
-      this.combatStateService.addParticipants(Array.from(selectedIds));
-      this.isAddingParticipant = false; // 追加後にモードを終了
-    });
   }
 
   // --- 戦闘操作UI用メソッド ---

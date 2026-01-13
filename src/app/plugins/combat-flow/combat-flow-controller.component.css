@@ -463,3 +463,54 @@ button.danger:hover:not(:disabled) {
   color: #666;
   font-size: 0.9em;
 }.footer-controls { flex-shrink: 0; display: flex; justify-content: flex-end; padding: 4px; background-color: transparent; border-top: 1px solid rgba(0, 0, 0, 0.1); } .footer-controls .settings-button { background: transparent; border: none; color: #777; padding: 4px; } .footer-controls .settings-button:hover { color: #333; background-color: rgba(0,0,0,0.05); }
+
+/* --- 統合リスト用 --- */
+.unified-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.list-separator {
+  background-color: #ddd;
+  color: #555;
+  font-size: 0.9em;
+  font-weight: bold;
+  text-align: center;
+  padding: 4px;
+  cursor: default;
+  border-top: 1px solid #ccc;
+  border-bottom: 1px solid #ccc;
+}
+.list-separator:hover {
+  background-color: #ddd; /* ホバーしても色を変えない */
+}
+
+.character-item.participating {
+  background-color: #fff;
+  color: #333;
+}
+.character-item.standby {
+  background-color: #f9f9f9;
+  color: #888;
+}
+.character-item.selected {
+  background-color: #8d6e63 !important;
+  color: #fff !important;
+  font-weight: bold;
+}
+
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  margin-right: 8px;
+  cursor: pointer;
+}
+.checkbox-label input {
+  cursor: pointer;
+  transform: scale(1.2); /* 少し大きく */
+}
+
+.character-name {
+  flex-grow: 1;
+}
+
