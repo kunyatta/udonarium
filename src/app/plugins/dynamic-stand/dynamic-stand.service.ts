@@ -111,7 +111,12 @@ export class DynamicStandPluginService implements OnDestroy {
     // 送信前フィルターの登録（立ち絵キーワードの自動付与）
     this.uiExtensionService.registerFilter('chat-send', (text: string, context: any) => {
       if (context instanceof GameCharacter && this.isActive(context)) {
-        return text + ' 💬';
+        // 台詞またはエモートが含まれている場合のみキーワードを付与
+        const hasSpeech = /[「『].+?[」』]/.test(text);
+        const hasEmote = /(\p{Extended_Pictographic}|[！？])/u.test(text);
+        if (hasSpeech || hasEmote) {
+          return text + ' 💬';
+        }
       }
       return text;
     });
@@ -199,24 +204,89 @@ export class DynamicStandPluginService implements OnDestroy {
     if (!character) return;
 
     const textWithoutKeyword = message.text.split('💬').join('').trim();
-    const speechMatch = textWithoutKeyword.match(/[「『](.+?)[」』]/);
-    const speechText = speechMatch ? speechMatch[1] : '';
+    
+    // 1. テキストの分割（台詞部分と外側部分）
+    const speechMatch = textWithoutKeyword.match(/([「『])(.+?)([」』])/);
+    const wholeSpeech = speechMatch ? speechMatch[0] : ''; // 括弧を含む台詞全体 「〜」
+    const contentSpeech = speechMatch ? speechMatch[2] : ''; // 括弧の中身 〜
+    const outsideText = speechMatch ? textWithoutKeyword.replace(wholeSpeech, '') : textWithoutKeyword;
 
-    let finalSpeechText = speechText;
-    const existing = this.localActors.find(a => a.characterId === character.identifier);
-    if (existing && speechText && existing.expirationTime > Date.now() - 5000) {
-      finalSpeechText = existing.speechText + '\n' + speechText;
+    // 2. エモート（トリガー）の探索
+    const emoteRegexAll = /(\p{Extended_Pictographic}|[！？])/u; // 絵文字＋記号
+    const emoteRegexPictogram = /\p{Extended_Pictographic}/u;    // 絵文字のみ
+
+    let emoteKeyword = '';
+    
+    // 優先度A: 外側部分から探す（絵文字＋記号）
+    const matchOutside = outsideText.match(emoteRegexAll);
+    if (matchOutside) {
+      emoteKeyword = matchOutside[0];
+    } else {
+      // 優先度B: 台詞部分から探す（絵文字のみ！記号は無視）
+      if (speechMatch) {
+        const matchInside = contentSpeech.match(emoteRegexPictogram);
+        if (matchInside) {
+          emoteKeyword = matchInside[0];
+        }
+      } else {
+        // 括弧なしの場合は全体から探す（絵文字＋記号）
+        const matchWhole = textWithoutKeyword.match(emoteRegexAll);
+        if (matchWhole) {
+          emoteKeyword = matchWhole[0];
+        }
+      }
     }
 
-    const emoteRegex = /(\p{Extended_Pictographic}|[！？])/u;
-    const emoteMatch = textWithoutKeyword.match(emoteRegex);
-    const emoteKeyword = emoteMatch ? emoteMatch[0] : '';
+    // 3. 表示テキストの構築
+    // トリガーとなったエモートがあれば、元のテキストから削除する
+    let processedText = textWithoutKeyword;
+    if (emoteKeyword) {
+      processedText = processedText.split(emoteKeyword).join('').trim();
+    }
 
+    // 削除後のテキストから再度台詞を抽出（あるいは整形）
+    // ※エモート削除によって括弧の位置がずれることはない（絵文字は1文字扱い、括弧は消えないため）
+    const processedSpeechMatch = processedText.match(/([「『])(.+?)([」』])/);
+    const processedContentSpeech = processedSpeechMatch ? processedSpeechMatch[2] : '';
+    
+    // 吹き出しに表示するエモート（フロート表示用）
+    let floatingEmote = '';
+    // 最終的な表示テキスト
+    let finalSpeechText = '';
+
+    if (processedSpeechMatch) {
+      // 台詞がある場合
+      const existing = this.localActors.find(a => a.characterId === character.identifier);
+      if (existing && existing.expirationTime > Date.now() - 5000) {
+        finalSpeechText = existing.speechText + '\n' + processedContentSpeech;
+      } else {
+        finalSpeechText = processedContentSpeech;
+      }
+      // エモートが見つかっていればフロート表示
+      if (emoteKeyword) floatingEmote = emoteKeyword;
+
+    } else {
+      // 台詞がない（括弧なし）場合
+      // processedText は既にエモート削除済み
+      
+      // エモート単体発言だった場合（テキストが空）、エモートをフロート表示
+      if (!processedText && emoteKeyword) {
+        floatingEmote = emoteKeyword;
+      }
+
+      const existing = this.localActors.find(a => a.characterId === character.identifier);
+      if (existing && processedText && existing.expirationTime > Date.now() - 5000) {
+        finalSpeechText = existing.speechText + '\n' + processedText;
+      } else {
+        finalSpeechText = processedText;
+      }
+    }
+
+    // エモート音の再生
     if (emoteKeyword) {
       const emoteData = this.emoteManager.getEmotes().find(e => e.icon === emoteKeyword);
       if (emoteData && emoteData.soundIdentifier) SoundEffect.play(emoteData.soundIdentifier);
     }
-    const filteredSpeech = (finalSpeechText && emoteKeyword) ? finalSpeechText.split(emoteKeyword).join('').trim() : finalSpeechText;
 
     const settings = this.getStandSettings(character);
     let selected = settings.find(s => s.emote === emoteKeyword && s.imageIdentifier) || settings.find(s => s.index === '1') || settings[0];
@@ -225,7 +295,7 @@ export class DynamicStandPluginService implements OnDestroy {
     }
 
     if (selected.imageIdentifier) {
-      this.renderLocalStand(character.identifier, selected, filteredSpeech, (selected.emote === emoteKeyword) ? '' : emoteKeyword);
+      this.renderLocalStand(character.identifier, selected, finalSpeechText, floatingEmote);
     }
   }
 
