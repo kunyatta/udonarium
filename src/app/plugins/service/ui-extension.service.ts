@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 
-export type ExtensionLocation = 'main-menu' | 'main-menu-bottom' | 'context-menu' | 'chat-window' | 'character-sheet' | 'chat-input' | 'chat-input-quick' | 'chat-send';
+export type ExtensionLocation = 'main-menu' | 'main-menu-bottom' | 'settings' | 'context-menu' | 'chat-window' | 'character-sheet' | 'chat-input' | 'chat-input-quick' | 'chat-send';
 
 export interface ExtensionAction {
   name: string | ((context?: any) => string); // ----- MODIFICATION (Gemini) for TargetSelectorPlugin -----

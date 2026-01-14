@@ -307,9 +307,8 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   get menuPanelHeight(): number {
     const standardItemCount = 8; // 接続, チャット, テーブル, 画像, 音楽, インベントリ, ZIP, 保存
-    const extensionLauncherCount = 1; // 「拡張」ボタン
     const pluginItemCount = this.mainMenuExtensions.length + this.mainMenuBottomExtensions.length;
-    const totalItemCount = standardItemCount + extensionLauncherCount + pluginItemCount;
+    const totalItemCount = standardItemCount + pluginItemCount;
 
     const itemHeight = 49; // 1項目あたりの高さ(実測値に近い値に調整)
     const chromeHeight = 30; // タイトルバー等の余白
@@ -320,21 +319,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     return Math.min(calculatedHeight, maxHeight);
   }
 
-  openPluginLauncherPanel() {
-    const launcherPlugin = this.pluginService.getUIPlugin('plugin-launcher');
-    if (launcherPlugin) {
-      const panelOptions: PanelOption = {
-        title: launcherPlugin.name,
-        width: launcherPlugin.width,
-        height: launcherPlugin.height,
-      };
-      panelOptions.top = (this.openPanelCount % 10 + 1) * 20;
-      panelOptions.left = 100 + (this.openPanelCount % 20 + 1) * 5;
-      this.openPanelCount = this.openPanelCount + 1;
-      this.pluginUiService.open(PluginLauncherPanelComponent, panelOptions);
-    } else {
-      console.warn('Plugin Launcher is not found.');
-    }
+  onExtensionClick(extension: ExtensionAction, event: MouseEvent) {
+    const pointer = { x: event.pageX, y: event.pageY };
+    extension.action(null, pointer);
   }
   // ----- MODIFICATION END (kunyatta) for PluginSystem -----
 

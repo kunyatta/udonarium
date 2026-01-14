@@ -7,10 +7,12 @@ import { DynamicStandPluginModule } from '../app/plugins/dynamic-stand/dynamic-s
 import { RollResultChartModule } from '../app/plugins/roll-result-chart/roll-result-chart.module';
 import { TargetSelectorModule } from '../app/plugins/target-selector/target-selector.module';
 import { LogoutModule } from '../app/plugins/logout/logout.module';
+import { SettingsModule } from '../app/plugins/settings/settings.module';
 
 export const environment = {
   production: true,
   pluginModules: [
+    SettingsModule,
     CombatFlowModule,
     ChatLogManagerModule,
     RollCallModule,

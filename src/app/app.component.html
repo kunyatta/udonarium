@@ -41,19 +41,13 @@
         </a>
       </li>
       <!-- ----- MODIFICATION START (kunyatta) for PluginSystem ----- -->
-      <li *ngFor="let extension of mainMenuExtensions" (click)="extension.action()">
+      <li *ngFor="let extension of mainMenuExtensions" (click)="onExtensionClick(extension, $event)">
         <a routerLink="/" routerLinkActive="active">
           <!-- ----- MODIFICATION START (kunyatta) for MaterialSymbolsSupport ----- -->
           <!-- <div><i class="material-icons icon-size">{{extension.icon}}</i></div> -->
           <div><i [ngClass]="extension.iconClass || 'material-icons'" class="icon-size">{{extension.icon}}</i></div>
           <!-- ----- MODIFICATION END (kunyatta) ----- -->
           <div>{{extension.name}}</div>
-        </a>
-      </li>
-      <li (click)="openPluginLauncherPanel()">
-        <a routerLink="/" routerLinkActive="active">
-          <div><i class="material-icons icon-size">extension</i></div>
-          <div>拡張</div>
         </a>
       </li>
       <!-- ----- MODIFICATION END (kunyatta) for PluginSystem ----- -->
@@ -80,7 +74,7 @@
         </a>
       </li>
       <!-- ----- MODIFICATION START (kunyatta) for PluginSystem ----- -->
-      <li *ngFor="let extension of mainMenuBottomExtensions" (click)="extension.action()">
+      <li *ngFor="let extension of mainMenuBottomExtensions" (click)="onExtensionClick(extension, $event)">
         <a routerLink="/" routerLinkActive="active">
           <div><i [ngClass]="extension.iconClass || 'material-icons'" class="icon-size">{{extension.icon}}</i></div>
           <div>{{extension.name}}</div>

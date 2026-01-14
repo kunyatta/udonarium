@@ -4,6 +4,7 @@ import { PluginUiService } from '../service/plugin-ui.service';
 import { PluginDataObserverService } from '../service/plugin-data-observer.service';
 import { CombatFlowControllerComponent } from './combat-flow-controller.component';
 import { CombatFlowPanelComponent } from './combat-flow-panel.component';
+import { CombatFlowSettingsComponent } from './combat-flow-settings.component';
 import { CombatStateService } from './combat-state.service';
 import { EventSystem } from '@udonarium/core/system';
 import { PluginDataContainer } from '../../class/plugin-data-container';
@@ -59,6 +60,20 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
           title: this.name,
           width: this.width,
           height: this.height,
+          isSingleton: true
+        });
+      }
+    });
+
+    this.uiExtensionService.registerAction('settings', {
+      name: '戦闘設定',
+      icon: 'settings',
+      priority: 100,
+      action: () => {
+        this.pluginUiService.open(CombatFlowSettingsComponent, {
+          title: '戦闘設定',
+          width: 580,
+          height: 600,
           isSingleton: true
         });
       }

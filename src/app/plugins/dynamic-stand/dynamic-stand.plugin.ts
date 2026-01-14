@@ -3,6 +3,7 @@ import { IPluginWithUI } from '../i-plugin';
 import { DynamicStandPluginService } from './dynamic-stand.service';
 import { EmoteManagerService } from './emote-manager.service';
 import { UIExtensionService } from '../service/ui-extension.service';
+import { PluginUiService } from '../service/plugin-ui.service';
 import { GameCharacter } from '@udonarium/game-character';
 import { DynamicStandSettingComponent } from './dynamic-stand-setting.component';
 
@@ -20,7 +21,8 @@ export class DynamicStandPlugin implements IPluginWithUI {
   constructor(
     private service: DynamicStandPluginService,
     private emoteManager: EmoteManagerService,
-    private uiExtensionService: UIExtensionService
+    private uiExtensionService: UIExtensionService,
+    private pluginUiService: PluginUiService
   ) {}
 
   initialize(): void {
@@ -29,6 +31,21 @@ export class DynamicStandPlugin implements IPluginWithUI {
   }
 
   initializeUI(injector: Injector): void {
+    // 設定メニューへの登録
+    this.uiExtensionService.registerAction('settings', {
+      name: '立ち絵設定',
+      icon: this.icon,
+      priority: 200,
+      action: () => {
+        this.pluginUiService.open(this.component, {
+          title: '立ち絵共通設定',
+          width: this.width,
+          height: this.height,
+          isSingleton: true
+        });
+      }
+    });
+
     // 1. キャラクターシートへの拡張
     this.uiExtensionService.registerAction('character-sheet', {
       name: '立ち絵設定を追加',
