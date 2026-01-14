@@ -2,9 +2,10 @@ import { Injectable, Injector, NgZone, OnDestroy } from '@angular/core';
 import { IPluginWithUI } from '../i-plugin';
 import { PluginUiService } from '../service/plugin-ui.service';
 import { PluginDataObserverService } from '../service/plugin-data-observer.service';
-import { CombatFlowControllerComponent } from './combat-flow-controller.component';
 import { CombatFlowPanelComponent } from './combat-flow-panel.component';
 import { CombatFlowSettingsComponent } from './combat-flow-settings.component';
+import { CombatFlowManagerComponent } from './combat-flow-manager.component';
+import { BattleActionComponent } from './battle-action.component';
 import { CombatStateService } from './combat-state.service';
 import { EventSystem } from '@udonarium/core/system';
 import { PluginDataContainer } from '../../class/plugin-data-container';
@@ -15,8 +16,13 @@ import { PLUGIN_ID } from './combat-flow.constants';
 export const COMBAT_FLOW_UI_DEFAULTS = {
   CONTROLLER: {
     width: 480,
-    height: 660,
-    title: '戦闘コントローラ'
+    height: 600,
+    title: '戦闘アクション'
+  },
+  MANAGER: {
+    width: 480,
+    height: 500,
+    title: '戦況マネージャ'
   },
   PANEL: {
     width: 800,
@@ -28,13 +34,13 @@ export const COMBAT_FLOW_UI_DEFAULTS = {
 @Injectable()
 export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
   readonly pluginName: string = PLUGIN_ID;
-  readonly name: string = COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.title;
+  readonly name: string = COMBAT_FLOW_UI_DEFAULTS.MANAGER.title; // メインメニュー用
   readonly type: 'panel' = 'panel';
   readonly icon: string = 'swords'; // ----- MODIFICATION (kunyatta) -----
   readonly iconClass: string = 'material-symbols-outlined'; // ----- MODIFICATION (kunyatta) -----
-  readonly component = CombatFlowControllerComponent;
-  width: number = COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.width;
-  height: number = COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.height;
+  readonly component = CombatFlowManagerComponent; // メインメニュー用
+  width: number = COMBAT_FLOW_UI_DEFAULTS.MANAGER.width;
+  height: number = COMBAT_FLOW_UI_DEFAULTS.MANAGER.height;
 
   private readonly PLUGIN_ID = PLUGIN_ID;
   private readonly FILE_NAME_HINT = 'default';
@@ -51,11 +57,12 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
   initializeUI(injector: Injector): void {
     // UI Extension の登録
     this.uiExtensionService.registerAction('main-menu', {
-      name: '戦闘',
+      name: '戦闘', // アイコン名は維持
       icon: this.icon,
       iconClass: this.iconClass, // ----- MODIFICATION (kunyatta) -----
       priority: 100,
       action: () => {
+        // メインメニューからは「戦況マネージャ」を開く
         this.pluginUiService.open(this.component, {
           title: this.name,
           width: this.width,
@@ -80,15 +87,16 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
     });
 
     this.uiExtensionService.registerAction('context-menu', {
-      name: '戦闘コントローラを表示',
+      name: '戦闘アクションを表示',
       action: (context: GameCharacter, pointer) => {
-        this.pluginUiService.open(this.component, {
-          title: this.name,
-          width: this.width,
-          height: this.height,
-          left: pointer ? pointer.x - this.width / 2 : undefined,
-          top: pointer ? pointer.y - this.height / 2 : undefined,
-          isSingleton: false,
+        // コンテキストメニューからは「戦闘アクション」を開く
+        this.pluginUiService.open(BattleActionComponent, {
+          title: COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.title,
+          width: COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.width,
+          height: COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.height,
+          left: pointer ? pointer.x - COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.width / 2 : undefined,
+          top: pointer ? pointer.y - COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.height / 2 : undefined,
+          isSingleton: false, // 複数キャラ同時に開けるようにする
           inputs: { initialCasterIdentifier: context.identifier }
         });
       },

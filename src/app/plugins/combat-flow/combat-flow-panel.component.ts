@@ -12,7 +12,7 @@ import { DataElement } from '@udonarium/data-element';
 import { EventSystem } from '@udonarium/core/system';
 import { ContextMenuService, ContextMenuAction } from 'service/context-menu.service';
 import { PluginUiService } from '../service/plugin-ui.service';
-import { CombatFlowControllerComponent } from './combat-flow-controller.component';
+import { BattleActionComponent } from './battle-action.component';
 import { CombatFlowHelpComponent } from './combat-flow-help.component';
 import { COMBAT_FLOW_UI_DEFAULTS } from './combat-flow.plugin';
 import { GameCharacterSheetComponent } from 'component/game-character-sheet/game-character-sheet.component';
@@ -254,9 +254,9 @@ export class CombatFlowPanelComponent implements OnInit, OnDestroy {
 
     const actions: ContextMenuAction[] = [
       {
-        name: '戦闘コントローラを表示',
+        name: '戦闘アクションを表示',
         action: () => {
-          this.pluginUiService.openAtCursor(CombatFlowControllerComponent, { 
+          this.pluginUiService.openAtCursor(BattleActionComponent, { 
             isSingleton: false,
             width: COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.width,
             height: COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.height,

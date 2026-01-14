@@ -1,0 +1,88 @@
+<ng-container *ngIf="{
+  isCombat: isCombat$ | async,
+  round: round$ | async,
+  preCombatRound: preCombatRound$ | async,
+  selectedCharacterCount: selectedCharacterCount$ | async,
+  isAllSelected: isAllSelected$ | async,
+  unifiedList: unifiedParticipantList$ | async,
+  selectedForReorder: selectedParticipantIdForReorder$ | async,
+  currentId: currentCharacterId$ | async
+} as state">
+
+<div class="component-container">
+  <!-- 手番・戦闘管理 -->
+  <h4 class="title-with-help">
+    手番・戦闘操作
+    <button class="help-button-mini" (click)="openHelp($event)" title="操作ヘルプ">?</button>
+  </h4>
+  <div class="turn-controls-container">
+    <div class="turn-controls">
+      <button (click)="prevTurn()" [disabled]="!state.isCombat">＜ 戻る</button>
+      <button (click)="nextTurn()" [disabled]="!state.isCombat">次へ ＞</button>
+      <button (click)="nextRound()">次ラウンド</button>
+      <span class="round-display" (click)="resetRound()" title="クリックしてラウンドを1にリセット">
+        R{{ (state.isCombat ? state.round : state.preCombatRound) | number:'2.0-0' }}
+      </span>
+    </div>
+    <button *ngIf="state.isCombat" class="danger" (click)="endCombat()">戦闘終了</button>
+    <button *ngIf="!state.isCombat" class="primary" (click)="startCombat()" [disabled]="state.selectedCharacterCount === 0">戦闘開始</button>
+  </div>
+  
+  <!-- 現在の手番表示と操作ボタン -->
+  <div class="current-turn-container">
+    <span class="current-turn-label">現在の手番:</span>
+    <span class="current-turn-name" *ngIf="state.isCombat">{{ getCharacterName(state.currentId) }}</span>
+    <span class="current-turn-name" *ngIf="!state.isCombat" style="color: #888;">(戦闘準備中)</span>
+    <button class="primary action-open-button" 
+            (click)="openBattleAction(state.currentId)" 
+            title="戦闘アクション画面を開きます">⚔️ 操作</button>
+  </div>
+
+  <hr>
+
+  <!-- 統合キャラクターリスト -->
+  <h4 class="title-with-button">
+    <span>戦闘参加キャラクター <small>チェックONで参加/OFFで待機</small></span>
+    <label *ngIf="!state.isCombat" class="checkbox-label" title="全員選択/解除" style="margin-left: auto; margin-right: 0;">
+      <input type="checkbox" 
+             [checked]="state.isAllSelected" 
+             (change)="toggleAllCharacters()">
+      <span style="font-size: 0.8em; margin-left: 4px;">全選択</span>
+    </label>
+  </h4>
+  
+  <div class="character-list-container unified-list">
+    <div *ngFor="let item of state.unifiedList"
+         [ngClass]="{
+           'list-separator': item.type === 'separator',
+           'character-item': item.type !== 'separator',
+           'selected': item.type !== 'separator' && state.selectedForReorder === item.characterId,
+           'participating': item.isParticipating,
+           'standby': !item.isParticipating
+         }"
+         (click)="item.type !== 'separator' && selectParticipantForReorder(item.characterId)">
+      
+      <!-- セパレータ -->
+      <ng-container *ngIf="item.type === 'separator'">
+        <span>--- 待機中 ---</span>
+      </ng-container>
+
+      <!-- キャラクター -->
+      <ng-container *ngIf="item.type !== 'separator'">
+        <label class="checkbox-label" (click)="$event.stopPropagation()">
+          <input type="checkbox" 
+                 [checked]="item.isParticipating" 
+                 (click)="toggleParticipantStatus(item, $event)">
+        </label>
+        <span class="character-name">{{ item.name }}</span>
+      </ng-container>
+    </div>
+  </div>
+  
+  <div class="order-controls">
+    <button (click)="moveParticipantUp()" [disabled]="!state.selectedForReorder">▲ 上へ</button>
+    <button (click)="moveParticipantDown()" [disabled]="!state.selectedForReorder">▼ 下へ</button>
+  </div>
+</div>
+
+</ng-container>
