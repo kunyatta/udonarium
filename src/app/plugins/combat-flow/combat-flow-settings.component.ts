@@ -17,9 +17,11 @@ import { PluginDataObserverService } from '../service/plugin-data-observer.servi
 import { PluginDataContainer } from '../../class/plugin-data-container';
 import { CharacterDataService } from '../service/character-data.service';
 import { SaveDataService } from '../../service/save-data.service';
+import { PluginDataTransferService } from '../service/plugin-data-transfer.service';
 import { DataElement } from '@udonarium/data-element';
 import { DICTIONARY_FILE_NAME_HINT, PLUGIN_ID, DATA_TAG_STATUS_EFFECT_DATA } from './combat-flow.constants';
 import { DamageCheckConfig } from './combat-flow-config.model';
+import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-combat-flow-settings',
@@ -29,6 +31,8 @@ import { DamageCheckConfig } from './combat-flow-config.model';
 export class CombatFlowSettingsComponent implements OnInit, OnDestroy {
   activeTab: 'status-effects' | 'settings' = 'settings';
   private unsubscribe$ = new Subject<void>();
+
+  get isProduction(): boolean { return environment.production; }
 
   // --- ステータス効果管理用 ---
   private readonly PLUGIN_ID = PLUGIN_ID;
@@ -76,6 +80,7 @@ export class CombatFlowSettingsComponent implements OnInit, OnDestroy {
     private combatLogService: CombatLogService,
     private characterDataService: CharacterDataService,
     private saveDataService: SaveDataService,
+    private pluginDataTransfer: PluginDataTransferService,
     private changeDetectorRef: ChangeDetectorRef
   ) { 
     this.combatStateService.displayDataTags$.pipe(takeUntil(this.unsubscribe$)).subscribe(tags => {
@@ -239,15 +244,30 @@ export class CombatFlowSettingsComponent implements OnInit, OnDestroy {
     this.syncFormModelWithUi();
 
     const effectElement = this.dictionaryService.exportEffectToElement(this.editingEffect);
-    const rootElement = DataElement.create(DATA_TAG_STATUS_EFFECT_DATA, '', {}, '');
-    rootElement.appendChild(effectElement);
-
-    this.saveDataService.saveDataElementAsync(rootElement, 'status-effect', `ステータス効果_${this.editingEffect.name}`);
+    this.pluginDataTransfer.export(this.PLUGIN_ID, `ステータス効果_${this.editingEffect.name}`, effectElement);
   }
 
   exportStatusEffectDictionaryAsZip(): void {
     if (!this.dictionaryContainer) return;
-    this.saveDataService.saveGameObjectAsync(this.dictionaryContainer, 'plugin_combat-flow_status-effect-dictionary');
+    
+    // 辞書データ全体をエクスポートするために、dictionary要素を取得
+    const dictionaryRoot = this.dictionaryContainer.state.getFirstElementByName('dictionary');
+    if (dictionaryRoot) {
+      this.pluginDataTransfer.export(this.PLUGIN_ID, 'plugin_combat-flow_status-effect-dictionary', dictionaryRoot);
+    }
+  }
+
+  /**
+   * [開発者用] 現在の辞書データを初期データ用XMLとしてエクスポートします。
+   * これを src/assets/status-effect-dictionary.xml に配置してください。
+   */
+  exportStatusEffectDictionaryAsXml(): void {
+    if (!this.dictionaryContainer) return;
+    
+    const dictionaryRoot = this.dictionaryContainer.state.getFirstElementByName('dictionary');
+    if (dictionaryRoot) {
+      this.pluginDataTransfer.export(this.PLUGIN_ID, 'status-effect-dictionary', dictionaryRoot, { type: 'xml' });
+    }
   }
 
   // --- UIモデル/フォーム同期ロジック (旧StatusEffectEditorから移植) ---

@@ -1,1 +1,46 @@
-<data name="dictionary"><data name="template"><data name="name">死亡</data><data name="emoji">☠️</data><data name="description">このキャラクターは行動できません。</data><data name="duration">0</data><data name="isPermanent">true</data><data name="visualEffects"><data type="filter" value="grayscale(100%)" name="visualEffect"></data><data type="backgroundColor" value="#666" name="visualEffect"></data></data><data name="effects"></data></data><data name="template"><data name="name">麻痺(命中-2)</data><data name="emoji">⚡</data><data name="description">命中力判定、または回避力判定を-2</data><data name="duration">18</data><data name="isPermanent">false</data><data name="visualEffects"><data type="aura" value="#ffff00" name="visualEffect"></data><data type="backgroundColor" value="#808000" name="visualEffect"></data></data><data name="effects"></data></data><data name="template"><data name="name">毒</data><data name="emoji">🧪</data><data name="description">毎ラウンドHP-5</data><data name="duration">18</data><data name="isPermanent">false</data><data name="visualEffects"><data type="aura" value="#ff0000" name="visualEffect"></data><data type="backgroundColor" value="#c37979" name="visualEffect"></data></data><data name="effects"><data type="attributeChange" target="HP.currentValue" value="-5" name="effect"></data></data></data></data>
+<?xml version="1.0" encoding="UTF-8"?>
+<data name="plugin-export-data">
+  <data name="targetPluginId">combat-flow</data>
+  <data name="payload">
+    <data name="dictionary">
+      <data name="template">
+        <data name="name">死亡</data>
+        <data name="emoji">☠️</data>
+        <data name="description">このキャラクターは行動できません。</data>
+        <data name="duration">0</data>
+        <data name="isPermanent">true</data>
+        <data name="visualEffects">
+          <data type="filter" value="grayscale(100%)" name="visualEffect"></data>
+          <data type="backgroundColor" value="#666" name="visualEffect"></data>
+        </data>
+        <data name="effects"></data>
+      </data>
+      <data name="template">
+        <data name="name">麻痺(命中-2)</data>
+        <data name="emoji">⚡</data>
+        <data name="description">命中力判定、または回避力判定を-2</data>
+        <data name="duration">18</data>
+        <data name="isPermanent">false</data>
+        <data name="visualEffects">
+          <data type="aura" value="#ffff00" name="visualEffect"></data>
+          <data type="backgroundColor" value="#808000" name="visualEffect"></data>
+        </data>
+        <data name="effects"></data>
+      </data>
+      <data name="template">
+        <data name="name">毒</data>
+        <data name="emoji">🧪</data>
+        <data name="description">毎ラウンドHP-5</data>
+        <data name="duration">18</data>
+        <data name="isPermanent">false</data>
+        <data name="visualEffects">
+          <data type="aura" value="#ff0000" name="visualEffect"></data>
+          <data type="backgroundColor" value="#c37979" name="visualEffect"></data>
+        </data>
+        <data name="effects">
+          <data type="attributeChange" target="HP.currentValue" value="-5" name="effect"></data>
+        </data>
+      </data>
+    </data>
+  </data>
+</data>

@@ -8,12 +8,15 @@ import { ChatListenerService } from '../service/chat-listener.service';
 import { CutInPlaybackService } from './cut-in-playback.service';
 import { PluginMapperService, MappingOptions } from '../service/plugin-mapper.service';
 import { DataElement } from '@udonarium/data-element';
+import { PluginDataTransferService } from '../service/plugin-data-transfer.service';
+import { Subject } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CutInService {
-  private readonly PLUGIN_ID = 'cut-in';
+  readonly PLUGIN_ID = 'cut-in';
+  readonly update$ = new Subject<void>();
 
   private readonly MAPPING_OPTIONS: MappingOptions = {
     tagMap: { 'cutIns': 'cut-in-list' },
@@ -29,7 +32,8 @@ export class CutInService {
     private observerService: PluginDataObserverService,
     private chatListenerService: ChatListenerService,
     private playbackService: CutInPlaybackService,
-    private mapperService: PluginMapperService
+    private mapperService: PluginMapperService,
+    private pluginDataTransfer: PluginDataTransferService
   ) {
     this.initialize();
   }
@@ -49,6 +53,60 @@ export class CutInService {
         this.loadFromContainer();
       }
     );
+
+    // インポート処理の登録
+    this.pluginDataTransfer.register(this.PLUGIN_ID, (data: DataElement) => {
+      console.log('[CutInService] Data received from PluginDataTransferService.');
+      this.importFromDataElement(data);
+    });
+  }
+
+  private importFromDataElement(rootElement: DataElement) {
+    let itemsToImport: CutIn[] = [];
+
+    // ルートが 'cut-in-list' (一括) か 'cut-in' (単体) か判定
+    if (rootElement.name === 'cut-in-list') {
+      const result = this.mapperService.fromElement<{ cutIns: CutIn[] }>(rootElement, this.MAPPING_OPTIONS);
+      itemsToImport = result.cutIns || [];
+    } else if (rootElement.name === 'cut-in') {
+      // 単体の場合はリストにラップしてパース
+      const wrapper = DataElement.create('cut-in-list', '', {}, '');
+      // クローンして追加しないと元のDataElementツリーを破壊する可能性がある
+      // (fromElementの実装によるが、念のため)
+      wrapper.appendChild(rootElement);
+      const result = this.mapperService.fromElement<{ cutIns: CutIn[] }>(wrapper, this.MAPPING_OPTIONS);
+      itemsToImport = result.cutIns || [];
+    } else {
+      // 子要素から探す (payloadの中身が直接リストではない場合など)
+      const listElement = rootElement.getFirstElementByName('cut-in-list');
+      if (listElement) {
+        const result = this.mapperService.fromElement<{ cutIns: CutIn[] }>(listElement, this.MAPPING_OPTIONS);
+        itemsToImport = result.cutIns || [];
+      } else {
+         // 単体要素の検索
+         const cutInElements = rootElement.children.filter(c => c instanceof DataElement && c.name === 'cut-in');
+         if (cutInElements.length > 0) {
+            const wrapper = DataElement.create('cut-in-list', '', {}, '');
+            cutInElements.forEach(c => wrapper.appendChild(c)); // ここでは移動でOK
+            const result = this.mapperService.fromElement<{ cutIns: CutIn[] }>(wrapper, this.MAPPING_OPTIONS);
+            itemsToImport = result.cutIns || [];
+         }
+      }
+    }
+
+    if (itemsToImport.length === 0) {
+        console.warn('[CutInService] No importable data found.');
+        return;
+    }
+
+    // 新規IDを付与して追加
+    for (const imported of itemsToImport) {
+      imported.identifier = crypto.randomUUID();
+      this._cutIns.push(imported);
+    }
+
+    this.saveToContainer();
+    console.log(`[CutInService] Imported ${itemsToImport.length} cut-ins.`);
   }
 
   private loadFromContainer() {
@@ -63,22 +121,34 @@ export class CutInService {
     
     if (listElement) {
       const result = this.mapperService.fromElement<{ cutIns: CutIn[] }>(listElement, this.MAPPING_OPTIONS);
-      this._cutIns = result.cutIns || [];
-      console.log('[CutInService] Loaded cut-ins (XML):', this._cutIns.length);
+      const newCutIns = result.cutIns || [];
+      
+      // 参照を維持しながら更新する (UI側で editingCutIn として掴んでいるため)
+      // 1. 既存IDのものは中身を更新
+      for (const newItem of newCutIns) {
+        const existing = this._cutIns.find(c => c.identifier === newItem.identifier);
+        if (existing) {
+          Object.assign(existing, newItem);
+        } else {
+          this._cutIns.push(newItem);
+        }
+      }
+      // 2. 削除されたものを除去
+      const newIds = new Set(newCutIns.map(c => c.identifier));
+      for (let i = this._cutIns.length - 1; i >= 0; i--) {
+        if (!newIds.has(this._cutIns[i].identifier)) {
+          this._cutIns.splice(i, 1);
+        }
+      }
     } else {
       // 後方互換性：古いJSON形式があれば読み込む
       if (this.container.data) {
         try {
           this._cutIns = JSON.parse(this.container.data);
-          console.log('[CutInService] Loaded cut-ins (Legacy JSON):', this._cutIns.length);
-          // 即座にXML形式へ変換保存を試みる
           this.saveToContainer();
         } catch (e) {
-          console.error('[CutInService] Failed to parse legacy JSON:', e);
           this._cutIns = [];
         }
-      } else {
-        this._cutIns = [];
       }
     }
     this.updateChatListeners();
@@ -104,11 +174,9 @@ export class CutInService {
     
     this.container.update();
     this.updateChatListeners();
+    this.update$.next();
   }
 
-  /**
-   * チャットキーワード監視を最新のリストで更新する
-   */
   private updateChatListeners() {
     this.chatListenerService.removeRulesByOwner(this);
 
@@ -143,6 +211,10 @@ export class CutInService {
     }
   }
 
+  save() {
+    this.saveToContainer();
+  }
+
   deleteCutIn(identifier: string) {
     this._cutIns = this._cutIns.filter(c => c.identifier !== identifier);
     this.saveToContainer();
@@ -150,5 +222,23 @@ export class CutInService {
 
   getCutInById(identifier: string): CutIn | undefined {
     return this._cutIns.find(c => c.identifier === identifier);
+  }
+
+  /**
+   * エクスポート用のDataElementを生成して返す（共通フォーマットにラップされる前の中身）
+   */
+  getExportDataElement(cutIn: CutIn): DataElement {
+    const listElement = this.mapperService.toElement('cutIns', [cutIn], this.MAPPING_OPTIONS);
+    // 1件だけのリストを作成し、その中身の 'cut-in' 要素を取り出す
+    const cutInElement = listElement.children[0] as DataElement;
+    return cutInElement;
+  }
+
+  /**
+   * 全件エクスポート用のDataElementを生成して返す
+   */
+  getAllExportDataElement(): DataElement {
+    const listElement = this.mapperService.toElement('cutIns', this._cutIns, this.MAPPING_OPTIONS);
+    return listElement;
   }
 }

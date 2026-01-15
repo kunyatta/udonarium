@@ -98,6 +98,7 @@
         </div>
         <div class="sidebar-footer">
           <button class="full-width" (click)="exportStatusEffectDictionaryAsZip()">辞書を一括保存</button>
+          <button *ngIf="!isProduction" class="full-width secondary" (click)="exportStatusEffectDictionaryAsXml()" style="margin-top: 4px; font-size: 0.8em;">開発用XML出力</button>
         </div>
       </div>
 

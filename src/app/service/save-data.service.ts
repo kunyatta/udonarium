@@ -88,26 +88,26 @@ export class SaveDataService {
 
   // ----- MODIFICATION START (kunyatta) for PluginSystem -----
   /**
-   * 任意の DataElement を単一のXMLファイルとしてZIP圧縮して保存します。
-   * プラグインが独自のデータ単位（例：ステータス効果単体、特定の設定セットなど）をエクスポートするために使用します。
+   * 任意の DataElement を単一のXMLファイルとして保存します。
+   * ZIP圧縮するかどうかを選択可能です。
    *
    * @param element 保存対象の DataElement
-   * @param xmlFileName ZIP内に格納されるXMLファイル名（拡張子なし）
-   * @param zipFileName ダウンロードされるZIPファイル名（拡張子なし）
+   * @param xmlFileName 保存されるXMLファイル名（拡張子なし）
+   * @param zipFileName ZIP保存時のファイル名（拡張子なし）。ZIP圧縮しない場合は無視されます。
+   * @param isZip ZIP圧縮して保存するかどうか。デフォルトは true。
    */
-  saveDataElementAsync(element: DataElement, xmlFileName: string = 'data', zipFileName: string = 'data'): Promise<void> {
-    return SaveDataService.queue.add((resolve, reject) => resolve(this._saveDataElementAsync(element, xmlFileName, zipFileName)));
+  saveDataElementAsync(element: DataElement, xmlFileName: string = 'data', zipFileName: string = 'data', isZip: boolean = true): Promise<void> {
+    return SaveDataService.queue.add((resolve, reject) => resolve(this._saveDataElementAsync(element, xmlFileName, zipFileName, isZip)));
   }
 
-  private _saveDataElementAsync(element: DataElement, xmlFileName: string, zipFileName: string): Promise<void> {
+  private _saveDataElementAsync(element: DataElement, xmlFileName: string, zipFileName: string, isZip: boolean): Promise<void> {
     // DataElementは既にXML構造を持っているので、そのまま文字列化する
     let xml: string = this.convertToXml(element.toXml());
-    return this._saveXmlAsZipAsync(xml, xmlFileName, zipFileName);
+    return isZip ? this._saveXmlAsZipAsync(xml, xmlFileName, zipFileName) : this._saveXmlAsync(xml, xmlFileName);
   }
 
   /**
-   * 任意の XML 文字列を単一のXMLファイルとしてZIP圧縮して保存します。
-   * タグ名をカスタマイズしたい場合など、DataElementを経由しない保存に使用します。
+   * 任意の XML 文字列を単一のXMLファイルとして保存します。
    */
   saveXmlAsZipAsync(xml: string, xmlFileName: string = 'data', zipFileName: string = 'data'): Promise<void> {
     return SaveDataService.queue.add((resolve, reject) => resolve(this._saveXmlAsZipAsync(this.convertToXml(xml), xmlFileName, zipFileName)));
@@ -119,6 +119,23 @@ export class SaveDataService {
     files = files.concat(this.searchImageFiles(xml));
 
     return this.saveAsync(files, this.appendTimestamp(zipFileName));
+  }
+
+  /**
+   * 任意の XML 文字列をZIP圧縮せずに単一のXMLファイルとして保存（ダウンロード）します。
+   * 主に開発者が初期データを作成するために使用します。
+   */
+  saveXmlAsync(xml: string, fileName: string = 'data'): Promise<void> {
+    return SaveDataService.queue.add((resolve, reject) => resolve(this._saveXmlAsync(this.convertToXml(xml), fileName)));
+  }
+
+  private _saveXmlAsync(xml: string, fileName: string): Promise<void> {
+    let blob = new Blob([xml], { type: 'text/xml' });
+    let link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = this.appendTimestamp(fileName) + '.xml';
+    link.click();
+    return Promise.resolve();
   }
   // ----- MODIFICATION END (kunyatta) for PluginSystem -----
 

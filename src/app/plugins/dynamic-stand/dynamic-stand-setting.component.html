@@ -60,7 +60,8 @@
   <!-- Left Column: List -->
   <div class="emote-list-col">
     <div class="list-header">
-      <button class="add-btn" (click)="createNewEmote()">+ 新規作成</button>
+      <button class="add-btn" (click)="createNewEmote()">+ 新規追加</button>
+      <button class="btn btn-outline-secondary btn-sm" style="width: 100%; margin-top: 4px;" (click)="exportAllEmotes()">辞書を一括保存</button>
     </div>
     <div class="scrollable-list">
       <div *ngFor="let emote of emotes; let i = index" class="list-item" 
@@ -82,29 +83,32 @@
       <h3>エモート編集</h3>
       <div class="form-group">
         <label>アイコン (絵文字/テキスト)</label>
-        <input type="text" [(ngModel)]="selectedEmote.icon" placeholder="😊">
+        <input type="text" [(ngModel)]="selectedEmote.icon" (change)="onEmoteChange()" placeholder="😊">
       </div>
       <div class="form-group">
         <label>表示名 (メニュー用)</label>
-        <input type="text" [(ngModel)]="selectedEmote.label" placeholder="笑顔">
+        <input type="text" [(ngModel)]="selectedEmote.label" (change)="onEmoteChange()" placeholder="笑顔">
       </div>
       <div class="form-group">
         <label>効果音 (SE)</label>
-        <select [(ngModel)]="selectedEmote.soundIdentifier">
+        <select [(ngModel)]="selectedEmote.soundIdentifier" (change)="onEmoteChange()">
           <option value="">設定なし</option>
           <option *ngFor="let audio of audios" [value]="audio.identifier">{{audio.name}}</option>
         </select>
       </div>
 
-      <div class="button-row">
-        <button (click)="saveEmote()">保存</button>
-        <button (click)="cancelEdit()">キャンセル</button>
-        <button class="danger" *ngIf="selectedEmote.identifier" (click)="deleteEmote()">削除</button>
+      <div class="button-row" style="margin-top: 20px;">
+        <button class="btn btn-outline-primary" (click)="exportEmote()">個別保存</button>
+        <button class="btn btn-outline-danger" (click)="deleteEmote()">削除</button>
+        <button class="btn btn-outline-secondary" (click)="cancelEdit()">閉じる</button>
+      </div>
+      <div class="footer" style="margin-top: 10px;">
+        <p class="small text-muted">※ 編集内容は自動的に保存・同期されます。</p>
       </div>
     </div>
     <ng-template #noSelection>
       <div class="placeholder">
-        <p>左のリストから選択するか<br>新規作成してください</p>
+        <p>左のリストから選択するか<br>新規追加してください</p>
       </div>
     </ng-template>
   </div>

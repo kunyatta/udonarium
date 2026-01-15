@@ -2,6 +2,7 @@
   <div class="sidebar">
     <div class="sidebar-header">
       <button class="full-width" (click)="createNew()">+ 新規チャート</button>
+      <button class="full-width secondary" style="margin-top: 4px;" (click)="exportAll()">辞書を一括保存</button>
     </div>
     <div class="chart-list">
       <div *ngFor="let chart of charts; let i = index"
@@ -15,7 +16,7 @@
 
   <div class="main-content">
     <div class="editor-header" *ngIf="editingChart">
-      <button (click)="save()">保存</button>
+      <button (click)="export()">個別保存</button>
       <button class="danger" (click)="delete()" [disabled]="selectedChartIndex < 0">削除</button>
     </div>
     
@@ -23,20 +24,20 @@
       <div class="input-column">
         <div class="input-group">
           <label>チャート名</label>
-          <input type="text" [(ngModel)]="editingChart.title">
+          <input type="text" [(ngModel)]="editingChart.title" (change)="onChartChange()">
         </div>
         <div class="input-group">
           <label>コマンド</label>
-          <input type="text" [(ngModel)]="editingChart.command">
+          <input type="text" [(ngModel)]="editingChart.command" (change)="onChartChange()">
         </div>
         <div class="input-group">
           <label>使用ダイス</label>
-          <input type="text" [(ngModel)]="editingChart.dice">
+          <input type="text" [(ngModel)]="editingChart.dice" (change)="onChartChange()">
         </div>
       </div>
       <div class="input-group full-height">
         <label>表の内容 (数字:結果)</label>
-        <textarea [(ngModel)]="editingChart.value" placeholder="1:結果A
+        <textarea [(ngModel)]="editingChart.value" (change)="onChartChange()" placeholder="1:結果A
 2-5:結果B
 *:結果C"></textarea>
       </div>

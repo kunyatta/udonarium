@@ -1,4 +1,4 @@
-import { Component, OnInit, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, ChangeDetectionStrategy } from '@angular/core';
 import { CutInService } from './cut-in.service';
 import { CutIn, DEFAULT_CUT_IN } from './cut-in.model';
 import { PluginUiService } from '../service/plugin-ui.service';
@@ -6,6 +6,9 @@ import { FileSelecterComponent } from '../../component/file-selecter/file-select
 import { ImageStorage } from '@udonarium/core/file-storage/image-storage';
 import { AudioStorage } from '@udonarium/core/file-storage/audio-storage';
 import { CutInPlaybackService } from './cut-in-playback.service';
+import { PluginDataTransferService } from '../service/plugin-data-transfer.service';
+import { Subject } from 'rxjs';
+import { takeUntil } from 'rxjs/operators';
 
 @Component({
   selector: 'app-cut-in-setting',
@@ -13,9 +16,10 @@ import { CutInPlaybackService } from './cut-in-playback.service';
   styleUrls: ['./cut-in-setting.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-export class CutInSettingComponent implements OnInit {
+export class CutInSettingComponent implements OnInit, OnDestroy {
   selectedIdentifier: string | null = null;
   editingCutIn: CutIn | null = null;
+  private onDestroy$ = new Subject<void>();
   
   get sizeMode(): 'ratio' | 'scale' {
     if (!this.editingCutIn) return 'scale';
@@ -30,14 +34,15 @@ export class CutInSettingComponent implements OnInit {
     } else {
       this.editingCutIn.width = 0;
     }
-    this.changeDetector.markForCheck();
+    this.update();
   }
 
   constructor(
     public cutInService: CutInService,
     private playbackService: CutInPlaybackService,
     private pluginUiService: PluginUiService,
-    private changeDetector: ChangeDetectorRef
+    private changeDetector: ChangeDetectorRef,
+    private pluginDataTransfer: PluginDataTransferService
   ) {}
 
   readonly easings = [
@@ -84,7 +89,7 @@ export class CutInSettingComponent implements OnInit {
         this.editingCutIn.startOpacity = 0;
         break;
     }
-    this.changeDetector.markForCheck();
+    this.update();
   }
 
   setQuickOutEffect(effect: string) {
@@ -125,7 +130,7 @@ export class CutInSettingComponent implements OnInit {
         this.editingCutIn.endOpacity = 0;
         break;
     }
-    this.changeDetector.markForCheck();
+    this.update();
   }
 
   ngOnInit(): void {
@@ -133,6 +138,17 @@ export class CutInSettingComponent implements OnInit {
     if (this.cutIns.length > 0) {
       this.select(this.cutIns[0].identifier);
     }
+
+    this.cutInService.update$
+      .pipe(takeUntil(this.onDestroy$))
+      .subscribe(() => {
+        this.changeDetector.markForCheck();
+      });
+  }
+
+  ngOnDestroy(): void {
+    this.onDestroy$.next();
+    this.onDestroy$.complete();
   }
 
   get cutIns(): CutIn[] {
@@ -145,8 +161,9 @@ export class CutInSettingComponent implements OnInit {
 
   select(identifier: string) {
     this.selectedIdentifier = identifier;
+    // 参照渡しに変更（リアルタイム更新のため）
     const found = this.cutInService.getCutInById(identifier);
-    this.editingCutIn = found ? { ...found } : null;
+    this.editingCutIn = found ? found : null;
     
     // Restore video URL for display
     if (this.editingCutIn?.type === 'video' && this.editingCutIn.videoIdentifier) {
@@ -159,13 +176,14 @@ export class CutInSettingComponent implements OnInit {
   }
 
   createNew() {
-    this.selectedIdentifier = null;
-    this.editingCutIn = {
+    const newCutIn = {
       ...DEFAULT_CUT_IN,
-      identifier: ''
+      identifier: '' // service.addCutInでID生成される
     };
-    this.videoUrl = ''; // Reset video URL
-    this.changeDetector.markForCheck();
+    this.cutInService.addCutIn(newCutIn);
+    // 生成されたIDで選択（リストの末尾に追加されているはず）
+    const added = this.cutIns[this.cutIns.length - 1];
+    this.select(added.identifier);
   }
 
   // Helper property for UI binding
@@ -176,7 +194,7 @@ export class CutInSettingComponent implements OnInit {
   set cutInType(type: 'image' | 'video') {
     if (this.editingCutIn) {
       this.editingCutIn.type = type;
-      this.changeDetector.markForCheck();
+      this.update();
     }
   }
 
@@ -193,7 +211,7 @@ export class CutInSettingComponent implements OnInit {
       if (videoId) {
         this.editingCutIn.videoIdentifier = videoId;
       }
-      this.changeDetector.markForCheck(); // Force UI update
+      this.update();
     }
   }
 
@@ -211,24 +229,24 @@ export class CutInSettingComponent implements OnInit {
     return '';
   }
 
-  save() {
+  update() {
     if (!this.editingCutIn) return;
-    
-    // モードに合わせて値を最終調整
-    if (this.sizeMode === 'ratio') {
-      this.editingCutIn.scale = 1.0;
-    } else {
-      this.editingCutIn.width = 0;
-    }
+    this.cutInService.save();
+    this.changeDetector.markForCheck();
+  }
 
-    if (this.editingCutIn.identifier) {
-      this.cutInService.updateCutIn(this.editingCutIn);
-      this.select(this.editingCutIn.identifier); // Reload to ensure consistency
-    } else {
-      const newCutIn = { ...this.editingCutIn, identifier: crypto.randomUUID() };
-      this.cutInService.addCutIn(newCutIn);
-      this.select(newCutIn.identifier); // Switch to edit mode
-    }
+  // 個別エクスポート
+  export() {
+    if (!this.editingCutIn) return;
+    const element = this.cutInService.getExportDataElement(this.editingCutIn);
+    this.pluginDataTransfer.export(this.cutInService.PLUGIN_ID, `カットイン_${this.editingCutIn.name}`, element);
+  }
+
+  // 一括エクスポート
+  exportAll() {
+    if (this.cutIns.length === 0) return;
+    const element = this.cutInService.getAllExportDataElement();
+    this.pluginDataTransfer.export(this.cutInService.PLUGIN_ID, 'plugin_cut-in_list', element);
   }
 
   delete() {
@@ -262,7 +280,7 @@ export class CutInSettingComponent implements OnInit {
     this.pluginUiService.openAsModal(FileSelecterComponent, { title: '画像を選択' }).then(fileIdentifier => {
       if (typeof fileIdentifier === 'string' && this.editingCutIn) {
         this.editingCutIn.imageIdentifier = fileIdentifier;
-        this.changeDetector.markForCheck();
+        this.update();
       }
     });
   }

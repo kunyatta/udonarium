@@ -3,7 +3,8 @@
     <!-- 左カラム: リスト -->
     <div class="left-panel">
       <div class="panel-header">
-        <button class="btn btn-xs btn-primary full-width-btn" (click)="createNew()">＋ 新規追加</button>
+        <button class="btn btn-xs btn-primary full-width-btn mb-1" (click)="createNew()">＋ 新規追加</button>
+        <button class="btn btn-xs btn-outline-secondary full-width-btn" (click)="exportAll()">辞書を一括保存</button>
       </div>
       <div class="custom-list flex-grow-1">
         <button *ngFor="let item of cutIns" 
@@ -55,9 +56,9 @@
             <div class="preview-placeholder" *ngIf="!editingCutIn.videoIdentifier">URLを入力してください</div>
           </div>
 
-          <!-- 保存・削除ボタン (サムネイルの下) -->
+          <!-- 個別保存・削除ボタン (サムネイルの下) -->
           <div class="flex-row mb-3">
-            <button class="btn btn-sm btn-primary px-4 mr-2" (click)="save()">保存</button>
+            <button class="btn btn-sm btn-outline-primary px-4 mr-2" (click)="export()">個別保存</button>
             <button class="btn btn-sm btn-outline-danger" (click)="delete()">削除</button>
           </div>
         </div>
@@ -79,21 +80,21 @@
             <div class="flex-row">
               <div class="flex-label small">名前</div>
               <div class="flex-controls">
-                <input type="text" class="form-control" [(ngModel)]="editingCutIn.name">
+                <input type="text" class="form-control" [(ngModel)]="editingCutIn.name" (change)="update()">
               </div>
             </div>
 
             <div class="flex-row">
               <div class="flex-label small">キーワード</div>
               <div class="flex-controls">
-                <input type="text" class="form-control bold-text" [(ngModel)]="editingCutIn.keyword" placeholder="@必殺技 など">
+                <input type="text" class="form-control bold-text" [(ngModel)]="editingCutIn.keyword" (change)="update()" placeholder="@必殺技 など">
               </div>
             </div>
             
             <div class="flex-row">
               <div class="flex-label small">表示秒数</div>
               <div class="flex-controls">
-                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.duration" min="0">
+                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.duration" (change)="update()" min="0">
                 <span class="small-label ml-1" style="margin-left: 4px;">
                   {{ editingCutIn.type === 'video' ? '(0=動画終了まで)' : '(0=無制限)' }}
                 </span>
@@ -105,7 +106,7 @@
           <!-- ... (以下、既存の音声、大きさ、位置、演出設定) ... -->
         <div class="form-group">
           <label class="small-label">音源</label>
-          <select class="form-control" [(ngModel)]="editingCutIn.audioIdentifier">
+          <select class="form-control" [(ngModel)]="editingCutIn.audioIdentifier" (change)="update()">
             <option value="">(なし)</option>
             <option *ngFor="let audio of audios" [value]="audio.identifier">{{ audio.name }}</option>
           </select>
@@ -113,19 +114,19 @@
 
         <div class="form-group" *ngIf="editingCutIn.audioIdentifier">
           <div class="radio-group mb-1">
-            <input type="radio" id="audioModeSE" name="audioMode" value="se" [(ngModel)]="editingCutIn.audioMode">
+            <input type="radio" id="audioModeSE" name="audioMode" value="se" [(ngModel)]="editingCutIn.audioMode" (change)="update()">
             <label for="audioModeSE">SEとして再生</label>
             
-            <input type="radio" id="audioModeBGM" name="audioMode" value="bgm" [(ngModel)]="editingCutIn.audioMode">
+            <input type="radio" id="audioModeBGM" name="audioMode" value="bgm" [(ngModel)]="editingCutIn.audioMode" (change)="update()">
             <label for="audioModeBGM">BGMとして再生</label>
           </div>
 
           <div class="checkbox-row small">
             <label *ngIf="editingCutIn.audioMode === 'se'" class="mr-3">
-              <input type="checkbox" [(ngModel)]="editingCutIn.isLoop"> ループ再生
+              <input type="checkbox" [(ngModel)]="editingCutIn.isLoop" (change)="update()"> ループ再生
             </label>
             <label>
-              <input type="checkbox" [(ngModel)]="editingCutIn.stopJukebox"> 既存BGMを停止
+              <input type="checkbox" [(ngModel)]="editingCutIn.stopJukebox" (change)="update()"> 既存BGMを停止
             </label>
           </div>
         </div>
@@ -133,7 +134,7 @@
         <div class="form-group" *ngIf="editingCutIn.stopJukebox">
           <label class="small-label">演出終了後のBGM</label>
           <div class="flex-row align-items-center mb-1">
-            <select class="form-control flex-grow-1 mr-1" [(ngModel)]="editingCutIn.afterAudioIdentifier">
+            <select class="form-control flex-grow-1 mr-1" [(ngModel)]="editingCutIn.afterAudioIdentifier" (change)="update()">
               <option value="">(なし / 停止したまま)</option>
               <option *ngFor="let audio of audios" [value]="audio.identifier">{{ audio.name }}</option>
             </select>
@@ -141,7 +142,7 @@
           <div class="flex-row align-items-center" *ngIf="editingCutIn.afterAudioIdentifier !== ''">
             <div class="flex-label small">待機時間(秒)</div>
             <div class="flex-controls">
-              <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.afterAudioDelay" min="0" step="0.5">
+              <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.afterAudioDelay" (change)="update()" min="0" step="0.5">
               <span class="small-label ml-1">※演出終了後</span>
             </div>
           </div>
@@ -160,9 +161,9 @@
           <div *ngIf="sizeMode === 'scale'" class="flex-row align-items-center mb-1">
             <div class="flex-label small">拡大率</div>
             <div class="flex-controls">
-              <input type="range" class="custom-range flex-grow-1 mr-2" min="0.1" max="3.0" step="0.1" [(ngModel)]="editingCutIn.scale">
+              <input type="range" class="custom-range flex-grow-1 mr-2" min="0.1" max="3.0" step="0.1" [(ngModel)]="editingCutIn.scale" (input)="update()">
               <div class="input-with-unit">
-                <input type="number" class="form-control" [(ngModel)]="editingCutIn.scale" min="0.1" step="0.1">
+                <input type="number" class="form-control" [(ngModel)]="editingCutIn.scale" (change)="update()" min="0.1" step="0.1">
                 <span class="unit-text">倍</span>
               </div>
             </div>
@@ -171,9 +172,9 @@
           <div *ngIf="sizeMode === 'ratio'" class="flex-row align-items-center mb-1">
             <div class="flex-label small">幅(%)</div>
             <div class="flex-controls">
-              <input type="range" class="custom-range flex-grow-1 mr-2" min="1" max="100" step="1" [(ngModel)]="editingCutIn.width">
+              <input type="range" class="custom-range flex-grow-1 mr-2" min="1" max="100" step="1" [(ngModel)]="editingCutIn.width" (input)="update()">
               <div class="input-with-unit">
-                <input type="number" class="form-control" [(ngModel)]="editingCutIn.width" min="1" max="100">
+                <input type="number" class="form-control" [(ngModel)]="editingCutIn.width" (change)="update()" min="1" max="100">
                 <span class="unit-text">%</span>
               </div>
             </div>
@@ -185,27 +186,27 @@
           <div class="flex-row align-items-center mb-1">
             <div class="flex-label small">X (%)</div>
             <div class="flex-controls">
-              <input type="range" class="custom-range flex-grow-1 mr-2" min="0" max="100" step="1" [(ngModel)]="editingCutIn.left">
+              <input type="range" class="custom-range flex-grow-1 mr-2" min="0" max="100" step="1" [(ngModel)]="editingCutIn.left" (input)="update()">
               <div class="input-with-unit no-unit">
-                <input type="number" class="form-control" [(ngModel)]="editingCutIn.left" min="0" max="100">
+                <input type="number" class="form-control" [(ngModel)]="editingCutIn.left" (change)="update()" min="0" max="100">
               </div>
             </div>
           </div>
           <div class="flex-row align-items-center mb-1">
             <div class="flex-label small">Y (%)</div>
             <div class="flex-controls">
-              <input type="range" class="custom-range flex-grow-1 mr-2" min="0" max="100" step="1" [(ngModel)]="editingCutIn.top">
+              <input type="range" class="custom-range flex-grow-1 mr-2" min="0" max="100" step="1" [(ngModel)]="editingCutIn.top" (input)="update()">
               <div class="input-with-unit no-unit">
-                <input type="number" class="form-control" [(ngModel)]="editingCutIn.top" min="0" max="100">
+                <input type="number" class="form-control" [(ngModel)]="editingCutIn.top" (change)="update()" min="0" max="100">
               </div>
             </div>
           </div>
           <div class="flex-row align-items-center">
             <div class="flex-label small">不透明度</div>
             <div class="flex-controls">
-              <input type="range" class="custom-range flex-grow-1 mr-2" min="0" max="1" step="0.1" [(ngModel)]="editingCutIn.opacity">
+              <input type="range" class="custom-range flex-grow-1 mr-2" min="0" max="1" step="0.1" [(ngModel)]="editingCutIn.opacity" (input)="update()">
               <div class="input-with-unit no-unit">
-                <input type="number" class="form-control" [(ngModel)]="editingCutIn.opacity" min="0" max="1" step="0.1">
+                <input type="number" class="form-control" [(ngModel)]="editingCutIn.opacity" (change)="update()" min="0" max="1" step="0.1">
               </div>
             </div>
           </div>
@@ -229,8 +230,8 @@
           <div class="flex-row mb-1 align-items-center">
             <div class="flex-label small">時間(ms)</div>
             <div class="flex-controls">
-              <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.inDuration" step="100" min="0">
-              <select class="form-control flex-grow-1 ml-1" [(ngModel)]="editingCutIn.easing">
+              <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.inDuration" (change)="update()" step="100" min="0">
+              <select class="form-control flex-grow-1 ml-1" [(ngModel)]="editingCutIn.easing" (change)="update()">
                 <option *ngFor="let e of easings" [value]="e">{{e}}</option>
               </select>
             </div>
@@ -241,17 +242,17 @@
             <div class="flex-row align-items-center mb-1">
               <div class="flex-label small">開始X (%)</div>
               <div class="flex-controls">
-                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.startLeft">
+                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.startLeft" (change)="update()">
                 <span class="small-label ml-2">開始Y (%)</span>
-                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.startTop">
+                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.startTop" (change)="update()">
               </div>
             </div>
             <div class="flex-row align-items-center mb-1">
               <div class="flex-label small">不透明度</div>
               <div class="flex-controls">
-                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.startOpacity" step="0.1" min="0" max="1">
+                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.startOpacity" (change)="update()" step="0.1" min="0" max="1">
                 <span class="small-label ml-2">スケール</span>
-                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.startScale" step="0.1">
+                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.startScale" (change)="update()" step="0.1">
               </div>
             </div>
           </details>
@@ -275,8 +276,8 @@
           <div class="flex-row mb-1 align-items-center">
             <div class="flex-label small">時間(ms)</div>
             <div class="flex-controls">
-              <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.outDuration" step="100" min="0">
-              <select class="form-control flex-grow-1 ml-1" [(ngModel)]="editingCutIn.outEasing">
+              <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.outDuration" (change)="update()" step="100" min="0">
+              <select class="form-control flex-grow-1 ml-1" [(ngModel)]="editingCutIn.outEasing" (change)="update()">
                 <option *ngFor="let e of easings" [value]="e">{{e}}</option>
               </select>
             </div>
@@ -287,17 +288,17 @@
             <div class="flex-row align-items-center mb-1">
               <div class="flex-label small">終了X (%)</div>
               <div class="flex-controls">
-                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.endLeft">
+                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.endLeft" (change)="update()">
                 <span class="small-label ml-2">終了Y (%)</span>
-                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.endTop">
+                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.endTop" (change)="update()">
               </div>
             </div>
             <div class="flex-row align-items-center mb-1">
               <div class="flex-label small">不透明度</div>
               <div class="flex-controls">
-                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.endOpacity" step="0.1" min="0" max="1">
+                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.endOpacity" (change)="update()" step="0.1" min="0" max="1">
                 <span class="small-label ml-2">スケール</span>
-                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.endScale" step="0.1">
+                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.endScale" (change)="update()" step="0.1">
               </div>
             </div>
           </details>
