@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { Subject, Observable } from 'rxjs';
 
-export type ExtensionLocation = 'main-menu' | 'main-menu-bottom' | 'settings' | 'context-menu' | 'chat-window' | 'character-sheet' | 'chat-input' | 'chat-input-quick' | 'chat-send';
+export type ExtensionLocation = 'main-menu' | 'main-menu-bottom' | 'settings' | 'context-menu' | 'chat-window' | 'character-sheet' | 'chat-input' | 'chat-input-quick' | 'chat-send' | 'chat-message-display';
 
 export interface ExtensionAction {
   name: string | ((context?: any) => string); // ----- MODIFICATION (Gemini) for TargetSelectorPlugin -----
@@ -52,6 +52,23 @@ export class UIExtensionService {
     }
   }
   // ----- MODIFICATION END (kunyatta) for Dynamic UI Slot -----
+
+  /**
+   * HTML文字列をエスケープします。
+   */
+  escapeHtml(str: string): string {
+    if (!str) return '';
+    return str.replace(/[&<>"']/g, (match) => {
+      const escape = {
+        '&': '&amp;',
+        '<': '&lt;',
+        '>': '&gt;',
+        '"': '&quot;',
+        "'": '&#39;'
+      };
+      return escape[match as keyof typeof escape];
+    });
+  }
 
   constructor() { }
 

@@ -22,6 +22,7 @@
     "@angular/youtube-player": "^17.3.10",
     "@skyway-sdk/core": "^1.9.2",
     "@zip.js/zip.js": "^2.7.52",
+    "autolinker": "^4.1.5",
     "base-x": "^5.0.1",
     "bcdice": "^4.8.0",
     "crypto-js": "^4.2.0",

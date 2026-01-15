@@ -5,6 +5,8 @@ import { ChatMessage } from '@udonarium/chat-message';
 import { ImageFile } from '@udonarium/core/file-storage/image-file';
 import { ChatMessageService } from 'service/chat-message.service';
 
+import { UIExtensionService } from '../../plugins/service/ui-extension.service'; // ----- MODIFICATION (Gemini) for ChatMessageAction -----
+
 @Component({
   selector: 'chat-message',
   templateUrl: './chat-message.component.html',
@@ -34,7 +36,8 @@ export class ChatMessageComponent implements OnInit {
   animeState: string = 'inactive';
 
   constructor(
-    private chatMessageService: ChatMessageService
+    private chatMessageService: ChatMessageService,
+    private uiExtensionService: UIExtensionService, // ----- MODIFICATION (Gemini) for ChatMessageAction -----
   ) { }
 
   ngOnInit() {
@@ -47,4 +50,23 @@ export class ChatMessageComponent implements OnInit {
   discloseMessage() {
     this.chatMessage.tag = this.chatMessage.tag.replace('secret', '');
   }
+
+  // ----- MODIFICATION START (Gemini) for ChatMessageAction -----
+  get processedText(): string {
+    const escaped = this.uiExtensionService.escapeHtml(this.chatMessage.text);
+    return this.uiExtensionService.applyFilters('chat-message-display', escaped, this.chatMessage);
+  }
+
+  onLinkClick($event: MouseEvent) {
+    if ($event && $event.target instanceof HTMLAnchorElement) {
+      const href = $event.target.getAttribute('href');
+      if (href) {
+        $event.preventDefault();
+        if (window.confirm('外部サイトへ移動しますか？\n\n' + href)) {
+          window.open(href, '_blank', 'noopener noreferrer');
+        }
+      }
+    }
+  }
+  // ----- MODIFICATION END (Gemini) for ChatMessageAction -----
 }

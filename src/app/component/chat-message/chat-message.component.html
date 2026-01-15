@@ -22,7 +22,8 @@
 <ng-template #visible>
   <!-- ----- MODIFICATION START (kunyatta) for ColorSupport ----- -->
   <!-- <span [style.color]="chatMessage.color">{{chatMessage.text}}</span> -->
-  <span [style.color]="chatMessage.color">{{chatMessage.text}}</span>
+  <!-- ----- MODIFICATION (Gemini) for ChatMessageAction ----- -->
+  <span [style.color]="chatMessage.color" [innerHTML]="processedText | safe: 'html'" (click)="onLinkClick($event)"></span>
   <!-- ----- MODIFICATION END (kunyatta) for ColorSupport ----- -->
   <button *ngIf="chatMessage.isSecret" (click)="discloseMessage()">結果を公開</button>
 </ng-template>

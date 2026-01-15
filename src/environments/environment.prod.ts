@@ -8,6 +8,7 @@ import { RollResultChartModule } from '../app/plugins/roll-result-chart/roll-res
 import { TargetSelectorModule } from '../app/plugins/target-selector/target-selector.module';
 import { LogoutModule } from '../app/plugins/logout/logout.module';
 import { SettingsModule } from '../app/plugins/settings/settings.module';
+import { ChatMessageActionModule } from '../app/plugins/chat-message-action/chat-message-action.module';
 
 export const environment = {
   production: true,
@@ -21,6 +22,7 @@ export const environment = {
     DynamicStandPluginModule,
     RollResultChartModule,
     TargetSelectorModule,
+    ChatMessageActionModule,
     LogoutModule
   ]
 };
