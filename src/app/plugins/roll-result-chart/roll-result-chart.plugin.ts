@@ -22,7 +22,7 @@ export class RollResultChartPlugin implements IPluginWithUI {
   ) {}
 
   initialize(): void {
-    this.chartService.initialize();
+    // Service initialization is now handled by its constructor.
   }
 
   initializeUI(injector: Injector): void {

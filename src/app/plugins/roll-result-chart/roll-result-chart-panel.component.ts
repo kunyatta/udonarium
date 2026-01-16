@@ -14,20 +14,16 @@ import { takeUntil } from 'rxjs/operators';
   styleUrls: ['./roll-result-chart-panel.component.css']
 })
 export class RollResultChartPanelComponent implements OnInit, OnDestroy {
-  // サービス側のデータを直接参照（またはコピー）
+  // サービス側のデータを直接参照
   get charts(): RollResultChart[] {
     return this.chartService.charts;
   }
   
-  selectedChartIndex: number = -1;
+  selectedIdentifier: string | null = null;
   editingChart: RollResultChart | null = null;
   private onDestroy$ = new Subject<void>();
 
-  private readonly PLUGIN_ID = 'roll-result-chart';
-
   constructor(
-    private pluginHelper: PluginHelperService,
-    private pluginMapper: PluginMapperService,
     private chartService: RollResultChartService,
     private pluginDataTransfer: PluginDataTransferService,
     private changeDetector: ChangeDetectorRef
@@ -37,16 +33,16 @@ export class RollResultChartPanelComponent implements OnInit, OnDestroy {
     this.chartService.update$
       .pipe(takeUntil(this.onDestroy$))
       .subscribe(() => {
-        this.changeDetector.detectChanges();
-        // 選択中のインデックスが範囲外になった場合の補正
-        if (this.selectedChartIndex >= this.charts.length) {
-          this.selectedChartIndex = -1;
+        // 選択中のチャートが削除されていないかチェック
+        if (this.selectedIdentifier && !this.charts.find(c => c.identifier === this.selectedIdentifier)) {
+          this.selectedIdentifier = null;
           this.editingChart = null;
         }
+        this.changeDetector.markForCheck();
       });
       
     if (this.charts.length > 0) {
-      this.selectChart(0);
+      this.selectChart(this.charts[0].identifier);
     }
   }
 
@@ -55,32 +51,20 @@ export class RollResultChartPanelComponent implements OnInit, OnDestroy {
     this.onDestroy$.complete();
   }
 
-  selectChart(index: number) {
-    if (index < 0 || index >= this.charts.length) {
-      this.selectedChartIndex = -1;
-      this.editingChart = null;
-      return;
-    }
-    this.selectedChartIndex = index;
-    // 即時反映のため参照渡しに変更
-    this.editingChart = this.charts[index];
+  selectChart(identifier: string) {
+    this.selectedIdentifier = identifier;
+    this.editingChart = this.charts.find(c => c.identifier === identifier) || null;
+    this.changeDetector.markForCheck();
   }
 
   createNew() {
-    const newChart: RollResultChart = { 
+    const newChart = this.chartService.add({ 
       title: '新しいチャート', 
       command: 'NEW_CHART', 
       dice: '1d6', 
       value: '' 
-    };
-    // サービスに追加させる（重複チェック等はサービス側で行われるべきだが、ここでは簡易的にpush）
-    // ※Serviceにaddメソッドがないため、chartsに直接pushしてsaveを呼ぶ
-    // 本来はServiceにaddChartメソッドを作るべき。
-    this.chartService.charts.push(newChart);
-    this.chartService.save();
-    
-    // 追加されたチャートを選択
-    this.selectChart(this.charts.length - 1);
+    });
+    this.selectChart(newChart.identifier);
   }
 
   onChartChange() {
@@ -90,18 +74,15 @@ export class RollResultChartPanelComponent implements OnInit, OnDestroy {
   }
 
   delete() {
-    if (this.selectedChartIndex < 0) return;
+    if (!this.selectedIdentifier) return;
     if (!confirm('このチャートを削除しますか？')) return;
 
-    this.chartService.charts.splice(this.selectedChartIndex, 1);
-    this.chartService.save();
+    this.chartService.delete(this.selectedIdentifier);
+    this.selectedIdentifier = null;
+    this.editingChart = null;
 
-    const nextIndex = this.charts.length > 0 ? 0 : -1;
-    if (nextIndex >= 0) {
-      this.selectChart(nextIndex);
-    } else {
-      this.selectedChartIndex = -1;
-      this.editingChart = null;
+    if (this.charts.length > 0) {
+      this.selectChart(this.charts[0].identifier);
     }
   }
 

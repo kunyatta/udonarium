@@ -28,4 +28,6 @@ import { UIExtensionService } from '../service/ui-extension.service';
     RollResultChartService
   ]
 })
-export class RollResultChartModule { }
+export class RollResultChartModule {
+  constructor(private service: RollResultChartService) { }
+}

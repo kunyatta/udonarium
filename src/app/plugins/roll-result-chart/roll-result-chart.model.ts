@@ -1,7 +1,8 @@
 import { MappingOptions } from '../service/plugin-mapper.service';
 
 export interface RollResultChart {
-  title: string; // Changed from 'name' to 'title' to avoid conflict with DataElement.name
+  identifier: string;
+  title: string;
   command: string;
   dice: string;
   value: string; // The table text
@@ -16,7 +17,10 @@ export interface RollResultChartRow {
 }
 
 export const ROLL_RESULT_CHART_TAG_NAME = 'roll-result-chart';
+export const ROLL_RESULT_CHART_LIST_TAG_NAME = 'roll-result-chart-list';
 
 export const ROLL_RESULT_CHART_MAPPING_OPTIONS: MappingOptions = {
-  attrProps: ['title', 'command', 'dice']
+  tagMap: { 'charts': ROLL_RESULT_CHART_LIST_TAG_NAME },
+  arrayItemNames: { 'charts': ROLL_RESULT_CHART_TAG_NAME },
+  attrProps: ['identifier', 'title', 'command', 'dice']
 };

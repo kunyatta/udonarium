@@ -46,7 +46,9 @@ export class Room extends GameObject implements InnerXml {
     objects = objects.concat(ObjectStore.instance.getObjects(Card));
     objects = objects.concat(ObjectStore.instance.getObjects(DiceSymbol));
     // ----- MODIFICATION START (kunyatta) for PluginSystem -----
-    objects = objects.concat(ObjectStore.instance.getObjects(PluginDataContainer));
+    // NOTE: プラグインデータが独立したXMLとして保存されている場合、data.xmlの処理（Room.parseInnerXml）で
+    // 一掃してしまうと、直前に読み込まれたプラグインデータが消えてしまうため、ここでは除外します。
+    // objects = objects.concat(ObjectStore.instance.getObjects(PluginDataContainer));
     // ----- MODIFICATION END (kunyatta) for PluginSystem -----
     for (let object of objects) {
       object.destroy();

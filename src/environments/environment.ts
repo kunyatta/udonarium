@@ -14,10 +14,12 @@ import { RollResultChartModule } from '../app/plugins/roll-result-chart/roll-res
 import { TargetSelectorModule } from '../app/plugins/target-selector/target-selector.module';
 import { SettingsModule } from '../app/plugins/settings/settings.module';
 import { ChatMessageActionModule } from '../app/plugins/chat-message-action/chat-message-action.module';
+import { ConfigPanelTestModule } from '../app/plugins/config-panel-test/config-panel-test.module';
 
 export const environment = {
   production: false,
   pluginModules: [
+    ConfigPanelTestModule,
     SettingsModule,
     CombatFlowModule,
     ChatLogManagerModule,

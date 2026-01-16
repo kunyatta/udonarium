@@ -1,0 +1,49 @@
+<div class="component">
+  <div class="sidebar">
+    <div class="toolbar">
+      <button (click)="createNew()">新規作成</button>
+      <button (click)="exportAll()">一括保存</button>
+    </div>
+    <div class="list-container">
+      <div *ngFor="let item of items" 
+           class="list-item" 
+           [class.selected]="item.identifier === selectedIdentifier"
+           (click)="select(item.identifier)">
+        {{ item.name }}
+      </div>
+    </div>
+  </div>
+
+  <div class="main-content" *ngIf="editingItem; else noSelection">
+    <div class="form-group">
+      <label>項目名</label>
+      <input type="text" [(ngModel)]="editingItem.name" (blur)="save()" />
+    </div>
+
+    <div class="form-group">
+      <label>画像</label>
+      <div class="image-preview" (click)="openImageSelecter()">
+        <img *ngIf="editingItem.imageIdentifier; else noImage" [src]="getImageUrl(editingItem.imageIdentifier)" />
+        <ng-template #noImage>
+          <div class="no-image">画像を選択</div>
+        </ng-template>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label>説明</label>
+      <textarea [(ngModel)]="editingItem.description" (blur)="save()" rows="5"></textarea>
+    </div>
+
+    <div class="toolbar bottom">
+      <button (click)="exportItem()">この項目を保存</button>
+      <button class="danger" (click)="delete()">削除</button>
+    </div>
+  </div>
+
+  <ng-template #noSelection>
+    <div class="main-content empty">
+      左側のリストから項目を選択するか、新規作成してください。
+    </div>
+  </ng-template>
+</div>

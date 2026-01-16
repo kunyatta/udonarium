@@ -13,7 +13,7 @@ import { PluginHelperService } from '../service/plugin-helper.service';
 import { PluginMapperService } from '../service/plugin-mapper.service';
 import { PluginDataObserverService } from '../service/plugin-data-observer.service';
 import { PluginDataContainer } from '../../class/plugin-data-container';
-import { RollResultChart, ROLL_RESULT_CHART_MAPPING_OPTIONS, ROLL_RESULT_CHART_TAG_NAME } from './roll-result-chart.model';
+import { RollResultChart, ROLL_RESULT_CHART_MAPPING_OPTIONS, ROLL_RESULT_CHART_TAG_NAME, ROLL_RESULT_CHART_LIST_TAG_NAME } from './roll-result-chart.model';
 import { RollResultChartParser } from './roll-result-chart-parser';
 import { PluginDataTransferService } from '../service/plugin-data-transfer.service';
 
@@ -26,7 +26,6 @@ export class RollResultChartService implements OnDestroy {
 
   private _charts: RollResultChart[] = [];
   private container: PluginDataContainer | null = null;
-  private isSaving = false;
 
   constructor(
     private chatListener: ChatListenerService,
@@ -34,15 +33,16 @@ export class RollResultChartService implements OnDestroy {
     private pluginMapper: PluginMapperService,
     private observerService: PluginDataObserverService,
     private pluginDataTransfer: PluginDataTransferService
-  ) {}
+  ) {
+    this.initialize();
+  }
 
   get charts(): RollResultChart[] {
     return this._charts;
   }
 
-  initialize() {
-    this.observerService.observe(this, this.PLUGIN_ID, '', container => {
-      if (this.isSaving) return;
+  private initialize() {
+    this.observerService.observe(this, this.PLUGIN_ID, 'default', container => {
       this.container = container;
       this.loadFromContainer();
     });
@@ -56,14 +56,6 @@ export class RollResultChartService implements OnDestroy {
     this.pluginDataTransfer.register(this.PLUGIN_ID, (data: DataElement) => {
       this.importFromDataElement(data);
     });
-
-    // ルームロード完了時にも再ロードを試行（重い部屋でのロード漏れ対策）
-    EventSystem.register(this).on('XML_LOADED', () => {
-      this.loadFromContainer();
-    });
-
-    // 初期化時にコンテナを確保
-    this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID);
   }
 
   ngOnDestroy() {
@@ -73,94 +65,101 @@ export class RollResultChartService implements OnDestroy {
 
   private loadFromContainer() {
     if (!this.container) {
-      this.container = this.pluginHelper.findContainer(this.PLUGIN_ID);
-    }
-
-    if (!this.container) {
       this._charts = [];
+      this.update$.next();
       return;
     }
 
-    const children = this.container.state.children as DataElement[];
-
-    const newCharts = children
-      .filter(child => child instanceof DataElement && child.getAttribute('name') === ROLL_RESULT_CHART_TAG_NAME)
-      .map(child => this.pluginMapper.fromElement<RollResultChart>(child as DataElement, ROLL_RESULT_CHART_MAPPING_OPTIONS));
+    const listElement = this.container.children.find(child => child instanceof DataElement && child.name === ROLL_RESULT_CHART_LIST_TAG_NAME) as DataElement;
     
-    // 参照維持のためのマージ
-    for (const newItem of newCharts) {
-      const existing = this._charts.find(c => c.command === newItem.command);
-      if (existing) {
-        Object.assign(existing, newItem);
-      } else {
-        this._charts.push(newItem);
+    if (listElement) {
+      const result = this.pluginMapper.fromElement<{ charts: RollResultChart[] }>(listElement, ROLL_RESULT_CHART_MAPPING_OPTIONS);
+      const newCharts = result.charts || [];
+      
+      // 参照維持のためのマージ
+      for (const newItem of newCharts) {
+        const existing = this._charts.find(c => c.identifier === newItem.identifier);
+        if (existing) {
+          Object.assign(existing, newItem);
+        } else {
+          this._charts.push(newItem);
+        }
+      }
+      // 削除されたものを除去
+      const newIds = new Set(newCharts.map(c => c.identifier));
+      for (let i = this._charts.length - 1; i >= 0; i--) {
+        if (!newIds.has(this._charts[i].identifier)) {
+          this._charts.splice(i, 1);
+        }
       }
     }
-    // 削除されたものを除去
-    const newCommands = new Set(newCharts.map(c => c.command));
-    for (let i = this._charts.length - 1; i >= 0; i--) {
-      if (!newCommands.has(this._charts[i].command)) {
-        this._charts.splice(i, 1);
-      }
-    }
-
     this.update$.next();
   }
 
   save() {
-    this.isSaving = true;
-    try {
-      if (!this.container) {
-        this.container = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID);
-      }
-      this.container.state.children.forEach(c => c.destroy());
-      for (const chart of this._charts) {
-        const element = this.pluginMapper.toElement(ROLL_RESULT_CHART_TAG_NAME, chart, ROLL_RESULT_CHART_MAPPING_OPTIONS);
-        this.container.state.appendChild(element);
-      }
-      this.container.update();
-    } finally {
-      setTimeout(() => { this.isSaving = false; }, 200);
+    if (!this.container) {
+      this.container = this.pluginHelper.getOrCreateContainer(this.PLUGIN_ID, 'default');
     }
+
+    // 既存のXML構造をクリア
+    const oldList = this.container.children.find(child => child instanceof DataElement && child.name === ROLL_RESULT_CHART_LIST_TAG_NAME);
+    if (oldList) {
+      this.container.removeChild(oldList);
+    }
+
+    // データをXML(DataElement)化して追加
+    const listElement = this.pluginMapper.toElement('charts', this._charts, ROLL_RESULT_CHART_MAPPING_OPTIONS);
+    this.container.appendChild(listElement);
+
+    this.container.update();
+    this.update$.next();
   }
 
   private importFromDataElement(rootElement: DataElement) {
     let itemsToImport: RollResultChart[] = [];
 
-    if (rootElement.name === ROLL_RESULT_CHART_TAG_NAME) {
-      itemsToImport = [this.pluginMapper.fromElement<RollResultChart>(rootElement, ROLL_RESULT_CHART_MAPPING_OPTIONS)];
-    } else {
-      const chartElements = rootElement.children.filter(c => c instanceof DataElement && c.name === ROLL_RESULT_CHART_TAG_NAME) as DataElement[];
-      if (chartElements.length > 0) {
-        itemsToImport = chartElements.map(e => this.pluginMapper.fromElement<RollResultChart>(e, ROLL_RESULT_CHART_MAPPING_OPTIONS));
-      }
+    if (rootElement.name === ROLL_RESULT_CHART_LIST_TAG_NAME) {
+      const result = this.pluginMapper.fromElement<{ charts: RollResultChart[] }>(rootElement, ROLL_RESULT_CHART_MAPPING_OPTIONS);
+      itemsToImport = result.charts || [];
+    } else if (rootElement.name === ROLL_RESULT_CHART_TAG_NAME) {
+      const wrapper = DataElement.create(ROLL_RESULT_CHART_LIST_TAG_NAME, '', {}, '');
+      wrapper.appendChild(rootElement);
+      const result = this.pluginMapper.fromElement<{ charts: RollResultChart[] }>(wrapper, ROLL_RESULT_CHART_MAPPING_OPTIONS);
+      itemsToImport = result.charts || [];
     }
 
     if (itemsToImport.length === 0) return;
 
     for (const imported of itemsToImport) {
-      const existingIdx = this._charts.findIndex(c => c.command === imported.command);
-      if (existingIdx >= 0) {
-        this._charts[existingIdx] = imported;
-      } else {
-        this._charts.push(imported);
-      }
+      imported.identifier = crypto.randomUUID(); // インポート時は新規ID
+      this._charts.push(imported);
     }
 
     this.save();
-    this.update$.next();
+  }
+
+  add(chart: Omit<RollResultChart, 'identifier'>) {
+    const newChart: RollResultChart = {
+      ...chart,
+      identifier: crypto.randomUUID()
+    };
+    this._charts.push(newChart);
+    this.save();
+    return newChart;
+  }
+
+  delete(identifier: string) {
+    this._charts = this._charts.filter(c => c.identifier !== identifier);
+    this.save();
   }
 
   getExportDataElement(chart: RollResultChart): DataElement {
-    return this.pluginMapper.toElement(ROLL_RESULT_CHART_TAG_NAME, chart, ROLL_RESULT_CHART_MAPPING_OPTIONS);
+    const listElement = this.pluginMapper.toElement('charts', [chart], ROLL_RESULT_CHART_MAPPING_OPTIONS);
+    return listElement.children[0] as DataElement;
   }
 
   getAllExportDataElement(): DataElement {
-    const root = DataElement.create('roll-result-chart-list', '', {});
-    for (const chart of this._charts) {
-      root.appendChild(this.getExportDataElement(chart));
-    }
-    return root;
+    return this.pluginMapper.toElement('charts', this._charts, ROLL_RESULT_CHART_MAPPING_OPTIONS);
   }
 
   private async handleChatMessage(message: ChatMessage) {

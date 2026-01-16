@@ -5,10 +5,10 @@
       <button class="full-width secondary" style="margin-top: 4px;" (click)="exportAll()">辞書を一括保存</button>
     </div>
     <div class="chart-list">
-      <div *ngFor="let chart of charts; let i = index"
+      <div *ngFor="let chart of charts"
            class="chart-item"
-           [class.selected]="i === selectedChartIndex"
-           (click)="selectChart(i)">
+           [class.selected]="chart.identifier === selectedIdentifier"
+           (click)="selectChart(chart.identifier)">
         {{ chart.title }}
       </div>
     </div>
@@ -17,7 +17,7 @@
   <div class="main-content">
     <div class="editor-header" *ngIf="editingChart">
       <button (click)="export()">個別保存</button>
-      <button class="danger" (click)="delete()" [disabled]="selectedChartIndex < 0">削除</button>
+      <button class="danger" (click)="delete()" [disabled]="!selectedIdentifier">削除</button>
     </div>
     
     <div class="edit-panel" *ngIf="editingChart">
