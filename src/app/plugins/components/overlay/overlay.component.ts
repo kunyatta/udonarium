@@ -9,8 +9,7 @@ import { ImageStorage } from '@udonarium/core/file-storage/image-storage';
 import { ImageFile } from '@udonarium/core/file-storage/image-file';
 import { AudioPlayer, VolumeType } from '@udonarium/core/file-storage/audio-player';
 import { AudioStorage } from '@udonarium/core/file-storage/audio-storage';
-import { DynamicStandPluginService } from '../../dynamic-stand/dynamic-stand.service';
-import { StandingActor } from '../../dynamic-stand/dynamic-stand.model';
+import { PluginOverlayService, StandingActor } from '../../service/plugin-overlay.service';
 
 @Component({
   selector: 'app-overlay',
@@ -36,7 +35,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
 
   constructor(
     private changeDetector: ChangeDetectorRef,
-    public dynamicStandService: DynamicStandPluginService
+    public pluginOverlayService: PluginOverlayService
   ) {}
 
   /**
@@ -44,7 +43,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
    * 取得と同時にタイピング演出の更新チェックを行います。
    */
   get stageActors(): StandingActor[] {
-    const actors = this.dynamicStandService.localActors;
+    const actors = this.pluginOverlayService.localActors;
     actors.forEach(actor => this.updateActorTyping(actor));
     return actors;
   }

@@ -7,7 +7,6 @@ import {
   DYNAMIC_STAND_SECTION_NAME,
   StandSetting,
   StandGlobalConfig,
-  StandingActor,
   DEFAULT_HEAD_OFFSET,
   DEFAULT_AUTO_X_RATIO
 } from './dynamic-stand.model';
@@ -23,6 +22,7 @@ import { OverlayObject } from '../overlay-object';
 import { PeerCursor } from '@udonarium/peer-cursor';
 import { EventSystem } from '@udonarium/core/system';
 import { UIExtensionService } from '../service/ui-extension.service';
+import { PluginOverlayService, StandingActor } from '../service/plugin-overlay.service';
 
 @Injectable({
   providedIn: 'root'
@@ -30,9 +30,6 @@ import { UIExtensionService } from '../service/ui-extension.service';
 export class DynamicStandPluginService implements OnDestroy {
   readonly PLUGIN_ID = 'dynamic-stand';
   config: StandGlobalConfig = new StandGlobalConfig();
-  
-  // 型定義を適用
-  localActors: StandingActor[] = [];
   
   private stageObject: OverlayObject = null;
   private readonly STAGE_ID = 'DYNAMIC_STAND_STAGE_GLOBAL';
@@ -51,12 +48,27 @@ export class DynamicStandPluginService implements OnDestroy {
     private pluginHelper: PluginHelperService,
     private pluginMapper: PluginMapperService,
     private uiExtensionService: UIExtensionService,
+    private pluginOverlayService: PluginOverlayService,
     private ngZone: NgZone
   ) { }
 
   ngOnDestroy() {
     if (this.observerSubscription) this.observerSubscription.unsubscribe();
     EventSystem.unregister(this);
+  }
+
+  /**
+   * 現在のローカルアクターのリストを PluginOverlayService から取得します。
+   */
+  get localActors(): StandingActor[] {
+    return this.pluginOverlayService.localActors;
+  }
+
+  /**
+   * 現在のローカルアクターのリストを PluginOverlayService に設定します。
+   */
+  set localActors(actors: StandingActor[]) {
+    this.pluginOverlayService.localActors = actors;
   }
 
   initialize() {

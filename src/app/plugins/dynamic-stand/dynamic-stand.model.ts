@@ -32,25 +32,4 @@ export class StandGlobalConfig {
 
 export const DEFAULT_STAND_CONFIG = new StandGlobalConfig();
 
-// --- アクター定義 (Actor Definition) ---
-
-export interface StandingActor {
-  characterId: string;
-  side: 'left' | 'right';
-  timestamp: number;
-  expirationTime: number;
-  imageIdentifier: string;
-  width: number;
-  height: number;
-  speechText: string;
-  speechVisible: boolean;
-  speechOffsetX: number;
-  speechOffsetY: number;
-  emoteText: string;
-  emoteVisible: boolean;
-  emoteOffsetX: number;
-  emoteOffsetY: number;
-  opacity: number;
-  left: number;
-  isDisappearing?: boolean;
-}
+// StandingActor 定義は PluginOverlayService へ移動しました。

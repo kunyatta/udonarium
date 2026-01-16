@@ -5,6 +5,31 @@ import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
 import { EventSystem } from '@udonarium/core/system';
 import { ObjectFactory } from '@udonarium/core/synchronize-object/object-factory';
 
+/**
+ * 立ち絵（スタンド）の描画情報を表すインターフェース。
+ * 特定のプラグインに依存せず、オーバーレイ基盤として共有されます。
+ */
+export interface StandingActor {
+  characterId: string;
+  side: 'left' | 'right';
+  timestamp: number;
+  expirationTime: number;
+  imageIdentifier: string;
+  width: number;
+  height: number;
+  speechText: string;
+  speechVisible: boolean;
+  speechOffsetX: number;
+  speechOffsetY: number;
+  emoteText: string;
+  emoteVisible: boolean;
+  emoteOffsetX: number;
+  emoteOffsetY: number;
+  opacity: number;
+  left: number;
+  isDisappearing?: boolean;
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -12,6 +37,12 @@ export class PluginOverlayService {
 
   // 本体側(AppComponent)からセットされるコンテナ
   static defaultParentViewContainerRef: ViewContainerRef;
+
+  /**
+   * ローカルでの立ち絵描画リクエストのリスト。
+   * プラグインはこの配列にデータを追加・更新し、OverlayComponent がこれを読み取って描画します。
+   */
+  localActors: StandingActor[] = [];
 
   // identifier をキーとして生成済みのコンポーネントを管理
   // 型を any に広げる（OverlayComponent 以外のカスタムコンポーネントも許可するため）
