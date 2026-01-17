@@ -14,6 +14,9 @@ export interface PluginPanelOption extends OriginalPanelOption {
   layout?: 'full-auto' | 'hybrid'; // layoutオプションを復活
   position?: 'center' | 'default'; // 中央表示オプションを追加
   keepOnRoomLoad?: boolean; // ルームロード時にパネルを維持するかどうか
+  align?: 'top-left' | 'top-center' | 'top-right' | 'center-left' | 'center' | 'center-right' | 'bottom-left' | 'bottom-center' | 'bottom-right' | 'bottom'; // 配置の基準点（デフォルト: top-left）
+  offsetX?: number; // X軸オフセット
+  offsetY?: number; // Y軸オフセット
 }
 
 // シングルトン機能を必要としないプラグインのために、元のPanelOptionを再エクスポートします。
@@ -100,39 +103,98 @@ export class PluginUiService {
       this.singletonPanelIds.set(component, panelId);
     }
 
+    const width = option.width || 300;
+    const height = option.height || 200;
     const panelType = option.panelType || 'parent';
 
-    // 中央配置ロジック
+    // 1. ベース座標の決定
+    let left = option.left;
+    let top = option.top;
+
     if (option.position === 'center') {
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-      const width = option.width || 300; // デフォルト幅
-      const height = option.height || 200; // デフォルト高さ
-
-      option.left = (windowWidth - width) / 2;
-      option.top = (windowHeight - height) / 2;
-
-      // 画面外に出ないように調整
-      option.left = Math.max(0, option.left);
-      option.top = Math.max(0, option.top);
-
-    } else if (panelType === 'parent') {
-      if (option.top === undefined) {
-        option.top = (this.parentPanelCount % 10 + 1) * 20;
+      left = (window.innerWidth - width) / 2;
+      top = (window.innerHeight - height) / 2;
+    } else if (left === undefined || top === undefined) {
+      if (panelType === 'parent') {
+        if (top === undefined) {
+          top = (this.parentPanelCount % 10 + 1) * 20;
+        }
+        if (left === undefined) {
+          left = 100 + (this.parentPanelCount % 20 + 1) * 5;
+        }
+      } else { // 'child' (引数なしで呼ばれた場合のフォールバック)
+        const coordinate = this.pointerDeviceService.pointers[0];
+        if (!coordinate) {
+          left = window.innerWidth / 2 - width / 2;
+          top = window.innerHeight / 2 - height / 2;
+        } else {
+          left = coordinate.x - 200;
+          top = coordinate.y - 150;
+        }
       }
-      if (option.left === undefined) {
-        option.left = 100 + (this.parentPanelCount % 20 + 1) * 5;
-      }
-      // handlePanelOpenでカウントアップする
-    } else { // 'child'
-      const coordinate = this.pointerDeviceService.pointers[0];
-      if (!coordinate) {
-        option.left = window.innerWidth / 2 - 200;
-        option.top = window.innerHeight / 2 - 150;
-      }
-      option.left = coordinate.x - 200;
-      option.top = coordinate.y - 150;
     }
+
+    // 2. アライメント調整 (9パターン対応)
+    switch (option.align) {
+      case 'top-center':
+        left -= width / 2;
+        break;
+      case 'top-right':
+        left -= width;
+        break;
+      case 'center-left':
+        top -= height / 2;
+        break;
+      case 'center':
+        left -= width / 2;
+        top -= height / 2;
+        break;
+      case 'center-right':
+        left -= width;
+        top -= height / 2;
+        break;
+      case 'bottom-left':
+        top -= height;
+        break;
+      case 'bottom': // エイリアス
+      case 'bottom-center':
+        left -= width / 2;
+        top -= height;
+        break;
+      case 'bottom-right':
+        left -= width;
+        top -= height;
+        break;
+      case 'top-left':
+      default:
+        // top-left は計算不要 (0, 0)
+        break;
+    }
+
+    // 3. オフセット適用
+    left += (option.offsetX || 0);
+    top += (option.offsetY || 0);
+
+    // 4. 共通のクランプ処理（画面外へのはみ出し防止）
+    const windowWidth = window.innerWidth;
+    const windowHeight = window.innerHeight;
+    const marginX = 20;
+    const marginY = 40; 
+    
+    // 右下のはみ出しをクランプ
+    if (left + width > windowWidth) {
+      left = windowWidth - width - marginX;
+    }
+    if (top + height > windowHeight) {
+      top = windowHeight - height - marginY;
+    }
+    // 左上のはみ出しをクランプ（上端にもマージンを設ける）
+    left = Math.max(marginX / 2, left);
+    top = Math.max(8, top); // タイトルバーが隠れない程度に
+
+    // 確定した座標をオプションに書き戻す
+    option.left = left;
+    option.top = top;
     
     let componentToOpen: Type<any> = component;
     let finalInputs: any = option.inputs || {};
@@ -145,64 +207,33 @@ export class PluginUiService {
         componentInputs: option.inputs,
       };
       componentToOpen = AutoLayoutPanelComponent;
-      // option.inputs は削除しないと、AutoLayoutPanel自体に渡ってしまう可能性があるが
-      // PanelService.open は option.inputs をサポートしていないので、後で手動設定する。
     }
 
     const componentInstance = this.panelService.open(componentToOpen, option);
 
     // inputsを手動で設定
-    // コンポーネント生成直後にプロパティを変更するとNG0100エラーになるため、
-    // setTimeoutで次のイベントループに遅延させる。
     setTimeout(() => {
       for (const key in finalInputs) {
         if (finalInputs.hasOwnProperty(key)) {
           (componentInstance as any)[key] = finalInputs[key];
         }
       }
-      
-      // ngOnChangesを手動でトリガーする必要がある場合はここで行う
-      // (Angularのライフサイクル上、プロパティ変更だけではngOnChangesは呼ばれないため)
-      // ただし、単純なプロパティセットで十分な場合が多い
     }, 0);
 
-    // AutoLayoutPanelの場合、instanceはAutoLayoutPanelComponentになる。
-    // 呼び出し元がT型（元のコンポーネント）を期待している場合はキャストが必要だが、
-    // TypeScript上はそのまま返すしかない。
-    // find()では中身を返すが、open()の戻り値はパネル直下のコンポーネントになる点に注意。
     return componentInstance as T;
   }
 
-  openAtCursor<T>(component: Type<T>, option: PluginPanelOption = {}): T {
-    // PointerDeviceService から現在のカーソル位置を取得
-    const pointer = this.pointerDeviceService.pointer;
-
-    // オプションに位置指定がない場合のみ、カーソル位置を適用
-    let left = option.left ?? pointer.x;
-    let top = option.top ?? pointer.y;
-
-    // 幅と高さが指定されている場合、画面端からはみ出さないように調整
-    if (option.width && option.height) {
-      const windowWidth = window.innerWidth;
-      const windowHeight = window.innerHeight;
-
-      if (left + option.width > windowWidth) {
-        left = windowWidth - option.width - 20; // 20pxのマージン
-      }
-      if (top + option.height > windowHeight) {
-        top = windowHeight - option.height - 20; // 20pxのマージン
-      }
-      // 左上が画面外に出ないようにする
-      left = Math.max(0, left);
-      top = Math.max(0, top);
-    }
+  openAtCursor<T>(component: Type<T>, option: PluginPanelOption = {}, coordinate?: { x: number, y: number }): T {
+    // 外部からの座標指定がなければ PointerDeviceService から取得
+    const basePointer = coordinate || this.pointerDeviceService.pointer;
 
     const finalOption = {
       ...option,
-      left: left,
-      top: top
+      left: option.left ?? basePointer.x,
+      top: option.top ?? basePointer.y
     };
 
+    // リファクタリングされた open を呼び出す。
     return this.open(component, finalOption);
   }
   

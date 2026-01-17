@@ -16,7 +16,7 @@ export class ChatLogManagerPlugin implements IPluginWithUI {
   // パネル設定
   readonly component = ChatLogManagerPanelComponent;
   readonly width = 300;
-  readonly height = 250;
+  readonly height = 290;
 
   constructor(
     private uiExtensionService: UIExtensionService,
@@ -33,14 +33,13 @@ export class ChatLogManagerPlugin implements IPluginWithUI {
       icon: this.icon,
       priority: -10, // 他のボタンより左に表示する
       action: (context, pointer) => {
-        this.pluginUiService.open(this.component, {
+        this.pluginUiService.openAtCursor(this.component, {
           title: this.name,
           width: this.width,
           height: this.height,
-          left: pointer ? pointer.x - this.width / 2 : undefined,
-          top: pointer ? pointer.y - this.height / 2 : undefined,
+          align: 'bottom-center',
           isSingleton: true
-        });
+        }, pointer);
       }
     });
   }
