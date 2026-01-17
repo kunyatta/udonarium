@@ -113,23 +113,34 @@ export class AutoLayoutPanelComponent implements OnInit, AfterViewInit, OnDestro
         
         // PluginUiService側で加算されるクロームサイズ (同期が必要)
         const PANEL_CHROME_WIDTH = 36;
+        const PANEL_CHROME_HEIGHT = 36; // タイトルバーの高さなど
         
-        // 予測されるパネルの右端位置
+        // 予測されるパネルの右端・下端位置
         const projectedRightEdge = rect.left + contentWidth + PANEL_CHROME_WIDTH;
+        const projectedBottomEdge = rect.top + contentHeight + PANEL_CHROME_HEIGHT;
+
         const windowWidth = window.innerWidth;
+        const windowHeight = window.innerHeight;
         
         let newLeft: number | undefined = undefined;
+        let newTop: number | undefined = undefined;
 
         // 画面右端からはみ出る場合、左にずらす
         if (projectedRightEdge > windowWidth) {
           newLeft = Math.max(0, windowWidth - (contentWidth + PANEL_CHROME_WIDTH) - 20);
         }
 
+        // 画面下端からはみ出る場合、上にずらす
+        if (projectedBottomEdge > windowHeight) {
+          newTop = Math.max(0, windowHeight - (contentHeight + PANEL_CHROME_HEIGHT) - 20);
+        }
+
         this.isResizing = true;
         this.pluginUiService.updatePanel(this.panelId, { 
           width: contentWidth, 
           height: contentHeight,
-          left: newLeft 
+          left: newLeft,
+          top: newTop
         });
         
         setTimeout(() => {

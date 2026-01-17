@@ -17,6 +17,7 @@ import { takeUntil } from 'rxjs/operators';
 export class ConfigPanelTestComponent implements OnInit, OnDestroy {
   selectedIdentifier: string | null = null;
   editingItem: ConfigItem | null = null;
+  activeTab: 'basic' | 'advanced' = 'basic'; // タブ状態管理
   private onDestroy$ = new Subject<void>();
 
   constructor(

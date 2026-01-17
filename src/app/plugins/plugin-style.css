@@ -1,0 +1,250 @@
+/* ==============================================
+   Udonarium Mod Design System (Plugin Shared Style)
+   ============================================== */
+
+/* 
+ * AngularコンポーネントのCSSから @import して使用します。
+ * :root 定義はグローバルスコープで効く場合と、ViewEncapsulationの影響を受ける場合がありますが、
+ * ここでは各コンポーネントがこのファイルをインポートすることを前提に、
+ * 変数定義とユーティリティクラスを提供します。
+ */
+
+:host {
+  /* Colors */
+  /* --bg-color-base: rgba(255, 248, 240, 0.85); */ /* 全体のベース: 淡いオレンジ + 透過 */
+  --bg-color-panel: rgba(255, 255, 255, 0.95); /* 操作パネル: ほぼ不透明な白 */
+  --bg-color-card: #ffffff; /* カード・区画: 完全な白 */
+  
+  --text-color-primary: #333333;
+  --text-color-secondary: #666666;
+  --text-color-inverse: #ffffff;
+
+  --color-primary: #ff9800;
+  --color-primary-dark: #f57c00;
+  --color-danger: #d32f2f;
+  --color-danger-dark: #b71c1c;
+
+  --border-color: rgba(0, 0, 0, 0.15);
+  --border-radius: 4px;
+
+  /* Spacing */
+  --spacing-xs: 4px;
+  --spacing-s: 8px;
+  --spacing-m: 16px;
+  --spacing-l: 24px;
+}
+
+/* Common Layout Structures */
+.panel-layout {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  width: 100%;
+  background-color: var(--bg-color-base);
+  color: var(--text-color-primary);
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.panel-header,
+.panel-footer {
+  flex-shrink: 0;
+  padding: var(--spacing-s);
+  background-color: transparent; /* 背景なし */
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.panel-footer {
+  border-bottom: none;
+  border-top: 1px solid var(--border-color);
+}
+
+.panel-body {
+  flex-grow: 1;
+  overflow-y: auto;
+  padding: var(--spacing-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+}
+
+/* Components */
+.info-card {
+  background-color: rgba(255, 255, 255, 0.6); /* 半透明にしてベース色を活かす */
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: var(--spacing-m);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.udonarium-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f5f5f5;
+  color: var(--text-color-primary);
+  border: 1px solid #ccc; /* 本体の形状準拠 */
+  border-radius: var(--border-radius); /* 本体の形状準拠 */
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease-in-out;
+  font-size: 14px;
+  font-weight: bold; /* 視認性向上 */
+  line-height: 1.4;
+  text-decoration: none;
+  user-select: none;
+}
+
+.udonarium-btn:hover:not(:disabled) {
+  background-color: #e0e0e0;
+  border-color: #bbb;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+}
+
+.udonarium-btn:active:not(:disabled) {
+  transform: translateY(1px);
+  box-shadow: none;
+}
+
+.udonarium-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  background-color: #eee;
+  color: #aaa;
+}
+
+.list-container {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+/* Primary: 主要アクション (標準のセピア/グレー調に戻す) */
+.udonarium-btn.primary {
+  background-color: #eee; /* 標準色 */
+  color: var(--text-color-primary);
+  border-color: #ccc;
+  font-weight: bold; /* 色の代わりに太字で強調 */
+}
+
+.udonarium-btn.primary:hover:not(:disabled) {
+  background-color: #e0e0e0;
+  border-color: #bbb;
+}
+
+/* Danger: 危険なアクション (赤系 - 警告用) */
+.udonarium-btn.danger {
+  background-color: var(--color-danger);
+  color: var(--text-color-inverse);
+  border-color: var(--color-danger-dark);
+}
+
+.udonarium-btn.danger:hover:not(:disabled) {
+  background-color: var(--color-danger-dark);
+  border-color: #920c0c;
+}
+
+/* Accent/Active: 強調・選択状態 (白背景+色枠) */
+.udonarium-btn.accent,
+.udonarium-btn.active {
+  background-color: #fff;
+  color: var(--color-primary-dark);
+  border-color: var(--color-primary);
+  border-width: 2px; /* 少し太くして強調 */
+  padding: 5px 11px; /* ボーダーが太くなった分パディングを調整 */
+}
+
+.udonarium-btn.accent:hover:not(:disabled),
+.udonarium-btn.active:hover:not(:disabled) {
+  background-color: #fff3e0;
+}
+
+.udonarium-input,
+.udonarium-textarea,
+.udonarium-select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: #fff;
+  color: var(--text-color-primary);
+  box-sizing: border-box;
+}
+
+/* 2-Pane Layout Helper */
+.layout-2pane {
+  display: flex;
+  height: 100%;
+  overflow: hidden;
+}
+
+.layout-sidebar {
+  width: 200px;
+  /* background-color: rgba(0, 0, 0, 0.05); */
+  border-right: 1px solid var(--border-color);
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+}
+
+.layout-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* ==============================================
+   Tab System
+   ============================================== */
+.udonarium-tab-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+}
+
+.udonarium-tab-header {
+  display: flex;
+  flex-shrink: 0;
+  border-bottom: 1px solid var(--border-color);
+  background-color: transparent; /* 背景なし */
+  padding: 0 var(--spacing-s);
+  gap: 2px;
+}
+
+.tab-item {
+  padding: 8px 16px;
+  cursor: pointer;
+  font-size: 14px;
+  color: var(--text-color-secondary);
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: var(--border-radius) var(--border-radius) 0 0;
+  margin-bottom: -1px; /* 下線と重ねる */
+  position: relative;
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.tab-item:hover:not(.active) {
+  background-color: rgba(0, 0, 0, 0.05);
+  color: var(--text-color-primary);
+}
+
+.tab-item.active {
+  background-color: rgba(255, 255, 255, 0.6); /* コンテンツと同じ半透明白 */
+  color: var(--text-color-primary); /* オレンジをやめ、標準テキスト色(#333)に */
+  font-weight: bold;
+  border-color: var(--border-color);
+  border-bottom-color: rgba(255, 255, 255, 0.6); /* 境界線を消す */
+  z-index: 1;
+}
+
+.udonarium-tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-m);
+  background-color: transparent; /* 背景なし */
+}

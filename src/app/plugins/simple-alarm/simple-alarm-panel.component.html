@@ -1,24 +1,39 @@
-<div class="panel-content">
-  
-  <div class="control-group" style="margin-bottom: 10px; text-align: left;">
-    <label style="display:block; margin-bottom: 4px; font-size:12px;">通知先タブ:</label>
-    <select [(ngModel)]="targetTabIdentifier" style="width: 100%; padding: 4px; background-color: #444; color: #fff; border: 1px solid #666;">
-      <option *ngFor="let tab of chatTabs" [value]="tab.identifier">{{ tab.name }}</option>
-    </select>
-  </div>
-  <hr style="margin: 10px 0; border-color: #444;">
+<div class="panel-layout">
+  <div class="panel-body">
+    
+    <!-- 通知先設定 -->
+    <div class="control-group">
+      <label>通知先タブ:</label>
+      <select class="udonarium-select" [(ngModel)]="targetTabIdentifier">
+        <option *ngFor="let tab of chatTabs" [value]="tab.identifier">{{ tab.name }}</option>
+      </select>
+    </div>
 
-  <div class="setting-form">
-    <div class="time-input">
-      <label style="display:block; margin-bottom: 4px; font-size:12px;">時間設定:</label>
-      <input type="number" [(ngModel)]="inputMinutes" min="0" class="input-field" style="width: 40px;"> 分
-      <input type="number" [(ngModel)]="inputSeconds" min="0" max="59" class="input-field" style="width: 40px;"> 秒
+    <hr class="separator">
+
+    <!-- 設定フォーム -->
+    <div class="setting-form">
+      
+      <div class="control-group">
+        <label>時間設定:</label>
+        <div class="time-input-row">
+          <input type="number" class="udonarium-input time-field" [(ngModel)]="inputMinutes" min="0">
+          <span>分</span>
+          <input type="number" class="udonarium-input time-field" [(ngModel)]="inputSeconds" min="0" max="59">
+          <span>秒</span>
+        </div>
+      </div>
+
+      <div class="control-group">
+        <label>タイトル:</label>
+        <input type="text" class="udonarium-input" [(ngModel)]="inputTitle" placeholder="アラームのタイトル">
+      </div>
+
+      <div class="button-area">
+        <button *ngIf="!isRunning" (click)="setAlarm()" class="udonarium-btn primary full-width">セット</button>
+        <button *ngIf="isRunning" (click)="stopAlarm()" class="udonarium-btn danger full-width">停止</button>
+      </div>
+
     </div>
-    <div class="title-input" style="margin-top: 10px;">
-      <label style="display:block; margin-bottom: 4px; font-size:12px;">タイトル:</label>
-      <input type="text" [(ngModel)]="inputTitle" placeholder="アラームのタイトル" class="input-field">
-    </div>
-    <button *ngIf="!isRunning" (click)="setAlarm()" class="primary-button" style="margin-top: 15px;">セット</button>
-    <button *ngIf="isRunning" (click)="stopAlarm()" class="danger" style="margin-top: 15px;">停止</button>
   </div>
 </div>

@@ -20,7 +20,8 @@ export class AlarmNotificationComponent implements OnInit, OnDestroy {
 
   // 「タイトル N秒経過しました」という形式のメッセージを生成
   get displayMessage(): string {
-    return `${this.alarmTitle} ${this.simpleAlarmService.alarm.time}秒経過しました`;
+    // return `${this.alarmTitle} ${this.simpleAlarmService.alarm.time}秒経過しました`;
+    return `${this.simpleAlarmService.alarm.time}秒経過しました`;
   }
 
   private destroy$ = new Subject<void>();

@@ -1,184 +1,130 @@
-.panel-content {
-  padding: 8px;
-  height: 100%;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  color: #222;
-}
+@import "../plugin-style.css";
 
+/* Control Group */
 .control-group {
-  margin-bottom: 8px;
+  margin-bottom: 12px;
 }
 .control-group label {
-  display: inline-block;
-  width: 80px;
-  font-size: 14px;
+  display: block;
+  margin-bottom: 4px;
+  font-size: 12px;
   font-weight: bold;
-}
-.control-group select {
-  /* width: calc(100% - 90px); */
-  width: 160px;
+  color: var(--text-color-secondary);
 }
 
-.tab-header {
-  display: flex;
-  margin-bottom: 10px;
-}
-.tab-header button {
-  flex: 1;
-  padding: 5px;
-  background-color: #ddd;
-  border: 1px solid #ccc;
-  border-bottom: none;
-  cursor: pointer;
-}
-.tab-header button.active {
-  font-weight: bold;
-  border-bottom: 2px solid #007bff;
-}
-
-.settings-body {
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-top: none;
+/* Tab Content Adjustments */
+.udonarium-tab-content {
+  /* ガイドラインに従い背景なし */
+  padding: 12px var(--spacing-s); /* 左右に余白を追加して見切れを防止 */
+  overflow-x: hidden;
+  box-sizing: border-box;
 }
 
 .input-group {
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .input-group label {
   display: block;
   margin-bottom: 4px;
-}
-.input-group input[type="text"] {
-  width: 100%;
-  box-sizing: border-box;
-  padding: 4px;
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  font-weight: bold;
 }
 .input-group.checkbox {
   display: flex;
   align-items: center;
+  gap: 8px;
 }
 .input-group.checkbox input {
-  width: auto;
-  margin-right: 8px;
+  margin: 0;
 }
 .input-group.checkbox label {
-  display: inline;
-  margin-bottom: 0;
+  margin: 0;
   font-weight: normal;
+  color: var(--text-color-primary);
   cursor: pointer;
 }
 
+/* Choice Input */
 .choice-input {
   display: flex;
-  margin-bottom: 5px;
+  gap: 4px;
+  margin-bottom: 8px;
 }
 .choice-input input {
   flex: 1;
-  margin-right: 5px;
 }
 
 .choice-list {
   list-style: none;
   padding: 0;
-  margin: 0 0 10px 0;
-  border: 1px solid #eee;
+  margin: 0 0 16px 0;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
   max-height: 100px;
   overflow-y: auto;
+  background-color: rgba(255, 255, 255, 0.4); /* 薄い背景 */
 }
 .choice-list li {
-  padding: 4px;
-  border-bottom: 1px solid #eee;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   justify-content: space-between;
+  font-size: 12px;
 }
 .remove-choice {
   cursor: pointer;
-  color: red;
+  color: var(--color-danger);
   font-weight: bold;
 }
 
 .actions {
-  text-align: center;
-}
-.actions button {
-  width: 100%;
-  padding: 8px;
-  background-color: #007bff;
-  color: white;
-  border: none;
-  cursor: pointer;
+  margin-top: 16px;
 }
 
-.status-header {
+/* HUD Status */
+.status-hud {
+  background-color: rgba(0, 0, 0, 0.7);
+  border-radius: 8px;
+  padding: 12px;
   text-align: center;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
+  color: #fff;
 }
 .status-title {
   font-size: 1.2em;
   font-weight: bold;
+  margin-bottom: 4px;
 }
 .status-badge {
   display: inline-block;
   font-size: 0.8em;
-  padding: 2px 6px;
+  padding: 2px 8px;
   border-radius: 4px;
-  color: white;
-}
-.status-badge.running {
-  background-color: #28a745;
-}
-
-.answer-actions {
-  text-align: center;
-  margin-bottom: 10px;
-}
-.btn-attend {
-  width: 100%;
-  height: 50px;
-  font-size: 1.2em;
-  background-color: #28a745;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-.btn-attend.selected {
-  background-color: #1e7e34;
-  box-shadow: inset 0 3px 5px rgba(0,0,0,0.2);
+  background-color: var(--color-primary); /* オレンジバッジ */
+  color: #fff;
+  font-weight: bold;
 }
 
-.vote-buttons button {
-  display: block;
-  width: 100%;
-  margin-bottom: 5px;
-  padding: 8px;
-  background-color: #17a2b8;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-.vote-buttons button.selected {
-  background-color: #117a8b;
-  box-shadow: inset 0 3px 5px rgba(0,0,0,0.2);
-}
-
+/* Participants List */
 .participants-list {
   flex: 1;
   overflow-y: auto;
-  border-top: 1px solid #ddd;
+  border: 1px solid var(--border-color); /* .list-container style override if needed */
+  border-radius: var(--border-radius);
 }
 .participant-header {
   font-weight: bold;
-  padding: 4px;
-  background-color: #e9ecef;
+  padding: 6px 8px;
+  background-color: rgba(0, 0, 0, 0.1);
+  font-size: 12px;
+  color: var(--text-color-primary);
 }
 .participant-row {
   display: flex;
   align-items: center;
-  padding: 4px;
-  border-bottom: 1px solid #eee;
+  padding: 6px 8px;
+  border-bottom: 1px solid var(--border-color);
 }
 .peer-icon {
   width: 24px;
@@ -200,24 +146,20 @@
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  font-size: 12px;
 }
 .peer-status {
   width: 80px;
   text-align: right;
   font-weight: bold;
+  font-size: 12px;
 }
-.status-none { color: #999; }
-.status-done { color: #28a745; }
+.status-none { color: var(--text-color-secondary); }
+.status-done { color: var(--color-primary-dark); } /* 完了色はセピア調に合わせるか、緑にするか。今回は視認性でPrimaryDarkを使用 */
 
 .owner-actions {
-  margin-top: 10px;
-  text-align: center;
+  margin-top: 12px;
 }
-.owner-actions button.danger {
+.full-width {
   width: 100%;
-  background-color: #dc3545;
-  color: white;
-  padding: 6px;
-  border: none;
-  cursor: pointer;
 }

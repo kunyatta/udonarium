@@ -1,85 +1,85 @@
-<div class="panel-content">
-  
-  <div class="control-group">
-    <label>通知先タブ:</label>
-    <select [(ngModel)]="targetTabIdentifier">
-      <option *ngFor="let tab of chatTabs" [value]="tab.identifier">{{ tab.name }}</option>
-    </select>
-  </div>
-  <hr>
-
-  <!-- 待機画面: 設定モード -->
-  <ng-container *ngIf="!isRunning">
-    <div class="tab-header">
-      <button [class.active]="selectedTab === 'roll-call'" (click)="selectTab('roll-call')">点呼</button>
-      <button [class.active]="selectedTab === 'poll'" (click)="selectTab('poll')">投票</button>
-    </div>
-
-    <div class="settings-body">
-      <!-- 点呼モード: タイトルなし -->
-      <!-- 投票モード: タイトルあり -->
-      <div class="input-group" *ngIf="selectedTab === 'poll'">
-        <label>タイトル:</label>
-        <input type="text" [(ngModel)]="title" placeholder="タイトルを入力">
-      </div>
-
-      <!-- 共通設定 -->
-      <div class="input-group checkbox">
-        <input type="checkbox" id="includeOwner" [(ngModel)]="includeOwner">
-        <label for="includeOwner">自分を含める</label>
-      </div>
-
-      <!-- 投票モードの場合の選択肢設定 -->
-      <div *ngIf="selectedTab === 'poll'" class="poll-settings">
-        <label>選択肢:</label>
-        <div class="choice-input">
-          <input type="text" [(ngModel)]="newChoice" (keydown.enter)="addChoice()" placeholder="選択肢を追加">
-          <button (click)="addChoice()">+</button>
-        </div>
-        <ul class="choice-list">
-          <li *ngFor="let choice of pollChoices; let i = index">
-            {{ choice }} <span class="remove-choice" (click)="removeChoice(i)">×</span>
-          </li>
-        </ul>
-      </div>
-
-      <div class="actions">
-        <button (click)="startActivity()">開始</button>
-      </div>
-    </div>
-  </ng-container>
-
-  <!-- 進行中画面 (管理用: 状況表示と強制終了) -->
-  <ng-container *ngIf="isRunning">
-    <div class="status-header">
-      <div class="status-title">{{ voteTitle }}</div>
-      <div class="status-badge running">進行中</div>
-    </div>
+<div class="panel-layout">
+  <div class="panel-body">
     
-    <hr>
+    <div class="control-group">
+      <label>通知先タブ:</label>
+      <select class="udonarium-select" [(ngModel)]="targetTabIdentifier">
+        <option *ngFor="let tab of chatTabs" [value]="tab.identifier">{{ tab.name }}</option>
+      </select>
+    </div>
 
-    <div class="participants-list">
-      <div class="participant-header">回答状況</div>
-      <div class="participant-row" *ngFor="let peer of peers">
-        <div class="peer-icon">
-          <img *ngIf="peer.image" [src]="peer.image.url | safe: 'resourceUrl'">
-          <span *ngIf="!peer.image" class="no-icon">?</span>
+    <!-- 待機画面: 設定モード -->
+    <ng-container *ngIf="!isRunning">
+      <div class="udonarium-tab-container">
+        <div class="udonarium-tab-header">
+          <div class="tab-item" [class.active]="selectedTab === 'roll-call'" (click)="selectTab('roll-call')">点呼</div>
+          <div class="tab-item" [class.active]="selectedTab === 'poll'" (click)="selectTab('poll')">投票</div>
         </div>
-        <div class="peer-name">{{ peer.name }}</div>
-        <div class="peer-status">
-          <span class="status-text" 
-            [class.status-none]="rollCallService.getAnswerState(peer.peerId) === 0"
-            [class.status-done]="rollCallService.getAnswerState(peer.peerId) > 0">
-            {{ getAnswerText(rollCallService.getAnswerState(peer.peerId)) }}
-          </span>
+
+        <div class="udonarium-tab-content">
+          <!-- 投票モード: タイトルあり -->
+          <div class="input-group" *ngIf="selectedTab === 'poll'">
+            <label>タイトル:</label>
+            <input type="text" class="udonarium-input" [(ngModel)]="title" placeholder="タイトルを入力">
+          </div>
+
+          <!-- 共通設定 -->
+          <div class="input-group checkbox">
+            <input type="checkbox" id="includeOwner" [(ngModel)]="includeOwner">
+            <label for="includeOwner">自分を含める</label>
+          </div>
+
+          <!-- 投票モードの場合の選択肢設定 -->
+          <div *ngIf="selectedTab === 'poll'" class="poll-settings">
+            <label>選択肢:</label>
+            <div class="choice-input">
+              <input type="text" class="udonarium-input" [(ngModel)]="newChoice" (keydown.enter)="addChoice()" placeholder="選択肢を追加">
+              <button class="udonarium-btn" (click)="addChoice()">+</button>
+            </div>
+            <ul class="choice-list">
+              <li *ngFor="let choice of pollChoices; let i = index">
+                {{ choice }} <span class="remove-choice" (click)="removeChoice(i)">×</span>
+              </li>
+            </ul>
+          </div>
+
+          <div class="actions">
+            <button class="udonarium-btn primary full-width" (click)="startActivity()">開始</button>
+          </div>
         </div>
       </div>
-    </div>
+    </ng-container>
 
-    <div class="owner-actions">
-      <hr>
-      <button class="danger" (click)="stopActivity()">強制終了</button>
-    </div>
-  </ng-container>
+    <!-- 進行中画面 (管理用) -->
+    <ng-container *ngIf="isRunning">
+      <!-- HUDスタイルでステータス表示 -->
+      <div class="status-hud">
+        <div class="status-title">{{ voteTitle }}</div>
+        <div class="status-badge">進行中</div>
+      </div>
+      
+      <div class="list-container participants-list">
+        <div class="participant-header">回答状況</div>
+        <div class="participant-row" *ngFor="let peer of peers">
+          <div class="peer-icon">
+            <img *ngIf="peer.image" [src]="peer.image.url | safe: 'resourceUrl'">
+            <span *ngIf="!peer.image" class="no-icon">?</span>
+          </div>
+          <div class="peer-name">{{ peer.name }}</div>
+          <div class="peer-status">
+            <span class="status-text" 
+              [class.status-none]="rollCallService.getAnswerState(peer.peerId) === 0"
+              [class.status-done]="rollCallService.getAnswerState(peer.peerId) > 0">
+              {{ getAnswerText(rollCallService.getAnswerState(peer.peerId)) }}
+            </span>
+          </div>
+        </div>
+      </div>
 
+      <div class="owner-actions">
+        <button class="udonarium-btn danger full-width" (click)="stopActivity()">強制終了</button>
+      </div>
+    </ng-container>
+
+  </div>
 </div>

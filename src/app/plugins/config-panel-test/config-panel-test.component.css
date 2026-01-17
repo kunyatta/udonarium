@@ -1,45 +1,6 @@
-.component {
-  display: flex;
-  height: 100%;
-  width: 100%;
-  background-color: #222;
-  color: #eee;
-  font-size: 14px;
-}
+@import "../plugin-style.css";
 
-.sidebar {
-  width: 200px;
-  border-right: 1px solid #444;
-  display: flex;
-  flex-direction: column;
-}
-
-.main-content {
-  flex: 1;
-  padding: 16px;
-  overflow-y: auto;
-}
-
-.empty {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #888;
-}
-
-.toolbar {
-  padding: 8px;
-  border-bottom: 1px solid #444;
-  display: flex;
-  gap: 8px;
-}
-
-.toolbar.bottom {
-  border-bottom: none;
-  border-top: 1px solid #444;
-  margin-top: 20px;
-  padding-top: 16px;
-}
+/* 固有のレイアウト調整のみここに記述 */
 
 .list-container {
   flex: 1;
@@ -49,15 +10,17 @@
 .list-item {
   padding: 8px 12px;
   cursor: pointer;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--border-color);
+  transition: background-color 0.1s;
 }
 
 .list-item:hover {
-  background-color: #333;
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .list-item.selected {
-  background-color: #444;
+  background-color: #555; /* 落ち着いたダークグレー */
+  color: #fff;
   font-weight: bold;
 }
 
@@ -68,49 +31,28 @@
 label {
   display: block;
   margin-bottom: 4px;
-  color: #ccc;
-}
-
-input[type="text"], textarea {
-  width: 100%;
-  padding: 8px;
-  background-color: #111;
-  border: 1px solid #555;
-  color: #fff;
-  box-sizing: border-box;
-}
-
-button {
-  padding: 6px 12px;
-  background-color: #444;
-  border: 1px solid #666;
-  color: #fff;
-  cursor: pointer;
-}
-
-button:hover {
-  background-color: #555;
-}
-
-button.danger {
-  background-color: #622;
-  border-color: #844;
-}
-
-button.danger:hover {
-  background-color: #833;
+  font-weight: bold;
+  font-size: 12px;
+  color: var(--text-color-secondary);
 }
 
 .image-preview {
   width: 100%;
   max-width: 200px;
   height: 150px;
-  border: 2px dashed #555;
+  border: 2px dashed var(--border-color);
+  border-radius: var(--border-radius);
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  background-color: #111;
+  background-color: #f9f9f9;
+  overflow: hidden;
+}
+
+.image-preview:hover {
+  background-color: #eee;
+  border-color: var(--color-primary);
 }
 
 .image-preview img {
@@ -120,5 +62,13 @@ button.danger:hover {
 }
 
 .no-image {
-  color: #888;
+  color: var(--text-color-secondary);
+}
+
+.empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-color-secondary);
 }

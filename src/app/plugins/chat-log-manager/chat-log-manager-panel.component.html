@@ -1,26 +1,29 @@
-<div class="panel-content">
-  <div class="control-group">
-    <label>対象タブ:</label>
-    <select [(ngModel)]="selectedTabIdentifier">
-      <option *ngFor="let tab of chatTabs" [ngValue]="tab.identifier">{{ tab.name }}</option>
-    </select>
-  </div>
+<div class="panel-layout">
+  <div class="panel-body">
+    
+    <div class="control-group">
+      <label>対象タブ:</label>
+      <select class="udonarium-select" [(ngModel)]="selectedTabIdentifier">
+        <option *ngFor="let tab of chatTabs" [ngValue]="tab.identifier">{{ tab.name }}</option>
+      </select>
+    </div>
 
-  <hr>
+    <hr class="separator">
 
-  <div class="control-group">
-    <label class="checkbox-label">
-      <input type="checkbox" [(ngModel)]="allowDeleteLog">
-      ログ消去機能を有効にする
-    </label>
-  </div>
+    <div class="control-group">
+      <label class="checkbox-label">
+        <input type="checkbox" [(ngModel)]="allowDeleteLog">
+        ログ消去機能を有効にする
+      </label>
+    </div>
 
-  <div class="button-group">
-    <button class="danger" (click)="deleteLog()" [disabled]="!allowDeleteLog || !selectedTab">
-      選択タブのログを消去
-    </button>
-    <button class="danger" (click)="deleteAllLogs()" [disabled]="!allowDeleteLog">
-      全タブのログを消去
-    </button>
+    <div class="button-group">
+      <button class="udonarium-btn danger full-width" (click)="deleteLog()" [disabled]="!allowDeleteLog || !selectedTab">
+        選択タブのログを消去
+      </button>
+      <button class="udonarium-btn danger full-width" (click)="deleteAllLogs()" [disabled]="!allowDeleteLog">
+        全タブのログを消去
+      </button>
+    </div>
   </div>
 </div>
