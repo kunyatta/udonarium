@@ -6,11 +6,11 @@ import { Component } from '@angular/core';
     <div class="help-content">
       <ul class="help-list">
         <li><span class="key">クリック</span>: 対象を現在の<strong>手番</strong>に変更します。</li>
-        <li><span class="key">Ctrl + クリック</span>: ターゲットを<strong>選択/解除</strong>します（TargetSelectorプラグインと連動）。</li>
+        <li><span class="key">Ctrl + クリック</span>: ターゲットを<strong>選択/解除</strong>します。</li>
         <li><span class="key">ダブルクリック</span>: <strong>行動済み</strong>状態を切り替えます。</li>
         <li><span class="key">右クリック</span>: <strong>戦闘メニュー</strong>（コントローラ、キャラシート等）を開きます。</li>
       </ul>
-      <div class="note">※ ターゲット選択状態は盤面（3Dテーブル）上の選択と同期しています。</div>
+      <div class="note">※ ターゲット選択状態は盤面（3Dテーブル）上のコマの選択と同期しています。</div>
     </div>
   `,
   styles: [`

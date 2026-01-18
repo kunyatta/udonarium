@@ -120,9 +120,9 @@ button.primary {
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  border: 1px solid #1976d2;
-  background-color: #fff;
-  color: #1976d2;
+  border: 1px solid #aaa;
+  background-color: #555;
+  color: #fff;
   font-size: 11px;
   font-weight: bold;
   cursor: pointer;
@@ -135,8 +135,8 @@ button.primary {
 }
 
 .help-button-mini:hover {
-  background-color: #1976d2;
-  color: #fff;
+  background-color: #777;
+  border-color: #fff;
 }
 
 /* --- Unified List --- */
@@ -220,6 +220,7 @@ button.primary {
 .checkbox-label input {
   cursor: pointer;
   transform: scale(1.2);
+  accent-color: #555555;
 }
 .character-name {
   flex-grow: 1;
