@@ -38,71 +38,15 @@
   width: 160px; /* 標準幅に固定 */
 }
 
-.effect-item {
-  width: 100%;
-  padding: 8px 10px;
-  border: none;
-  border-bottom: 1px solid var(--border-color);
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.2s;
-  box-sizing: border-box;
-}
-
-.effect-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.effect-item.selected {
-  background-color: #555555;
-  color: white;
-  font-weight: bold;
-}
-
-.effect-icon-preview {
-  font-size: 1.2em;
-  width: 1.2em;
-  text-align: center;
-}
+/* 独自の .effect-item 定義は削除 -> .list-item を使用 */
 
 /* エディタ内フォーム */
-.form-section {
-  display: flex;
-  flex-direction: column;
-  gap: var(--spacing-m);
-}
+/* .form-section, .form-group 等は削除し、.flex-row / .flex-label / .info-card を使用 */
 
-.form-group label {
-  display: block;
-  font-weight: bold;
-  margin-bottom: var(--spacing-xs);
-  font-size: 12px;
-  color: var(--text-color-secondary);
-}
-
-.form-row {
-  display: flex;
-  gap: var(--spacing-m);
-}
-
-.form-row > .form-group {
-  flex: 1;
-}
-
-.input-with-preview, .input-with-checkbox {
+.input-with-checkbox {
   display: flex;
   align-items: center;
   gap: var(--spacing-s);
-}
-
-.icon-preview {
-  font-size: 1.5em;
-  min-width: 1.5em;
-  text-align: center;
 }
 
 .checkbox-grid {
@@ -127,10 +71,14 @@
   gap: var(--spacing-m);
 }
 
+/* フォームラベルのコンテナ（右寄せチェックボックス用） */
 .form-label-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex: 0 0 80px; /* flex-labelと同じ幅 */
+  font-size: 11px;
+  color: var(--text-color-secondary);
 }
 
 .empty-state {

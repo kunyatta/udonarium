@@ -15,7 +15,7 @@ import { takeUntil } from 'rxjs/operators';
   styleUrls: ['./dynamic-stand-setting.component.css']
 })
 export class DynamicStandSettingComponent implements OnInit, OnDestroy {
-  selectedTab: 'global' | 'emotes' = 'global';
+  selectedTab: 'global' | 'emotes' = 'emotes';
   selectedEmote: EmoteData = null;
   private onDestroy$ = new Subject<void>();
 
@@ -97,9 +97,9 @@ export class DynamicStandSettingComponent implements OnInit, OnDestroy {
     this.selectedEmote = null;
   }
 
-  moveEmote(event: Event, emote: EmoteData, direction: number) {
-    event.stopPropagation();
-    this.emoteManager.moveEmote(emote.identifier, direction);
+  moveSelectedEmote(direction: number) {
+    if (!this.selectedEmote) return;
+    this.emoteManager.moveEmote(this.selectedEmote.identifier, direction);
   }
 
   cancelEdit() {

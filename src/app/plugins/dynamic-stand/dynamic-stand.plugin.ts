@@ -15,7 +15,7 @@ export class DynamicStandPlugin implements IPluginWithUI {
   readonly icon = 'recent_actors';
 
   readonly component = DynamicStandSettingComponent; 
-  readonly width: number = 400;
+  readonly width: number = 520;
   readonly height: number = 550;
 
   constructor(

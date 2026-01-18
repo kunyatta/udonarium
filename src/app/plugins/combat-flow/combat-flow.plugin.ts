@@ -79,7 +79,7 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
       action: () => {
         this.pluginUiService.open(CombatFlowSettingsComponent, {
           title: '戦闘設定',
-          width: 580,
+          width: 590,
           height: 600,
           isSingleton: true
         });

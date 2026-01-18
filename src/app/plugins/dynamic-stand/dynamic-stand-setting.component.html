@@ -1,8 +1,94 @@
 <div class="panel-layout">
   <div class="udonarium-tab-container">
     <div class="udonarium-tab-header">
-      <div class="tab-item" [class.active]="selectedTab === 'global'" (click)="selectTab('global')">全体設定</div>
       <div class="tab-item" [class.active]="selectedTab === 'emotes'" (click)="selectTab('emotes')">エモート管理</div>
+      <div class="tab-item" [class.active]="selectedTab === 'global'" (click)="selectTab('global')">全体設定</div>
+    </div>
+
+    <!-- エモート管理タブ -->
+    <div class="udonarium-tab-content" style="padding: 0;" *ngIf="selectedTab === 'emotes'">
+      <div class="layout-2pane">
+        <!-- 左ペイン: リスト -->
+        <div class="layout-sidebar">
+          <div class="panel-header">
+            <button class="udonarium-btn primary" style="width: 100%" (click)="createNewEmote()">＋ 新規追加</button>
+          </div>
+          <div class="panel-body" style="padding: 0; overflow-x: hidden;">
+            <button *ngFor="let emote of emotes; let i = index" class="list-item" 
+                 [class.active]="selectedEmote?.identifier === emote.identifier"
+                 (click)="selectEmote(emote)">
+              <span class="list-icon">{{emote.icon}}</span>{{emote.label}}
+            </button>
+            <div *ngIf="emotes.length === 0" style="padding: var(--spacing-m); text-align: center; color: var(--text-color-secondary);">
+              データがありません
+            </div>
+          </div>
+          <div class="panel-footer" style="flex-direction: column; gap: 4px;">
+            <div style="display: flex; gap: 2px; width: 100%;">
+              <button class="udonarium-btn" style="flex: 1; padding: 4px 2px; font-size: 11px;" (click)="moveSelectedEmote(-1)" [disabled]="!selectedEmote || emotes.indexOf(selectedEmote) === 0">▲ 上</button>
+              <button class="udonarium-btn" style="flex: 1; padding: 4px 2px; font-size: 11px;" (click)="moveSelectedEmote(1)" [disabled]="!selectedEmote || emotes.indexOf(selectedEmote) === emotes.length - 1">▼ 下</button>
+            </div>
+            <button class="udonarium-btn" style="width: 100%" (click)="exportAllEmotes()">まとめて保存</button>
+          </div>
+        </div>
+
+        <!-- 右ペイン: エディタ -->
+        <div class="layout-main">
+          <ng-container *ngIf="selectedEmote; else noEmoteSelection">
+            <div class="panel-header" style="justify-content: space-between;">
+              <div style="font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+                エモート: {{ selectedEmote.label }}
+              </div>
+              <div style="display: flex; gap: var(--spacing-s);">
+                <button class="udonarium-btn" (click)="exportEmote()">保存</button>
+                <button class="udonarium-btn danger" (click)="deleteEmote()">削除</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="info-card">
+                <div style="font-weight: bold; margin-bottom: var(--spacing-s); font-size: 12px; color: var(--text-color-secondary);">基本設定</div>
+                
+                <div class="flex-row">
+                  <div class="flex-label">アイコン</div>
+                  <div class="flex-controls">
+                    <input type="text" class="udonarium-input" style="width: 60px;" [(ngModel)]="selectedEmote.icon" (change)="onEmoteChange()" placeholder="😊">
+                    <span class="list-icon" style="margin-left: 8px; font-size: 1.5em;">{{selectedEmote.icon}}</span>
+                  </div>
+                </div>
+
+                <div class="flex-row">
+                  <div class="flex-label">表示名</div>
+                  <input type="text" class="udonarium-input" [(ngModel)]="selectedEmote.label" (change)="onEmoteChange()" placeholder="笑顔">
+                </div>
+              </div>
+
+              <div class="info-card">
+                <div style="font-weight: bold; margin-bottom: var(--spacing-s); font-size: 12px; color: var(--text-color-secondary);">音響・演出</div>
+                <div class="flex-row">
+                  <div class="flex-label">効果音 (SE)</div>
+                  <select class="udonarium-select" [(ngModel)]="selectedEmote.soundIdentifier" (change)="onEmoteChange()">
+                    <option value="">設定なし</option>
+                    <option *ngFor="let audio of audios" [value]="audio.identifier">{{audio.name}}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="margin-top: var(--spacing-m); font-size: 11px; color: var(--text-color-secondary); text-align: center;">
+                ※ 編集内容は自動的に保存・同期されます。
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #noEmoteSelection>
+            <div class="empty-state">
+              <i class="material-icons empty-state-icon">auto_fix_high</i>
+              <div class="empty-state-message">エモートを選択するか、新規追加してください</div>
+              <div class="empty-state-description">
+                チャット入力欄から素早く呼び出せる、感情表現豊かなエモートを管理します
+              </div>
+            </div>
+          </ng-template>
+        </div>
+      </div>
     </div>
 
     <!-- 全体設定タブ -->
@@ -58,81 +144,6 @@
 
       <div style="margin-top: var(--spacing-l); font-size: 11px; color: var(--text-color-secondary); text-align: center;">
         ※ 設定はリアルタイムに反映されます。
-      </div>
-    </div>
-
-    <!-- エモート管理タブ -->
-    <div class="udonarium-tab-content" style="padding: 0;" *ngIf="selectedTab === 'emotes'">
-      <div class="layout-2pane">
-        <!-- 左ペイン: リスト -->
-        <div class="layout-sidebar">
-          <div class="panel-header">
-            <button class="udonarium-btn primary" style="width: 100%" (click)="createNewEmote()">＋ 新規追加</button>
-          </div>
-          <div class="panel-body" style="padding: 0; overflow-x: hidden;">
-            <div *ngFor="let emote of emotes; let i = index" class="list-item" 
-                 [class.active]="selectedEmote?.identifier === emote.identifier"
-                 (click)="selectEmote(emote)">
-              <span class="icon">{{emote.icon}}</span>
-              <span class="label">{{emote.label}}</span>
-              <div class="move-btns">
-                <button [disabled]="i === 0" (click)="moveEmote($event, emote, -1)">▲</button>
-                <button [disabled]="i === emotes.length - 1" (click)="moveEmote($event, emote, 1)">▼</button>
-              </div>
-            </div>
-            <div *ngIf="emotes.length === 0" style="padding: var(--spacing-m); text-align: center; color: var(--text-color-secondary);">
-              データがありません
-            </div>
-          </div>
-          <div class="panel-footer">
-            <button class="udonarium-btn" style="width: 100%" (click)="exportAllEmotes()">辞書を一括保存</button>
-          </div>
-        </div>
-
-        <!-- 右ペイン: エディタ -->
-        <div class="layout-main">
-          <ng-container *ngIf="selectedEmote; else noEmoteSelection">
-            <div class="panel-header" style="justify-content: space-between;">
-              <div style="font-weight: bold;">エモート編集</div>
-              <div style="display: flex; gap: var(--spacing-s);">
-                <button class="udonarium-btn" (click)="exportEmote()">個別保存</button>
-                <button class="udonarium-btn danger" (click)="deleteEmote()">削除</button>
-              </div>
-            </div>
-            <div class="panel-body">
-              <div class="info-card">
-                <div class="form-group">
-                  <label>アイコン (絵文字/テキスト)</label>
-                  <input type="text" class="udonarium-input" [(ngModel)]="selectedEmote.icon" (change)="onEmoteChange()" placeholder="😊">
-                </div>
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label>表示名 (メニュー用)</label>
-                  <input type="text" class="udonarium-input" [(ngModel)]="selectedEmote.label" (change)="onEmoteChange()" placeholder="笑顔">
-                </div>
-              </div>
-
-              <div class="info-card">
-                <div class="form-group" style="margin-bottom: 0;">
-                  <label>効果音 (SE)</label>
-                  <select class="udonarium-select" [(ngModel)]="selectedEmote.soundIdentifier" (change)="onEmoteChange()">
-                    <option value="">設定なし</option>
-                    <option *ngFor="let audio of audios" [value]="audio.identifier">{{audio.name}}</option>
-                  </select>
-                </div>
-              </div>
-
-              <div style="margin-top: var(--spacing-m); font-size: 11px; color: var(--text-color-secondary); text-align: center;">
-                ※ 編集内容は自動的に保存・同期されます。
-              </div>
-            </div>
-          </ng-container>
-          <ng-template #noEmoteSelection>
-            <div class="empty-state">
-              <i class="material-icons" style="font-size: 48px; margin-bottom: 8px;">touch_app</i>
-              <p>左のリストから選択するか<br>新規追加してください</p>
-            </div>
-          </ng-template>
-        </div>
       </div>
     </div>
   </div>
