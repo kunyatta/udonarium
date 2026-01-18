@@ -7,7 +7,7 @@ import { UIExtensionService } from '../service/ui-extension.service';
 
 export class RollResultChartPlugin implements IPluginWithUI {
   readonly pluginName = 'Roll Result Chart Plugin';
-  readonly name = 'ダイスロール表';
+  readonly name = 'ダイスチャート';
   readonly icon = 'list_alt';
   readonly type = 'panel';
   readonly component = RollResultChartPanelComponent;
@@ -28,7 +28,7 @@ export class RollResultChartPlugin implements IPluginWithUI {
   initializeUI(injector: Injector): void {
     // Register Menu Action
     this.uiExtension.registerAction('main-menu', {
-      name: 'ダイスロール表',
+      name: 'ダイスチャート',
       icon: 'list_alt',
       priority: 120,
       action: () => this.openPanel()
@@ -37,7 +37,7 @@ export class RollResultChartPlugin implements IPluginWithUI {
 
   private openPanel() {
     this.pluginUiService.open(RollResultChartPanelComponent, {
-      title: 'ダイスロール表',
+      title: 'ダイスチャート',
       width: 600,
       height: 600,
       isSingleton: true
