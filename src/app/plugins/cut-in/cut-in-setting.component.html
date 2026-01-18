@@ -1,316 +1,279 @@
-<div class="layout-container">
-  <div class="layout-body">
-    <!-- 左カラム: リスト -->
-    <div class="left-panel">
+<div class="panel-layout">
+  <div class="layout-2pane">
+    <!-- 左ペイン: リスト -->
+    <div class="layout-sidebar">
       <div class="panel-header">
-        <button class="btn btn-xs btn-primary full-width-btn mb-1" (click)="createNew()">＋ 新規追加</button>
-        <button class="btn btn-xs btn-outline-secondary full-width-btn" (click)="exportAll()">辞書を一括保存</button>
+        <button class="udonarium-btn primary" style="width: 100%" (click)="createNew()">＋ 新規追加</button>
       </div>
-      <div class="custom-list flex-grow-1">
+      <div class="panel-body" style="padding: 0; overflow-x: hidden;">
         <button *ngFor="let item of cutIns" 
-                class="custom-list-item"
+                class="list-item"
                 [class.active]="selectedIdentifier === item.identifier"
                 (click)="select(item.identifier)">
           {{ item.name || '(名称未設定)' }}
         </button>
-        <div *ngIf="cutIns.length === 0" class="empty-message">
+        <div *ngIf="cutIns.length === 0" style="padding: var(--spacing-m); text-align: center; color: var(--text-color-secondary);">
           データがありません
         </div>
       </div>
+      <div class="panel-footer">
+        <button class="udonarium-btn" style="width: 100%" (click)="exportAll()">辞書を一括保存</button>
+      </div>
     </div>
 
-    <!-- 右カラム: 編集・実行 -->
-    <div class="right-panel">
+    <!-- 右ペイン: エディタ -->
+    <div class="layout-main">
       <ng-container *ngIf="editingCutIn; else noSelection">
-        <!-- 固定ヘッダーエリア -->
-        <div class="sticky-header">
-          <div class="header-row">
-            <h6 class="title">
-              <span class="badge badge-secondary mr-1">{{ editingCutIn.identifier ? '編集' : '新規' }}</span>
-              {{ editingCutIn.name }}
-            </h6>
-            <div class="btn-group">
-              <button class="btn btn-sm btn-success" (click)="play()" title="全体に再生">▶ 再生</button>
-              <button class="btn btn-sm btn-info" (click)="playLocal()" title="自分だけ見る">👁</button>
-            </div>
-            <button class="btn btn-sm btn-outline-danger ml-1" (click)="stopAll()" title="演出を停止（全員）">■ 停止</button>
+        <!-- 固定ヘッダー: 名前と再生コントロール -->
+        <div class="panel-header" style="justify-content: space-between;">
+          <div style="font-weight: bold; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">
+            {{ editingCutIn.name }}
           </div>
-
-          <!-- タイプ選択 & プレビュー (固定) -->
-          <div class="flex-row mb-2">
-            <div class="radio-group small">
-              <input type="radio" id="typeImage" name="cutInType" value="image" [(ngModel)]="cutInType">
-              <label for="typeImage">画像</label>
-              <input type="radio" id="typeVideo" name="cutInType" value="video" [(ngModel)]="cutInType">
-              <label for="typeVideo">動画</label>
-            </div>
-          </div>
-
-          <div *ngIf="cutInType === 'image'" class="preview-area" (click)="openImageSelecter()" title="画像を変更" style="height: 100px; margin-bottom: 12px;">
-            <img [src]="getImageUrl(editingCutIn.imageIdentifier)" class="img-fluid" *ngIf="editingCutIn.imageIdentifier">
-            <div class="preview-placeholder" *ngIf="!editingCutIn.imageIdentifier">クリックして画像を選択</div>
-          </div>
-
-          <div *ngIf="cutInType === 'video'" class="preview-area" style="height: 100px; margin-bottom: 12px;">
-            <img [src]="getVideoThumbnailUrl()" class="img-fluid" *ngIf="editingCutIn.videoIdentifier">
-            <div class="preview-placeholder" *ngIf="!editingCutIn.videoIdentifier">URLを入力してください</div>
-          </div>
-
-          <!-- 個別保存・削除ボタン (サムネイルの下) -->
-          <div class="flex-row mb-3">
-            <button class="btn btn-sm btn-outline-primary px-4 mr-2" (click)="export()">個別保存</button>
-            <button class="btn btn-sm btn-outline-danger" (click)="delete()">削除</button>
+          <div style="display: flex; gap: 2px;">
+            <button class="udonarium-btn" style="padding: 2px 6px;" (click)="play()" title="全体に再生">▶ 再生</button>
+            <button class="udonarium-btn" style="padding: 2px 6px;" (click)="playLocal()" title="自分だけ見る">👁</button>
+            <button class="udonarium-btn danger" style="padding: 2px 6px;" (click)="stopAll()" title="演出を停止（全員）">■ 停止</button>
           </div>
         </div>
 
-        <!-- スクロール可能な詳細設定エリア -->
-        <div class="scroll-content">
-          <!-- 編集フォーム (基本情報) -->
-          <div class="form-section">
+        <!-- 固定操作エリア: ソース選択、プレビュー、基本操作 -->
+        <div style="padding: var(--spacing-m); border-bottom: 1px solid var(--border-color); flex-shrink: 0; background-color: transparent;">
+          <!-- 1. ソース選択 (前提条件) -->
+          <div style="display: flex; align-items: center; gap: 16px; margin-bottom: var(--spacing-s); font-size: 13px;">
+            <span style="font-weight: bold; color: var(--text-color-secondary);">ソース:</span>
+            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+              <input type="radio" name="cutInType" value="image" [(ngModel)]="cutInType"> 画像
+            </label>
+            <label style="display: flex; align-items: center; gap: 4px; cursor: pointer;">
+              <input type="radio" name="cutInType" value="video" [(ngModel)]="cutInType"> 動画
+            </label>
+          </div>
+
+          <!-- 2. プレビュー (HUD) -->
+          <div class="hud-style preview-container" (click)="cutInType === 'image' ? openImageSelecter() : null" [title]="cutInType === 'image' ? '画像を変更' : ''">
+            <ng-container *ngIf="cutInType === 'image'">
+              <img [src]="getImageUrl(editingCutIn.imageIdentifier)" *ngIf="editingCutIn.imageIdentifier">
+              <div class="preview-placeholder" *ngIf="!editingCutIn.imageIdentifier">クリックして画像を選択</div>
+            </ng-container>
+            <ng-container *ngIf="cutInType === 'video'">
+              <img [src]="getVideoThumbnailUrl()" *ngIf="editingCutIn.videoIdentifier">
+              <div class="preview-placeholder" *ngIf="!editingCutIn.videoIdentifier">URLを入力してください</div>
+            </ng-container>
+          </div>
+
+          <!-- 3. 基本操作ボタン -->
+          <div style="display: flex; gap: var(--spacing-s); margin-top: var(--spacing-s);">
+            <button class="udonarium-btn" (click)="export()">個別保存</button>
+            <button class="udonarium-btn danger" (click)="delete()">削除</button>
+          </div>
+        </div>
+
+        <!-- スクロールエリア: 詳細設定 -->
+        <div class="panel-body">
+          <div class="info-card">
+            <div style="font-weight: bold; margin-bottom: var(--spacing-s); font-size: 12px; color: var(--text-color-secondary);">基本設定</div>
+            
             <div class="flex-row" *ngIf="cutInType === 'video'">
-              <div class="flex-label small">URL</div>
-              <div class="flex-controls column-direction">
-                <input type="text" class="form-control" [(ngModel)]="videoUrl" placeholder="https://www.youtube.com/watch?v=...">
-                <div class="text-right">
-                  <a href="https://www.youtube.com/terms" target="_blank" class="small-link">YouTube 利用規約</a>
+              <div class="flex-label">YouTube ID</div>
+              <input type="text" class="udonarium-input" [(ngModel)]="videoUrl" placeholder="URLまたは動画IDを入力">
+            </div>
+
+            <div class="flex-row">
+              <div class="flex-label">名称</div>
+              <input type="text" class="udonarium-input" [(ngModel)]="editingCutIn.name" (change)="update()">
+            </div>
+
+            <div class="flex-row">
+              <div class="flex-label">キーワード</div>
+              <input type="text" class="udonarium-input" [(ngModel)]="editingCutIn.keyword" (change)="update()" placeholder="@必殺技 など">
+            </div>
+
+            <div class="flex-row">
+              <div class="flex-label">表示秒数</div>
+              <div class="flex-controls">
+                <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.duration" (change)="update()" min="0">
+                <span class="unit-text">秒 {{ editingCutIn.type === 'video' ? '(0=動画終了まで)' : '(0=無制限)' }}</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- ... (以下の音響設定、サイズ、演出などは変更なし) ... -->
+          <div class="info-card">
+            <div style="font-weight: bold; margin-bottom: var(--spacing-s); font-size: 12px; color: var(--text-color-secondary);">音響設定</div>
+            <div class="flex-row">
+              <div class="flex-label">音源</div>
+              <select class="udonarium-select" [(ngModel)]="editingCutIn.audioIdentifier" (change)="update()">
+                <option value="">(なし)</option>
+                <option *ngFor="let audio of audios" [value]="audio.identifier">{{ audio.name }}</option>
+              </select>
+            </div>
+            
+            <ng-container *ngIf="editingCutIn.audioIdentifier">
+              <div class="flex-row">
+                <div class="flex-label">再生モード</div>
+                <div class="flex-controls">
+                  <input type="radio" id="audioModeSE" name="audioMode" value="se" [(ngModel)]="editingCutIn.audioMode" (change)="update()">
+                  <label for="audioModeSE" style="margin-right: 12px">SE</label>
+                  <input type="radio" id="audioModeBGM" name="audioMode" value="bgm" [(ngModel)]="editingCutIn.audioMode" (change)="update()">
+                  <label for="audioModeBGM">BGM</label>
                 </div>
               </div>
-            </div>
+              <div class="flex-row">
+                <div class="flex-label"></div>
+                <div class="flex-controls" style="font-size: 12px">
+                  <label *ngIf="editingCutIn.audioMode === 'se'" style="margin-right: 12px">
+                    <input type="checkbox" [(ngModel)]="editingCutIn.isLoop" (change)="update()"> ループ
+                  </label>
+                  <label>
+                    <input type="checkbox" [(ngModel)]="editingCutIn.stopJukebox" (change)="update()"> 既存BGMを停止
+                  </label>
+                </div>
+              </div>
+            </ng-container>
+          </div>
+
+          <div class="info-card">
+            <div style="font-weight: bold; margin-bottom: var(--spacing-s); font-size: 12px; color: var(--text-color-secondary);">配置・サイズ</div>
             
             <div class="flex-row">
-              <div class="flex-label small">名前</div>
+              <div class="flex-label">サイズ指定</div>
               <div class="flex-controls">
-                <input type="text" class="form-control" [(ngModel)]="editingCutIn.name" (change)="update()">
+                <input type="radio" id="modeScale" name="sizeMode" value="scale" [(ngModel)]="sizeMode">
+                <label for="modeScale" style="margin-right: 12px">拡大率</label>
+                <input type="radio" id="modeRatio" name="sizeMode" value="ratio" [(ngModel)]="sizeMode">
+                <label for="modeRatio">画面比率</label>
               </div>
             </div>
 
-            <div class="flex-row">
-              <div class="flex-label small">キーワード</div>
+            <div class="flex-row" *ngIf="sizeMode === 'scale'">
+              <div class="flex-label">拡大率</div>
               <div class="flex-controls">
-                <input type="text" class="form-control bold-text" [(ngModel)]="editingCutIn.keyword" (change)="update()" placeholder="@必殺技 など">
-              </div>
-            </div>
-            
-            <div class="flex-row">
-              <div class="flex-label small">表示秒数</div>
-              <div class="flex-controls">
-                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.duration" (change)="update()" min="0">
-                <span class="small-label ml-1" style="margin-left: 4px;">
-                  {{ editingCutIn.type === 'video' ? '(0=動画終了まで)' : '(0=無制限)' }}
-                </span>
-              </div>
-            </div>
-          </div>
-
-          <div class="section-divider">音声設定</div>
-          <!-- ... (以下、既存の音声、大きさ、位置、演出設定) ... -->
-        <div class="form-group">
-          <label class="small-label">音源</label>
-          <select class="form-control" [(ngModel)]="editingCutIn.audioIdentifier" (change)="update()">
-            <option value="">(なし)</option>
-            <option *ngFor="let audio of audios" [value]="audio.identifier">{{ audio.name }}</option>
-          </select>
-        </div>
-
-        <div class="form-group" *ngIf="editingCutIn.audioIdentifier">
-          <div class="radio-group mb-1">
-            <input type="radio" id="audioModeSE" name="audioMode" value="se" [(ngModel)]="editingCutIn.audioMode" (change)="update()">
-            <label for="audioModeSE">SEとして再生</label>
-            
-            <input type="radio" id="audioModeBGM" name="audioMode" value="bgm" [(ngModel)]="editingCutIn.audioMode" (change)="update()">
-            <label for="audioModeBGM">BGMとして再生</label>
-          </div>
-
-          <div class="checkbox-row small">
-            <label *ngIf="editingCutIn.audioMode === 'se'" class="mr-3">
-              <input type="checkbox" [(ngModel)]="editingCutIn.isLoop" (change)="update()"> ループ再生
-            </label>
-            <label>
-              <input type="checkbox" [(ngModel)]="editingCutIn.stopJukebox" (change)="update()"> 既存BGMを停止
-            </label>
-          </div>
-        </div>
-
-        <div class="form-group" *ngIf="editingCutIn.stopJukebox">
-          <label class="small-label">演出終了後のBGM</label>
-          <div class="flex-row align-items-center mb-1">
-            <select class="form-control flex-grow-1 mr-1" [(ngModel)]="editingCutIn.afterAudioIdentifier" (change)="update()">
-              <option value="">(なし / 停止したまま)</option>
-              <option *ngFor="let audio of audios" [value]="audio.identifier">{{ audio.name }}</option>
-            </select>
-          </div>
-          <div class="flex-row align-items-center" *ngIf="editingCutIn.afterAudioIdentifier !== ''">
-            <div class="flex-label small">待機時間(秒)</div>
-            <div class="flex-controls">
-              <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.afterAudioDelay" (change)="update()" min="0" step="0.5">
-              <span class="small-label ml-1">※演出終了後</span>
-            </div>
-          </div>
-        </div>
-
-        <div class="section-divider">大きさ</div>
-        <div class="form-group">
-          <div class="radio-group mb-1">
-            <input type="radio" id="modeScale" name="sizeMode" value="scale" [(ngModel)]="sizeMode">
-            <label for="modeScale">拡大率で指定</label>
-            
-            <input type="radio" id="modeRatio" name="sizeMode" value="ratio" [(ngModel)]="sizeMode">
-            <label for="modeRatio">画面比率(%)で指定</label>
-          </div>
-
-          <div *ngIf="sizeMode === 'scale'" class="flex-row align-items-center mb-1">
-            <div class="flex-label small">拡大率</div>
-            <div class="flex-controls">
-              <input type="range" class="custom-range flex-grow-1 mr-2" min="0.1" max="3.0" step="0.1" [(ngModel)]="editingCutIn.scale" (input)="update()">
-              <div class="input-with-unit">
-                <input type="number" class="form-control" [(ngModel)]="editingCutIn.scale" (change)="update()" min="0.1" step="0.1">
+                <input type="range" style="flex: 1" min="0.1" max="3.0" step="0.1" [(ngModel)]="editingCutIn.scale" (input)="update()">
+                <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.scale" (change)="update()" min="0.1" step="0.1">
                 <span class="unit-text">倍</span>
               </div>
             </div>
-          </div>
 
-          <div *ngIf="sizeMode === 'ratio'" class="flex-row align-items-center mb-1">
-            <div class="flex-label small">幅(%)</div>
-            <div class="flex-controls">
-              <input type="range" class="custom-range flex-grow-1 mr-2" min="1" max="100" step="1" [(ngModel)]="editingCutIn.width" (input)="update()">
-              <div class="input-with-unit">
-                <input type="number" class="form-control" [(ngModel)]="editingCutIn.width" (change)="update()" min="1" max="100">
+            <div class="flex-row" *ngIf="sizeMode === 'ratio'">
+              <div class="flex-label">幅</div>
+              <div class="flex-controls">
+                <input type="range" style="flex: 1" min="1" max="100" step="1" [(ngModel)]="editingCutIn.width" (input)="update()">
+                <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.width" (change)="update()" min="1" max="100">
+                <span class="unit-text">%</span>
+              </div>
+            </div>
+
+            <div class="flex-row">
+              <div class="flex-label">位置 X</div>
+              <div class="flex-controls">
+                <input type="range" style="flex: 1" min="0" max="100" step="1" [(ngModel)]="editingCutIn.left" (input)="update()">
+                <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.left" (change)="update()" min="0" max="100">
+                <span class="unit-text">%</span>
+              </div>
+            </div>
+
+            <div class="flex-row">
+              <div class="flex-label">位置 Y</div>
+              <div class="flex-controls">
+                <input type="range" style="flex: 1" min="0" max="100" step="1" [(ngModel)]="editingCutIn.top" (input)="update()">
+                <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.top" (change)="update()" min="0" max="100">
                 <span class="unit-text">%</span>
               </div>
             </div>
           </div>
-        </div>
 
-        <div class="section-divider">表示位置</div>
-        <div class="form-group">
-          <div class="flex-row align-items-center mb-1">
-            <div class="flex-label small">X (%)</div>
-            <div class="flex-controls">
-              <input type="range" class="custom-range flex-grow-1 mr-2" min="0" max="100" step="1" [(ngModel)]="editingCutIn.left" (input)="update()">
-              <div class="input-with-unit no-unit">
-                <input type="number" class="form-control" [(ngModel)]="editingCutIn.left" (change)="update()" min="0" max="100">
-              </div>
+          <div class="info-card">
+            <div style="font-weight: bold; margin-bottom: var(--spacing-s); font-size: 12px; color: var(--text-color-secondary);">登場演出</div>
+            <div class="quick-btns">
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('fade')">フェード</button>
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('slide-left')">←スライド</button>
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('slide-right')">スライド→</button>
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('slide-up')">↑スライド</button>
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('slide-down')">↓スライド</button>
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('zoom-in')">ズームイン</button>
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('zoom-out')">ズームアウト</button>
+            </div>
+            
+            <div class="advanced-settings">
+              <details>
+                <summary>詳細設定（時間・イージング・開始状態）</summary>
+                <div class="flex-row">
+                  <div class="flex-label">時間(ms)</div>
+                  <div class="flex-controls">
+                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.inDuration" (change)="update()" step="100" min="0">
+                    <select class="udonarium-select" [(ngModel)]="editingCutIn.easing" (change)="update()">
+                      <option *ngFor="let e of easings" [value]="e">{{e}}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="flex-row">
+                  <div class="flex-label">開始 X, Y</div>
+                  <div class="flex-controls">
+                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startLeft" (change)="update()">
+                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startTop" (change)="update()">
+                    <span class="unit-text">%</span>
+                  </div>
+                </div>
+                <div class="flex-row">
+                  <div class="flex-label">開始 不透明, 拡大</div>
+                  <div class="flex-controls">
+                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startOpacity" (change)="update()" step="0.1" min="0" max="1">
+                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startScale" (change)="update()" step="0.1">
+                  </div>
+                </div>
+              </details>
             </div>
           </div>
-          <div class="flex-row align-items-center mb-1">
-            <div class="flex-label small">Y (%)</div>
-            <div class="flex-controls">
-              <input type="range" class="custom-range flex-grow-1 mr-2" min="0" max="100" step="1" [(ngModel)]="editingCutIn.top" (input)="update()">
-              <div class="input-with-unit no-unit">
-                <input type="number" class="form-control" [(ngModel)]="editingCutIn.top" (change)="update()" min="0" max="100">
-              </div>
-            </div>
-          </div>
-          <div class="flex-row align-items-center">
-            <div class="flex-label small">不透明度</div>
-            <div class="flex-controls">
-              <input type="range" class="custom-range flex-grow-1 mr-2" min="0" max="1" step="0.1" [(ngModel)]="editingCutIn.opacity" (input)="update()">
-              <div class="input-with-unit no-unit">
-                <input type="number" class="form-control" [(ngModel)]="editingCutIn.opacity" (change)="update()" min="0" max="1" step="0.1">
-              </div>
-            </div>
-          </div>
-        </div>
 
-        <div class="section-divider">演出（登場時）</div>
-        <div class="form-group">
-          <label class="small-label">クイック設定</label>
-          <div class="quick-btns">
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('fade')">フェード</button>
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('slide-left')">←スライド</button>
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('slide-right')">スライド→</button>
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('slide-up')">↑スライド</button>
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('slide-down')">↓スライド</button>
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('zoom-in')">ズームイン</button>
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickInEffect('zoom-out')">ズームアウト</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div class="flex-row mb-1 align-items-center">
-            <div class="flex-label small">時間(ms)</div>
-            <div class="flex-controls">
-              <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.inDuration" (change)="update()" step="100" min="0">
-              <select class="form-control flex-grow-1 ml-1" [(ngModel)]="editingCutIn.easing" (change)="update()">
-                <option *ngFor="let e of easings" [value]="e">{{e}}</option>
-              </select>
+          <div class="info-card">
+            <div style="font-weight: bold; margin-bottom: var(--spacing-s); font-size: 12px; color: var(--text-color-secondary);">退場演出</div>
+            <div class="quick-btns">
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('fade')">フェード</button>
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('slide-left')">←スライド</button>
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('slide-right')">スライド→</button>
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('slide-up')">↑スライド</button>
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('slide-down')">↓スライド</button>
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('zoom-in')">ズームイン</button>
+              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('zoom-out')">ズームアウト</button>
             </div>
-          </div>
-          
-          <details class="advanced-settings">
-            <summary class="small">開始状態の詳細設定</summary>
-            <div class="flex-row align-items-center mb-1">
-              <div class="flex-label small">開始X (%)</div>
-              <div class="flex-controls">
-                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.startLeft" (change)="update()">
-                <span class="small-label ml-2">開始Y (%)</span>
-                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.startTop" (change)="update()">
-              </div>
-            </div>
-            <div class="flex-row align-items-center mb-1">
-              <div class="flex-label small">不透明度</div>
-              <div class="flex-controls">
-                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.startOpacity" (change)="update()" step="0.1" min="0" max="1">
-                <span class="small-label ml-2">スケール</span>
-                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.startScale" (change)="update()" step="0.1">
-              </div>
-            </div>
-          </details>
-        </div>
 
-        <div class="section-divider">演出（退場時）</div>
-        <div class="form-group">
-          <label class="small-label">クイック設定</label>
-          <div class="quick-btns">
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('fade')">フェードアウト</button>
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('slide-left')">←スライド消去</button>
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('slide-right')">スライド消去→</button>
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('slide-up')">↑スライド消去</button>
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('slide-down')">↓スライド消去</button>
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('zoom-in')">ズームアウト(拡大)</button>
-            <button class="btn btn-xs btn-outline-primary" (click)="setQuickOutEffect('zoom-out')">ズームアウト(縮小)</button>
-          </div>
-        </div>
-
-        <div class="form-group">
-          <div class="flex-row mb-1 align-items-center">
-            <div class="flex-label small">時間(ms)</div>
-            <div class="flex-controls">
-              <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.outDuration" (change)="update()" step="100" min="0">
-              <select class="form-control flex-grow-1 ml-1" [(ngModel)]="editingCutIn.outEasing" (change)="update()">
-                <option *ngFor="let e of easings" [value]="e">{{e}}</option>
-              </select>
+            <div class="advanced-settings">
+              <details>
+                <summary>詳細設定（時間・イージング・終了状態）</summary>
+                <div class="flex-row">
+                  <div class="flex-label">時間(ms)</div>
+                  <div class="flex-controls">
+                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.outDuration" (change)="update()" step="100" min="0">
+                    <select class="udonarium-select" [(ngModel)]="editingCutIn.outEasing" (change)="update()">
+                      <option *ngFor="let e of easings" [value]="e">{{e}}</option>
+                    </select>
+                  </div>
+                </div>
+                <div class="flex-row">
+                  <div class="flex-label">終了 X, Y</div>
+                  <div class="flex-controls">
+                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endLeft" (change)="update()">
+                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endTop" (change)="update()">
+                    <span class="unit-text">%</span>
+                  </div>
+                </div>
+                <div class="flex-row">
+                  <div class="flex-label">終了 不透明, 拡大</div>
+                  <div class="flex-controls">
+                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endOpacity" (change)="update()" step="0.1" min="0" max="1">
+                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endScale" (change)="update()" step="0.1">
+                  </div>
+                </div>
+              </details>
             </div>
           </div>
-          
-          <details class="advanced-settings">
-            <summary class="small">終了状態の詳細設定</summary>
-            <div class="flex-row align-items-center mb-1">
-              <div class="flex-label small">終了X (%)</div>
-              <div class="flex-controls">
-                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.endLeft" (change)="update()">
-                <span class="small-label ml-2">終了Y (%)</span>
-                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.endTop" (change)="update()">
-              </div>
-            </div>
-            <div class="flex-row align-items-center mb-1">
-              <div class="flex-label small">不透明度</div>
-              <div class="flex-controls">
-                <input type="number" class="form-control width-short" [(ngModel)]="editingCutIn.endOpacity" (change)="update()" step="0.1" min="0" max="1">
-                <span class="small-label ml-2">スケール</span>
-                <input type="number" class="form-control width-short ml-1" [(ngModel)]="editingCutIn.endScale" (change)="update()" step="0.1">
-              </div>
-            </div>
-          </details>
-        </div>
 
-        <!-- スクロールエリア終了 -->
         </div>
       </ng-container>
 
       <ng-template #noSelection>
         <div class="empty-state">
-          <i class="material-icons large-icon">touch_app</i>
+          <i class="material-icons" style="font-size: 48px; margin-bottom: 8px;">touch_app</i>
           <p>項目を選択するか、新規作成してください</p>
         </div>
       </ng-template>

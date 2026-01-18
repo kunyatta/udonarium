@@ -14,7 +14,7 @@ export class CutInPlugin implements IPluginWithUI {
   readonly type: 'panel' = 'panel';
   readonly icon: string = 'burst_mode'; 
   readonly component = CutInSettingComponent;
-  readonly width: number = 500;
+  readonly width: number = 550;
   readonly height: number = 600;
   readonly isSingleton: boolean = true;
 

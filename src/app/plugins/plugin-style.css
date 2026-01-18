@@ -11,9 +11,10 @@
 
 :host {
   /* Colors */
-  /* --bg-color-base: rgba(255, 248, 240, 0.85); */ /* 全体のベース: 淡いオレンジ + 透過 */
-  --bg-color-panel: rgba(255, 255, 255, 0.95); /* 操作パネル: ほぼ不透明な白 */
-  --bg-color-card: #ffffff; /* カード・区画: 完全な白 */
+  /* パネル本体の背景(不透過オレンジ)は本体側で設定されるため、ここでは定義しない */
+  
+  --bg-color-card: rgba(255, 255, 255, 0.6); /* ゾーニング（カード）用: 白半透明 */
+  --bg-color-hud: #222222; /* 強調（HUD）用: 不透過チャコールグレー */
   
   --text-color-primary: #333333;
   --text-color-secondary: #666666;
@@ -32,6 +33,9 @@
   --spacing-s: 8px;
   --spacing-m: 16px;
   --spacing-l: 24px;
+
+  /* Form Elements Control */
+  accent-color: #555555;
 }
 
 /* Common Layout Structures */
@@ -40,7 +44,7 @@
   flex-direction: column;
   height: 100%;
   width: 100%;
-  background-color: var(--bg-color-base);
+  /* background-color: は指定しない（本体の不透過オレンジを活かす） */
   color: var(--text-color-primary);
   box-sizing: border-box;
   overflow: hidden;
@@ -73,11 +77,24 @@
 
 /* Components */
 .info-card {
-  background-color: rgba(255, 255, 255, 0.6); /* 半透明にしてベース色を活かす */
+  background-color: var(--bg-color-card);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   padding: var(--spacing-m);
   box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+/* HUD Style: 最重要情報・通知・プレビュー用 */
+.hud-style {
+  background-color: var(--bg-color-hud);
+  color: var(--text-color-inverse);
+  padding: var(--spacing-s) var(--spacing-m);
+  border-radius: var(--border-radius);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+.hud-style .text-secondary {
+  color: #aaaaaa;
 }
 
 .udonarium-btn {
@@ -180,12 +197,11 @@
 }
 
 .layout-sidebar {
-  width: 200px;
-  /* background-color: rgba(0, 0, 0, 0.05); */
+  width: 160px; /* 幅を適切に圧縮 */
   border-right: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  overflow-y: auto;
+  overflow: hidden; /* 内部のpanel-bodyにスクロールを任せる */
 }
 
 .layout-main {

@@ -1,156 +1,73 @@
+@import "../plugin-style.css";
+
 :host {
   display: block;
   height: 100%;
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
 }
 
-/* タブ */
-.tabs {
-  display: flex;
-  border-bottom: 1px solid #ccc;
-  background: #f0f0f0;
-  flex-shrink: 0;
-}
-
-.tab-item {
-  padding: 10px 15px;
-  cursor: pointer;
-  border-right: 1px solid #ddd;
-  font-size: 14px;
-}
-
-.tab-item:hover {
-  background: #e0e0e0;
-}
-
-.tab-item.active {
-  background: #fff;
-  border-bottom: 2px solid #007bff;
-  font-weight: bold;
-}
-
-/* コンテナ共通 */
-.setting-container, .emote-manager-container {
-  padding: 15px;
-  overflow-y: auto;
-  flex-grow: 1;
-}
-
-/* 全体設定用 */
-h3 {
-  margin-top: 0;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 5px;
-  font-size: 1.1em;
-}
-
+/* 全体設定（スライダー）用 */
 .setting-group {
-  margin-bottom: 15px;
+  margin-bottom: var(--spacing-m);
 }
 
 .setting-group label {
   display: block;
-  margin-bottom: 5px;
+  margin-bottom: var(--spacing-xs);
   font-weight: bold;
+  font-size: 13px;
 }
 
 .setting-group label span {
   float: right;
   font-weight: normal;
-  color: #007bff;
+  color: var(--text-color-secondary);
 }
 
-.setting-group input[type="range"] {
-  width: 100%;
-}
-
-hr {
-  border: none;
-  border-top: 1px dashed #eee;
-  margin: 15px 0;
-}
-
-.footer {
-  margin-top: 20px;
-  font-size: 11px;
-  color: #888;
-  text-align: center;
-}
-
-/* エモート管理用 2カラム */
-.emote-manager-container {
-  display: flex;
-  padding: 0;
-}
-
-.emote-list-col {
-  width: 40%;
-  border-right: 1px solid #ccc;
-  display: flex;
-  flex-direction: column;
-  background: #f9f9f9;
-}
-
-.emote-editor-col {
-  width: 60%;
-  padding: 15px;
-}
-
-.list-header {
-  padding: 10px;
-  border-bottom: 1px solid #eee;
-}
-
-.add-btn {
-  width: 100%;
-  padding: 5px;
-}
-
-.scrollable-list {
-  overflow-y: auto;
-  flex-grow: 1;
-}
-
+/* エモートリストの微調整 */
 .list-item {
+  width: 100%;
   padding: 8px 10px;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  background: transparent;
+  text-align: left;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
+  transition: all 0.2s;
+  box-sizing: border-box;
 }
 
 .list-item:hover {
-  background: #eee;
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .list-item.active {
-  background: #e6f0ff;
-  border-left: 4px solid #007bff;
+  background-color: #555555;
+  color: white;
+  font-weight: bold;
 }
 
 .list-item .icon {
-  font-size: 1.1em;
-  margin-right: 6px;
-  width: 1.2em;
+  font-size: 1.2em;
+  margin-right: 8px;
+  width: 1.5em;
   text-align: center;
 }
 
 .list-item .label {
   flex-grow: 1;
-  font-weight: bold;
-  font-size: 0.8em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-right: 4px;
+  font-size: 12px;
 }
 
+/* 移動ボタン */
 .move-btns {
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   opacity: 0.3;
   transition: opacity 0.2s;
 }
@@ -161,53 +78,39 @@ hr {
 
 .move-btns button {
   padding: 0;
-  font-size: 8px;
-  line-height: 1;
-  width: 16px;
+  font-size: 9px;
+  width: 18px;
   height: 14px;
   cursor: pointer;
+  background: #eee;
+  border: 1px solid #ccc;
+  border-radius: 2px;
 }
 
-/* 編集フォーム */
+.move-btns button:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+}
+
+/* 編集エリア */
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: var(--spacing-m);
 }
 
 .form-group label {
   display: block;
   font-weight: bold;
-  margin-bottom: 5px;
-  font-size: 0.9em;
+  margin-bottom: var(--spacing-xs);
+  font-size: 12px;
+  color: var(--text-color-secondary);
 }
 
-.form-group input, .form-group select {
-  width: 100%;
-  padding: 5px;
-  box-sizing: border-box;
-}
-
-.button-row {
-  display: flex;
-  gap: 10px;
-  margin-top: 20px;
-}
-
-.button-row button {
-  padding: 5px 15px;
-}
-
-.button-row button.danger {
-  margin-left: auto;
-  background: #ffdddd;
-  border: 1px solid #ffaaaa;
-  color: #d00;
-}
-
-.placeholder {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.empty-state {
   height: 100%;
-  color: #999;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color-secondary);
   text-align: center;
 }

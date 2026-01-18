@@ -1,115 +1,139 @@
-<div class="tabs">
-  <div class="tab-item" [class.active]="selectedTab === 'global'" (click)="selectTab('global')">全体設定</div>
-  <div class="tab-item" [class.active]="selectedTab === 'emotes'" (click)="selectTab('emotes')">エモート管理</div>
-</div>
-
-<div class="setting-container" *ngIf="selectedTab === 'global'">
-  <h3>立ち絵演出設定 (Master Control)</h3>
-  
-  <div class="setting-group">
-    <label>表示持続時間 (ms): <span>{{config.displayDuration}}</span></label>
-    <input type="range" min="1000" max="20000" step="500" [(ngModel)]="config.displayDuration" (change)="updateConfig()">
-  </div>
-
-  <div class="setting-group">
-    <label>アニメーション速度 (ms): <span>{{config.animationDuration}}</span></label>
-    <input type="range" min="100" max="2000" step="50" [(ngModel)]="config.animationDuration" (change)="updateConfig()">
-  </div>
-
-  <div class="setting-group">
-    <label>文字表示速度 (ms/文字): <span>{{config.typingSpeed}}</span></label>
-    <small style="display: block; color: #ccc;">(0で即時表示。推奨: 30-70)</small>
-    <input type="range" min="0" max="200" step="5" [(ngModel)]="config.typingSpeed" (change)="updateConfig()">
-  </div>
-
-  <hr>
-
-  <div class="setting-group">
-    <label>押し出し幅 (vw): <span>{{config.slideWidth}}</span></label>
-    <input type="range" min="5" max="40" step="1" [(ngModel)]="config.slideWidth" (change)="updateConfig()">
-  </div>
-
-  <div class="setting-group">
-    <label>画面端からの距離 (vw): <span>{{config.edgeOffset}}</span></label>
-    <input type="range" min="0" max="30" step="1" [(ngModel)]="config.edgeOffset" (change)="updateConfig()">
-  </div>
-
-  <hr>
-
-  <div class="setting-group">
-    <label>立ち絵の標準幅 (vw): <span>{{config.standWidth}}</span></label>
-    <input type="range" min="10" max="50" step="1" [(ngModel)]="config.standWidth" (change)="updateConfig()">
-  </div>
-
-  <div class="setting-group">
-    <label>立ち絵の標準高さ (vh): <span>{{config.standHeight}}</span></label>
-    <input type="range" min="20" max="100" step="1" [(ngModel)]="config.standHeight" (change)="updateConfig()">
-  </div>
-
-  <div class="setting-group">
-    <label>エモートの大きさ (scale): <span>{{config.emoteSize}}</span></label>
-    <input type="range" min="1" max="10" step="0.1" [(ngModel)]="config.emoteSize" (change)="updateConfig()">
-  </div>
-
-  <div class="footer">
-    <p>※ 設定はリアルタイムに反映されます。</p>
-  </div>
-</div>
-
-<div class="emote-manager-container" *ngIf="selectedTab === 'emotes'">
-  <!-- Left Column: List -->
-  <div class="emote-list-col">
-    <div class="list-header">
-      <button class="add-btn" (click)="createNewEmote()">+ 新規追加</button>
-      <button class="btn btn-outline-secondary btn-sm" style="width: 100%; margin-top: 4px;" (click)="exportAllEmotes()">辞書を一括保存</button>
+<div class="panel-layout">
+  <div class="udonarium-tab-container">
+    <div class="udonarium-tab-header">
+      <div class="tab-item" [class.active]="selectedTab === 'global'" (click)="selectTab('global')">全体設定</div>
+      <div class="tab-item" [class.active]="selectedTab === 'emotes'" (click)="selectTab('emotes')">エモート管理</div>
     </div>
-    <div class="scrollable-list">
-      <div *ngFor="let emote of emotes; let i = index" class="list-item" 
-           [class.active]="selectedEmote?.identifier === emote.identifier"
-           (click)="selectEmote(emote)">
-        <span class="icon">{{emote.icon}}</span>
-        <span class="label">{{emote.label}}</span>
-        <div class="move-btns">
-          <button [disabled]="i === 0" (click)="moveEmote($event, emote, -1)">▲</button>
-          <button [disabled]="i === emotes.length - 1" (click)="moveEmote($event, emote, 1)">▼</button>
+
+    <!-- 全体設定タブ -->
+    <div class="udonarium-tab-content panel-body" *ngIf="selectedTab === 'global'">
+      <div style="font-weight: bold; margin-bottom: var(--spacing-m); border-bottom: 1px solid var(--border-color); padding-bottom: var(--spacing-xs);">
+        立ち絵演出 基本設定
+      </div>
+      
+      <div class="setting-group">
+        <label>表示持続時間 (ms) <span>{{config.displayDuration}}</span></label>
+        <input type="range" min="1000" max="20000" step="500" [(ngModel)]="config.displayDuration" (change)="updateConfig()">
+      </div>
+
+      <div class="setting-group">
+        <label>アニメーション速度 (ms) <span>{{config.animationDuration}}</span></label>
+        <input type="range" min="100" max="2000" step="50" [(ngModel)]="config.animationDuration" (change)="updateConfig()">
+      </div>
+
+      <div class="setting-group">
+        <label>文字表示速度 (ms/文字) <span>{{config.typingSpeed}}</span></label>
+        <div style="font-size: 11px; color: var(--text-color-secondary); margin-bottom: 4px;">(0で即時表示。推奨: 30-70)</div>
+        <input type="range" min="0" max="200" step="5" [(ngModel)]="config.typingSpeed" (change)="updateConfig()">
+      </div>
+
+      <div style="height: 1px; background: var(--border-color); margin: var(--spacing-m) 0;"></div>
+
+      <div class="setting-group">
+        <label>押し出し幅 (vw) <span>{{config.slideWidth}}</span></label>
+        <input type="range" min="5" max="40" step="1" [(ngModel)]="config.slideWidth" (change)="updateConfig()">
+      </div>
+
+      <div class="setting-group">
+        <label>画面端からの距離 (vw) <span>{{config.edgeOffset}}</span></label>
+        <input type="range" min="0" max="30" step="1" [(ngModel)]="config.edgeOffset" (change)="updateConfig()">
+      </div>
+
+      <div style="height: 1px; background: var(--border-color); margin: var(--spacing-m) 0;"></div>
+
+      <div class="setting-group">
+        <label>立ち絵の標準幅 (vw) <span>{{config.standWidth}}</span></label>
+        <input type="range" min="10" max="50" step="1" [(ngModel)]="config.standWidth" (change)="updateConfig()">
+      </div>
+
+      <div class="setting-group">
+        <label>立ち絵の標準高さ (vh) <span>{{config.standHeight}}</span></label>
+        <input type="range" min="20" max="100" step="1" [(ngModel)]="config.standHeight" (change)="updateConfig()">
+      </div>
+
+      <div class="setting-group">
+        <label>エモートの大きさ (scale) <span>{{config.emoteSize}}</span></label>
+        <input type="range" min="1" max="10" step="0.1" [(ngModel)]="config.emoteSize" (change)="updateConfig()">
+      </div>
+
+      <div style="margin-top: var(--spacing-l); font-size: 11px; color: var(--text-color-secondary); text-align: center;">
+        ※ 設定はリアルタイムに反映されます。
+      </div>
+    </div>
+
+    <!-- エモート管理タブ -->
+    <div class="udonarium-tab-content" style="padding: 0;" *ngIf="selectedTab === 'emotes'">
+      <div class="layout-2pane">
+        <!-- 左ペイン: リスト -->
+        <div class="layout-sidebar">
+          <div class="panel-header">
+            <button class="udonarium-btn primary" style="width: 100%" (click)="createNewEmote()">＋ 新規追加</button>
+          </div>
+          <div class="panel-body" style="padding: 0; overflow-x: hidden;">
+            <div *ngFor="let emote of emotes; let i = index" class="list-item" 
+                 [class.active]="selectedEmote?.identifier === emote.identifier"
+                 (click)="selectEmote(emote)">
+              <span class="icon">{{emote.icon}}</span>
+              <span class="label">{{emote.label}}</span>
+              <div class="move-btns">
+                <button [disabled]="i === 0" (click)="moveEmote($event, emote, -1)">▲</button>
+                <button [disabled]="i === emotes.length - 1" (click)="moveEmote($event, emote, 1)">▼</button>
+              </div>
+            </div>
+            <div *ngIf="emotes.length === 0" style="padding: var(--spacing-m); text-align: center; color: var(--text-color-secondary);">
+              データがありません
+            </div>
+          </div>
+          <div class="panel-footer">
+            <button class="udonarium-btn" style="width: 100%" (click)="exportAllEmotes()">辞書を一括保存</button>
+          </div>
+        </div>
+
+        <!-- 右ペイン: エディタ -->
+        <div class="layout-main">
+          <ng-container *ngIf="selectedEmote; else noEmoteSelection">
+            <div class="panel-header" style="justify-content: space-between;">
+              <div style="font-weight: bold;">エモート編集</div>
+              <div style="display: flex; gap: var(--spacing-s);">
+                <button class="udonarium-btn" (click)="exportEmote()">個別保存</button>
+                <button class="udonarium-btn danger" (click)="deleteEmote()">削除</button>
+              </div>
+            </div>
+            <div class="panel-body">
+              <div class="info-card">
+                <div class="form-group">
+                  <label>アイコン (絵文字/テキスト)</label>
+                  <input type="text" class="udonarium-input" [(ngModel)]="selectedEmote.icon" (change)="onEmoteChange()" placeholder="😊">
+                </div>
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label>表示名 (メニュー用)</label>
+                  <input type="text" class="udonarium-input" [(ngModel)]="selectedEmote.label" (change)="onEmoteChange()" placeholder="笑顔">
+                </div>
+              </div>
+
+              <div class="info-card">
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label>効果音 (SE)</label>
+                  <select class="udonarium-select" [(ngModel)]="selectedEmote.soundIdentifier" (change)="onEmoteChange()">
+                    <option value="">設定なし</option>
+                    <option *ngFor="let audio of audios" [value]="audio.identifier">{{audio.name}}</option>
+                  </select>
+                </div>
+              </div>
+
+              <div style="margin-top: var(--spacing-m); font-size: 11px; color: var(--text-color-secondary); text-align: center;">
+                ※ 編集内容は自動的に保存・同期されます。
+              </div>
+            </div>
+          </ng-container>
+          <ng-template #noEmoteSelection>
+            <div class="empty-state">
+              <i class="material-icons" style="font-size: 48px; margin-bottom: 8px;">touch_app</i>
+              <p>左のリストから選択するか<br>新規追加してください</p>
+            </div>
+          </ng-template>
         </div>
       </div>
     </div>
-  </div>
-
-  <!-- Right Column: Editor -->
-  <div class="emote-editor-col">
-    <div *ngIf="selectedEmote; else noSelection">
-      <h3>エモート編集</h3>
-      <div class="form-group">
-        <label>アイコン (絵文字/テキスト)</label>
-        <input type="text" [(ngModel)]="selectedEmote.icon" (change)="onEmoteChange()" placeholder="😊">
-      </div>
-      <div class="form-group">
-        <label>表示名 (メニュー用)</label>
-        <input type="text" [(ngModel)]="selectedEmote.label" (change)="onEmoteChange()" placeholder="笑顔">
-      </div>
-      <div class="form-group">
-        <label>効果音 (SE)</label>
-        <select [(ngModel)]="selectedEmote.soundIdentifier" (change)="onEmoteChange()">
-          <option value="">設定なし</option>
-          <option *ngFor="let audio of audios" [value]="audio.identifier">{{audio.name}}</option>
-        </select>
-      </div>
-
-      <div class="button-row" style="margin-top: 20px;">
-        <button class="btn btn-outline-primary" (click)="exportEmote()">個別保存</button>
-        <button class="btn btn-outline-danger" (click)="deleteEmote()">削除</button>
-        <button class="btn btn-outline-secondary" (click)="cancelEdit()">閉じる</button>
-      </div>
-      <div class="footer" style="margin-top: 10px;">
-        <p class="small text-muted">※ 編集内容は自動的に保存・同期されます。</p>
-      </div>
-    </div>
-    <ng-template #noSelection>
-      <div class="placeholder">
-        <p>左のリストから選択するか<br>新規追加してください</p>
-      </div>
-    </ng-template>
   </div>
 </div>
