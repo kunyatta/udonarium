@@ -1,230 +1,228 @@
-<div class="container">
-  <div class="tab-header">
-    <button 
-      [class.active]="activeTab === 'settings'" 
-      (click)="activeTab = 'settings'">
-      設定
-    </button>
-    <button 
-      [class.active]="activeTab === 'status-effects'" 
-      (click)="activeTab = 'status-effects'">
-      ステータス効果管理
-    </button>
-  </div>
-
-  <div class="tab-content" [class.no-padding]="activeTab === 'status-effects'">
-    
-    <!-- =============================================== -->
-    <!-- 設定タブ                                        -->
-    <!-- =============================================== -->
-    <div [hidden]="activeTab !== 'settings'" class="settings-panel">
-      
-      <h4>表示パラメータ設定</h4>
-      <p>カードに表示するパラメータのタグ名をスペース区切りで入力します。(例: HP MP 敏捷度)</p>
-      <input type="text" class="param-input" [ngModel]="displayDataTags" (ngModelChange)="onDisplayDataTagsChange($event)" placeholder="例: HP MP 敏捷度">
-      <hr>
-
-      <h4>チャット設定</h4>
-      <div class="form-group">
-        <label>ログ出力先タブ</label>
-        <select [(ngModel)]="messageTargetTabId" (ngModelChange)="onMessageTargetTabChange($event)" class="param-input">
-          <option *ngFor="let tab of availableChatTabs" [value]="tab.identifier">{{ tab.name }}</option>
-        </select>
+<div class="panel-layout">
+  <div class="udonarium-tab-container">
+    <div class="udonarium-tab-header">
+      <div class="tab-item" [class.active]="activeTab === 'settings'" (click)="activeTab = 'settings'">
+        設定
       </div>
-      <div class="form-group">
-        <label>システムログ送信元</label>
-        <select [(ngModel)]="selectedLogSenderName" (ngModelChange)="onSystemLogSenderNameChange($event)" class="param-input">
-          <option value="">指定なし（操作者）</option>
-          <option *ngFor="let char of (availableLogSenders$ | async)" [value]="char.name">{{ char.name }}</option>
-        </select>
+      <div class="tab-item" [class.active]="activeTab === 'status-effects'" (click)="activeTab = 'status-effects'">
+        ステータス効果管理
       </div>
-      <hr>
-
-      <h4>パネル操作</h4>
-      <div class="buttons">
-        <button (click)="toggleCombatPanel()">戦闘パネル 表示/非表示</button>
-      </div>
-      <hr>
-
-      <h4>ダメージ適用確認設定
-        <label class="checkbox-label" style="font-size: 0.8em; margin-left: 10px; font-weight: normal;">
-          <input type="checkbox" [(ngModel)]="damageCheckConfig.showDamageCheckPanel" (change)="saveDamageCheckConfig()"> 有効にする
-        </label>
-      </h4>
-      <div class="form-group" [class.disabled]="!damageCheckConfig.showDamageCheckPanel">
-        <label>軽減参照パラメータ</label>
-        <input type="text" class="param-input" [(ngModel)]="damageCheckConfig.referenceParams" (change)="saveDamageCheckConfig()" placeholder="例: 防護点">
-      </div>
-      <div class="checkbox-group">
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showAsIs" (change)="toggleDamageCheckButton('showAsIs')"> 「そのまま」ボタン
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showReduce" (change)="toggleDamageCheckButton('showReduce')"> 「軽減」ボタン
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showHalve" (change)="toggleDamageCheckButton('showHalve')"> 「半減」ボタン
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showZero" (change)="toggleDamageCheckButton('showZero')"> 「無効」ボタン
-        </label>
-        <label class="checkbox-label">
-          <input type="checkbox" [checked]="damageCheckConfig.buttonConfig.showCustom" (change)="toggleDamageCheckButton('showCustom')"> 「カスタム」入力
-        </label>
-      </div>
-      <hr>
     </div>
 
-    <!-- =============================================== -->
-    <!-- ステータス効果管理タブ (2カラム)                -->
-    <!-- =============================================== -->
-    <div [hidden]="activeTab !== 'status-effects'" class="two-column-container">
+    <div class="udonarium-tab-content" style="padding: 0;">
       
-      <!-- 左カラム: サイドバー (リスト) -->
-      <div class="sidebar">
-        <div class="sidebar-header">
-          <button class="full-width primary" (click)="createNewEffect()">+ 新規作成</button>
+      <!-- =============================================== -->
+      <!-- 設定タブ                                        -->
+      <!-- =============================================== -->
+      <div *ngIf="activeTab === 'settings'" class="settings-panel panel-body">
+        
+        <div class="info-card">
+          <h4>表示パラメータ設定</h4>
+          <p>戦闘パネルのカードに表示するパラメータ（例: HP MP 敏捷度）</p>
+          <input type="text" class="udonarium-input" [ngModel]="displayDataTags" (ngModelChange)="onDisplayDataTagsChange($event)" placeholder="例: HP MP 敏捷度">
         </div>
-        <div class="effect-list">
-          <div *ngFor="let effect of statusEffectTemplates; let i = index"
-               class="effect-item"
-               [class.selected]="selectedEffectIndex === i"
-               (click)="selectEffect(i)">
-            <span class="effect-icon-preview">
-              <span *ngIf="effect.emoji">{{ effect.emoji }}</span>
-            </span>
-            <span class="effect-name">{{ effect.name }}</span>
+
+        <div class="info-card">
+          <h4>チャット設定</h4>
+          <div class="form-group">
+            <label>ログ出力先タブ</label>
+            <select [(ngModel)]="messageTargetTabId" (ngModelChange)="onMessageTargetTabChange($event)" class="udonarium-select">
+              <option *ngFor="let tab of availableChatTabs" [value]="tab.identifier">{{ tab.name }}</option>
+            </select>
+          </div>
+          <div class="form-group" style="margin-bottom: 0;">
+            <label>システムログ送信元</label>
+            <select [(ngModel)]="selectedLogSenderName" (ngModelChange)="onSystemLogSenderNameChange($event)" class="udonarium-select">
+              <option value="">指定なし（操作者）</option>
+              <option *ngFor="let char of (availableLogSenders$ | async)" [value]="char.name">{{ char.name }}</option>
+            </select>
           </div>
         </div>
-        <div class="sidebar-footer">
-          <button class="full-width" (click)="exportStatusEffectDictionaryAsZip()">辞書を一括保存</button>
-          <button *ngIf="!isProduction" class="full-width secondary" (click)="exportStatusEffectDictionaryAsXml()" style="margin-top: 4px; font-size: 0.8em;">開発用XML出力</button>
+
+        <div class="info-card">
+          <h4>パネル・操作</h4>
+          <div style="display: flex; gap: var(--spacing-s);">
+            <button class="udonarium-btn" style="flex: 1" (click)="toggleCombatPanel()">戦闘パネル 表示/非表示</button>
+          </div>
         </div>
+
+        <div class="info-card">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: var(--spacing-s); border-bottom: 1px solid var(--border-color); padding-bottom: var(--spacing-xs);">
+            <h4 style="margin: 0; border: none; padding: 0;">ダメージ適用確認設定</h4>
+            <label class="checkbox-label" style="font-size: 0.85em;">
+              <input type="checkbox" [(ngModel)]="damageCheckConfig.showDamageCheckPanel" (change)="saveDamageCheckConfig()"> 有効にする
+            </label>
+          </div>
+
+          <div class="form-group" [style.opacity]="damageCheckConfig.showDamageCheckPanel ? 1 : 0.5">
+            <label>軽減参照パラメータ <small>(防護点、抵抗力などスペース区切り)</small></label>
+            <input type="text" class="udonarium-input" [(ngModel)]="damageCheckConfig.referenceParams" (change)="saveDamageCheckConfig()" [disabled]="!damageCheckConfig.showDamageCheckPanel" placeholder="例: 防護点">
+          </div>
+
+          <div style="font-size: 12px; font-weight: bold; margin-bottom: 8px; color: var(--text-color-secondary);">表示ボタン</div>
+          <div class="checkbox-grid" [style.opacity]="damageCheckConfig.showDamageCheckPanel ? 1 : 0.5">
+            <label class="checkbox-label"><input type="checkbox" [disabled]="!damageCheckConfig.showDamageCheckPanel" [checked]="damageCheckConfig.buttonConfig.showAsIs" (change)="toggleDamageCheckButton('showAsIs')"> そのまま</label>
+            <label class="checkbox-label"><input type="checkbox" [disabled]="!damageCheckConfig.showDamageCheckPanel" [checked]="damageCheckConfig.buttonConfig.showReduce" (change)="toggleDamageCheckButton('showReduce')"> 軽減</label>
+            <label class="checkbox-label"><input type="checkbox" [disabled]="!damageCheckConfig.showDamageCheckPanel" [checked]="damageCheckConfig.buttonConfig.showHalve" (change)="toggleDamageCheckButton('showHalve')"> 半減</label>
+            <label class="checkbox-label"><input type="checkbox" [disabled]="!damageCheckConfig.showDamageCheckPanel" [checked]="damageCheckConfig.buttonConfig.showZero" (change)="toggleDamageCheckButton('showZero')"> 無効</label>
+            <label class="checkbox-label"><input type="checkbox" [disabled]="!damageCheckConfig.showDamageCheckPanel" [checked]="damageCheckConfig.buttonConfig.showCustom" (change)="toggleDamageCheckButton('showCustom')"> カスタム入力</label>
+          </div>
+        </div>
+
       </div>
 
-      <!-- 右カラム: メイン (エディタ) -->
-      <div class="main-content">
-        <!-- エディタヘッダー -->
-        <div class="editor-header" *ngIf="editingEffect">
-          <div class="header-buttons">
-            <button class="primary" (click)="saveEffect()">反映</button>
-            <button (click)="exportSingleEffectAsZip()">個別保存</button>
+      <!-- =============================================== -->
+      <!-- ステータス効果管理タブ (2カラム)                -->
+      <!-- =============================================== -->
+      <div *ngIf="activeTab === 'status-effects'" class="layout-2pane">
+        
+        <!-- 左カラム: サイドバー (リスト) -->
+        <div class="layout-sidebar">
+          <div class="panel-header">
+            <button class="udonarium-btn primary" style="width: 100%" (click)="createNewEffect()">+ 新規作成</button>
           </div>
-          <button class="danger" (click)="deleteEffect()" [disabled]="selectedEffectIndex < 0">削除</button>
+          <div class="panel-body" style="padding: 0; overflow-x: hidden;">
+            <div *ngFor="let effect of statusEffectTemplates; let i = index"
+                 class="effect-item"
+                 [class.selected]="selectedEffectIndex === i"
+                 (click)="selectEffect(i)">
+              <span class="effect-icon-preview">
+                <span *ngIf="effect.emoji">{{ effect.emoji }}</span>
+              </span>
+              <span class="effect-name" style="font-size: 12px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">{{ effect.name }}</span>
+            </div>
+          </div>
+          <div class="panel-footer" style="flex-direction: column; gap: 4px;">
+            <button class="udonarium-btn" style="width: 100%" (click)="exportStatusEffectDictionaryAsZip()">辞書を一括保存</button>
+            <button *ngIf="!isProduction" class="udonarium-btn" style="width: 100%; font-size: 10px;" (click)="exportStatusEffectDictionaryAsXml()">開発用XML出力</button>
+          </div>
         </div>
 
-        <!-- エディタ本体 -->
-        <div class="edit-panel" *ngIf="editingEffect">
-          
-          <!-- 基本情報セクション -->
-          <div class="form-section">
-            <div class="form-group">
-              <label for="effect-name">名前</label>
-              <input id="effect-name" type="text" class="param-input" [(ngModel)]="editingEffect.name" placeholder="例: 毒">
+        <!-- 右カラム: メイン (エディタ) -->
+        <div class="layout-main">
+          <!-- エディタヘッダー -->
+          <div class="panel-header" *ngIf="editingEffect" style="justify-content: space-between;">
+            <div style="display: flex; gap: var(--spacing-s);">
+              <button class="udonarium-btn primary" (click)="saveEffect()">反映</button>
+              <button class="udonarium-btn" (click)="exportSingleEffectAsZip()">個別保存</button>
             </div>
-
-            <div class="form-row">
-              <div class="form-group icon-group">
-                <label for="effect-emoji">絵文字</label>
-                <div class="input-with-preview">
-                  <input id="effect-emoji" type="text" class="param-input" [(ngModel)]="editingEffect.emoji" placeholder="例: ☠️" maxlength="2">
-                  <span class="icon-preview">{{ editingEffect.emoji }}</span>
-                </div>
-              </div>
-          
-              <div class="form-group duration-group">
-                <label>持続ラウンド</label>
-                <div class="input-with-checkbox">
-                  <input id="effect-duration" type="number" class="param-input" [(ngModel)]="editingEffect.duration" [disabled]="editingEffect.isPermanent">
-                  <label class="checkbox-label">
-                    <input type="checkbox" [(ngModel)]="editingEffect.isPermanent"> 永遠
-                  </label>
-                </div>
-              </div>
-            </div>
-
-            <div class="form-group">
-              <label for="effect-description">説明</label>
-              <textarea id="effect-description" class="param-input" rows="3" [(ngModel)]="editingEffect.description" placeholder="ツールチップで表示される説明文"></textarea>
-            </div>
+            <button class="udonarium-btn danger" (click)="deleteEffect()" [disabled]="selectedEffectIndex < 0">削除</button>
           </div>
 
-          <hr>
-
-          <!-- 視覚効果セクション -->
-          <div class="form-section">
-            <h4>視覚効果</h4>
+          <!-- エディタ本体 -->
+          <div class="panel-body" *ngIf="editingEffect">
             
-            <div class="form-group">
-              <label>フィルター効果（複数選択可）</label>
-              <div class="checkbox-grid">
-                <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.filters.inverse"> 反転</label>
-                <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.filters.hollow"> ぼかし</label>
-                <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.filters.blackPaint"> 黒塗り</label>
-                <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.filters.grayscale"> グレースケール</label>
+            <div class="info-card">
+              <div class="form-section">
+                <div class="form-group">
+                  <label>名前</label>
+                  <input type="text" class="udonarium-input" [(ngModel)]="editingEffect.name" placeholder="例: 毒">
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <label>絵文字</label>
+                    <div class="input-with-preview">
+                      <input type="text" class="udonarium-input" [(ngModel)]="editingEffect.emoji" placeholder="例: ☠️" maxlength="2">
+                      <span class="icon-preview">{{ editingEffect.emoji }}</span>
+                    </div>
+                  </div>
+              
+                  <div class="form-group">
+                    <label>持続ラウンド</label>
+                    <div class="input-with-checkbox">
+                      <input type="number" class="udonarium-input" style="width: 60px" [(ngModel)]="editingEffect.duration" [disabled]="editingEffect.isPermanent">
+                      <label class="checkbox-label" style="font-size: 12px">
+                        <input type="checkbox" [(ngModel)]="editingEffect.isPermanent"> 永遠
+                      </label>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label>説明</label>
+                  <textarea class="udonarium-textarea" rows="2" [(ngModel)]="editingEffect.description" placeholder="ツールチップで表示される説明文"></textarea>
+                </div>
               </div>
             </div>
 
-            <div class="form-group">
-              <label>カラー効果</label>
-              <div class="color-effects-row">
-                <div class="color-control">
-                  <label class="checkbox-label">
-                    <input type="checkbox" [(ngModel)]="uiModel.aura.enabled"> オーラ
-                  </label>
-                  <input type="color" [(ngModel)]="uiModel.aura.color" [disabled]="!uiModel.aura.enabled">
+            <div class="info-card">
+              <div class="form-section">
+                <div style="font-weight: bold; font-size: 12px; color: var(--text-color-secondary); margin-bottom: 4px;">視覚効果</div>
+                
+                <div class="form-group">
+                  <label>フィルター効果</label>
+                  <div class="checkbox-grid">
+                    <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.filters.inverse"> 反転</label>
+                    <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.filters.hollow"> ぼかし</label>
+                    <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.filters.blackPaint"> 黒塗り</label>
+                    <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.filters.grayscale"> グレー</label>
+                  </div>
                 </div>
-                <div class="color-control">
-                  <label class="checkbox-label">
-                    <input type="checkbox" [(ngModel)]="uiModel.backgroundColor.enabled"> 背景色
-                  </label>
-                  <input type="color" [(ngModel)]="uiModel.backgroundColor.color" [disabled]="!uiModel.backgroundColor.enabled">
+
+                <div class="form-group" style="margin-bottom: 0;">
+                  <label>カラー効果</label>
+                  <div class="color-effects-row">
+                    <div class="color-control">
+                      <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.aura.enabled"> オーラ</label>
+                      <input type="color" [(ngModel)]="uiModel.aura.color" [disabled]="!uiModel.aura.enabled" style="width: 30px; height: 24px; padding: 0; border: none;">
+                    </div>
+                    <div class="color-control">
+                      <label class="checkbox-label"><input type="checkbox" [(ngModel)]="uiModel.backgroundColor.enabled"> 背景色</label>
+                      <input type="color" [(ngModel)]="uiModel.backgroundColor.color" [disabled]="!uiModel.backgroundColor.enabled" style="width: 30px; height: 24px; padding: 0; border: none;">
+                    </div>
+                  </div>
                 </div>
               </div>
+            </div>
+
+            <div class="info-card">
+              <div class="form-section">
+                <div style="font-weight: bold; font-size: 12px; color: var(--text-color-secondary); margin-bottom: 4px;">機械的な効果</div>
+                
+                <div class="form-group">
+                  <label>効果の種類</label>
+                  <div class="radio-group">
+                    <label class="radio-label" style="font-size: 12px;">
+                      <input type="radio" name="effectType" [(ngModel)]="uiModel.effectType" value="attributeChange"> ラウンド毎
+                    </label>
+                    <label class="radio-label" style="font-size: 12px;">
+                      <input type="radio" name="effectType" [(ngModel)]="uiModel.effectType" value="buffDebuff"> バフ/デバフ
+                    </label>
+                  </div>
+                </div>
+
+                <div class="form-row">
+                  <div class="form-group">
+                    <div class="form-label-container">
+                      <label>対象パラメータ</label>
+                      <label class="checkbox-label" style="font-size: 11px; font-weight: normal;">
+                        <input type="checkbox" [checked]="!showAllParameters" (change)="toggleShowAllParameters()"> 共通のみ
+                      </label>
+                    </div>
+                    <select class="udonarium-select" [(ngModel)]="uiModel.targetParam">
+                      <option value="" disabled>選択...</option>
+                      <option *ngFor="let param of availableParameters" [value]="param.key">{{ param.name }}</option>
+                    </select>
+                  </div>
+                  <div class="form-group" style="flex: 0 0 80px;">
+                    <label>変化量</label>
+                    <input type="number" class="udonarium-input" [(ngModel)]="uiModel.value" placeholder="0">
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div style="margin-top: var(--spacing-m); font-size: 11px; color: var(--text-color-secondary); text-align: center;">
+              ※ 反映ボタンを押すと変更が確定されます。
             </div>
           </div>
 
-          <hr>
-
-          <!-- 機械的な効果セクション -->
-          <div class="form-section">
-            <div class="form-group">
-              <label>効果の種類</label>
-              <div class="radio-group">
-                <label class="radio-label">
-                  <input type="radio" name="effectType" [(ngModel)]="uiModel.effectType" value="attributeChange"> ラウンド毎の増減
-                </label>
-                <label class="radio-label">
-                  <input type="radio" name="effectType" [(ngModel)]="uiModel.effectType" value="buffDebuff"> 能力値バフ/デバフ
-                </label>
-              </div>
-            </div>
-
-            <div class="form-row">
-              <div class="form-group target-param-group">
-                <div class="form-label-container">
-                  <label for="effect-target-param">対象パラメータ名</label>
-                  <label class="checkbox-label sub-label">
-                    <input type="checkbox" [checked]="!showAllParameters" (change)="toggleShowAllParameters()"> 共通のみ
-                  </label>
-                </div>
-                <select id="effect-target-param" class="param-input" [(ngModel)]="uiModel.targetParam">
-                  <option value="" disabled>パラメータを選択...</option>
-                  <option *ngFor="let param of availableParameters" [value]="param.key">{{ param.name }}</option>
-                </select>
-              </div>
-              <div class="form-group value-group">
-                <label for="effect-value">変化量</label>
-                <input id="effect-value" type="number" class="param-input" [(ngModel)]="uiModel.value" placeholder="例: -5">
-              </div>
-            </div>
+          <!-- 空の状態 -->
+          <div class="empty-state" *ngIf="!editingEffect">
+            <i class="material-icons" style="font-size: 48px; margin-bottom: 8px;">auto_fix_high</i>
+            <p>左のリストから選択するか<br>新規作成してください</p>
           </div>
-
-        </div>
-
-        <!-- 空の状態 -->
-        <div class="empty-state" *ngIf="!editingEffect">
-          <p>左側のリストから効果を選択するか、<br>新規作成してください。</p>
         </div>
       </div>
     </div>

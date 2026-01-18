@@ -1,313 +1,144 @@
+@import "../plugin-style.css";
+
 :host {
-  display: flex;
-  flex-direction: column;
+  display: block;
   height: 100%;
 }
-.container {
-  display: flex;
-  flex-direction: column;
+
+.panel-layout {
   height: 100%;
-  overflow: hidden;
-  background-color: transparent;
-  padding: 8px;
-  font-size: 13px;
-  color: #333;
 }
-h4, h5 {
-  margin-top: 0.4em;
-  margin-bottom: 0.4em;
-  border-bottom: 1px solid #666;
-  padding-bottom: 3px;
+
+/* 設定タブ内の微調整 */
+.settings-panel {
+  padding: var(--spacing-m);
+}
+
+.settings-panel h4 {
+  margin-top: var(--spacing-l);
+  margin-bottom: var(--spacing-s);
+  border-bottom: 1px solid var(--border-color);
+  padding-bottom: var(--spacing-xs);
   font-size: 1.1em;
-  color: #333;
-}
-p {
-  font-size: 1em;
-  color: #555;
-  margin-top: 0.5em;
-  margin-bottom: 0.5em;
-}
-hr {
-  margin: 8px 0;
-  border-color: #ddd;
-}
-
-/* --- タブUI --- */
-.tab-header {
-  display: flex;
-  flex-shrink: 0;
-  background-color: transparent;
-  padding: 0 4px;
-}
-.tab-header button {
-  padding: 2px 20px;
-  border: 1px solid;
-  background: rgba(240,218,189, 0.5);
-  cursor: pointer;
   font-weight: bold;
-  color: #777;
-  margin-right: 2px;
-  border-radius: 4px 4px 0 0;
-  border-bottom: 2px solid transparent;
-}
-.tab-header button.active {
-  background-color: rgba(240,218,189, 0.9);
-  border-bottom: 2px solid #933;
-  color: #333;
-}
-.tab-content {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 15px;
-  background-color: transparent;
-  display: flex;
-  flex-direction: column;
-}
-.tab-content.no-padding {
-  padding: 0;
 }
 
-/* --- 2カラムレイアウト --- */
-.two-column-container {
-  display: flex;
-  height: 100%;
-  overflow: hidden;
+.settings-panel h4:first-child {
+  margin-top: 0;
 }
 
-.sidebar {
-  width: 200px;
-  min-width: 150px;
-  border-right: 1px solid #ccc;
-  display: flex;
-  flex-direction: column;
-  background-color: rgba(255, 255, 255, 0.5);
+.settings-panel p {
+  font-size: 12px;
+  color: var(--text-color-secondary);
+  margin-bottom: var(--spacing-s);
 }
 
-.sidebar-header, .sidebar-footer {
-  padding: 8px;
-  flex-shrink: 0;
-}
-.sidebar-header {
-  border-bottom: 1px solid #ddd;
-}
-.sidebar-footer {
-  border-top: 1px solid #ddd;
-}
-
-.effect-list {
-  flex-grow: 1;
-  overflow-y: auto;
+/* 2ペイン構造 (ステータス効果管理) */
+.layout-sidebar {
+  width: 160px; /* 標準幅に固定 */
 }
 
 .effect-item {
-  padding: 8px 12px;
+  width: 100%;
+  padding: 8px 10px;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  background: transparent;
+  text-align: left;
   cursor: pointer;
-  border-bottom: 1px solid #eee;
   display: flex;
   align-items: center;
   gap: 8px;
+  transition: all 0.2s;
+  box-sizing: border-box;
 }
+
 .effect-item:hover {
-  background-color: rgba(0,0,0,0.05);
+  background-color: rgba(0, 0, 0, 0.05);
 }
+
 .effect-item.selected {
-  background-color: #8d6e63;
+  background-color: #555555;
   color: white;
   font-weight: bold;
 }
+
 .effect-icon-preview {
   font-size: 1.2em;
   width: 1.2em;
   text-align: center;
 }
 
-.main-content {
-  flex-grow: 1;
+/* エディタ内フォーム */
+.form-section {
   display: flex;
   flex-direction: column;
-  min-width: 0; /* Flexbox overflow fix */
-  background-color: rgba(255, 255, 255, 0.3);
-}
-
-.editor-header {
-  padding: 8px 16px;
-  border-bottom: 1px solid #ccc;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  background-color: rgba(255, 255, 255, 0.5);
-}
-.header-buttons {
-  display: flex;
-  gap: 8px;
-}
-
-.edit-panel {
-  flex-grow: 1;
-  overflow-y: auto;
-  padding: 16px;
-}
-
-.empty-state {
-  flex-grow: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #888;
-  text-align: center;
-}
-
-/* --- 入力フォーム類 --- */
-.param-input {
-  width: 100%;
-  padding: 6px;
-  box-sizing: border-box;
-  border: 1px solid #ccc;
-  border-radius: 4px;
-}
-
-.form-group {
-  margin-bottom: 12px;
+  gap: var(--spacing-m);
 }
 
 .form-group label {
   display: block;
   font-weight: bold;
-  margin-bottom: 4px;
-  color: #555;
-  font-size: 0.9em;
+  margin-bottom: var(--spacing-xs);
+  font-size: 12px;
+  color: var(--text-color-secondary);
 }
 
 .form-row {
   display: flex;
-  gap: 16px;
+  gap: var(--spacing-m);
 }
-.form-row .form-group {
+
+.form-row > .form-group {
   flex: 1;
 }
 
-/* アイコン入力周り */
-.icon-group .input-with-preview {
+.input-with-preview, .input-with-checkbox {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-s);
 }
+
 .icon-preview {
   font-size: 1.5em;
   min-width: 1.5em;
   text-align: center;
 }
 
-/* 持続時間周り */
-.duration-group .input-with-checkbox {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-/* 視覚効果 */
 .checkbox-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 8px;
+  gap: var(--spacing-s);
 }
 
 .color-effects-row {
   display: flex;
-  gap: 16px;
+  gap: var(--spacing-m);
 }
+
 .color-control {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--spacing-s);
 }
 
-/* 機械的効果 */
 .radio-group {
   display: flex;
-  gap: 16px;
+  gap: var(--spacing-m);
 }
+
 .form-label-container {
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
-.sub-label {
-  font-weight: normal;
-  font-size: 0.8em;
-}
 
-.buttons {
-  margin-bottom: 1em;
-  display: flex;
-  gap: 8px;
-}
-button {
-  padding: 5px 10px;
-  border: 1px solid #999;
-  background-color: #eee;
-  color: #333;
-  border-radius: 3px;
-  cursor: pointer;
-  font-size: 0.9em;
-}
-button:hover:not(:disabled) {
-  background-color: #ddd;
-}
-button.primary {
-  background-color: #333;
-  color: #fff;
-  border-color: #333;
-}
-button.primary:hover:not(:disabled) {
-  background-color: #555;
-}
-button.danger {
-  background-color: #d32f2f;
-  color: #fff;
-  border-color: #d32f2f;
-}
-button.danger:hover:not(:disabled) {
-  background-color: #b71c1c;
-}
-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-}
-button.full-width {
-  width: 100%;
-}
-
-.checkbox-group {
-  display: flex;
-  flex-direction: column;
-  gap: 5px;
-}
-
-.checkbox-label, .radio-label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  cursor: pointer;
-  user-select: none;
-}
-
-/* --- 設定パネル --- */
-.settings-panel {
-  padding: 15px;
-}
-
-/* --- プレースホルダー --- */
-.placeholder-message {
+.empty-state {
+  height: 100%;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
-  color: #777;
+  color: var(--text-color-secondary);
   text-align: center;
-  border: 1px dashed #ccc;
-  border-radius: 4px;
-  margin-top: 20px;
-  padding: 40px;
 }

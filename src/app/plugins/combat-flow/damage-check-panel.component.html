@@ -1,9 +1,5 @@
-<div class="container">
+<div class="panel-layout">
   <div class="header-area">
-    <!-- <div class="title-section">
-      <h3>ダメージ・回復適用確認 (基準値: {{ baseValue }})</h3>
-    </div> -->
-    <!-- 設定で非表示/自動化されたためドロップダウンは削除 -->
     <small>適用したいダメージのボタンを選んでクリックしてください。</small>
   </div>
 
@@ -12,54 +8,53 @@
       処理対象のキャラクターがいません。
     </div>
     
-    <div *ngFor="let charData of charactersToProcess" class="character-card">
+    <div *ngFor="let charData of charactersToProcess" class="info-card">
       <div class="character-info">
         <span class="char-name">{{ charData.character.name }}</span>
-              <div class="current-hp-mp">{{ charData.currentHpMp }}</div>
-              <div class="reference-values">
-                <ng-container *ngFor="let refParamName of availableReferenceParams">
-                  <span class="reference-value" *ngIf="!isNaN(charData.referenceValues[refParamName]) && charData.referenceValues[refParamName] !== 0">
-                    {{ refParamName }}: {{ charData.referenceValues[refParamName] }}
-                  </span>
-                </ng-container>
-              </div>
+        <div class="current-hp-mp">{{ charData.currentHpMp }}</div>
+        <div class="reference-values">
+          <ng-container *ngFor="let refParamName of availableReferenceParams">
+            <span class="reference-value" *ngIf="!isNaN(charData.referenceValues[refParamName]) && charData.referenceValues[refParamName] !== 0">
+              {{ refParamName }}: {{ charData.referenceValues[refParamName] }}
+            </span>
+          </ng-container>
+        </div>
       </div>
       
       <div class="button-group">
         <ng-container *ngIf="config.buttonConfig.showAsIs">
-          <button class="action-button" (click)="onSelectMode(charData, DamageApplyMode.AsIs)">
+          <button class="udonarium-btn" (click)="onSelectMode(charData, DamageApplyMode.AsIs)">
             そのまま: {{ calculateAsIsValue(baseValue) }}
           </button>
         </ng-container>
         
-        <!-- 参照パラメータごとの軽減ボタンを動的生成 -->
         <ng-container *ngIf="config.buttonConfig.showReduce">
           <ng-container *ngFor="let param of availableReferenceParams">
-            <button class="action-button" (click)="onSelectMode(charData, DamageApplyMode.Reduce, param)">
+            <button class="udonarium-btn" (click)="onSelectMode(charData, DamageApplyMode.Reduce, param)">
               軽減({{ param }}): {{ getReducedValue(charData, baseValue, param) }}
             </button>
           </ng-container>
         </ng-container>
 
         <ng-container *ngIf="config.buttonConfig.showHalve">
-          <button class="action-button" (click)="onSelectMode(charData, DamageApplyMode.Halve)">
+          <button class="udonarium-btn" (click)="onSelectMode(charData, DamageApplyMode.Halve)">
             半減: {{ calculateHalvedValue(baseValue) }}
           </button>
         </ng-container>
         <ng-container *ngIf="config.buttonConfig.showZero">
-          <button class="action-button" (click)="onSelectMode(charData, DamageApplyMode.Zero)">
+          <button class="udonarium-btn" (click)="onSelectMode(charData, DamageApplyMode.Zero)">
             無効: {{ calculateZeroValue() }}
           </button>
         </ng-container>
 
         <ng-container *ngIf="config.buttonConfig.showCustom">
           <div class="custom-input-group">
-            カスタム:
+            <span style="white-space: nowrap">カスタム:</span>
             <input type="number" 
                    [(ngModel)]="charData.finalValue" 
                    (change)="onCustomValueChange(charData, $event)" 
-                   class="param-input custom-value-input">
-            <button class="action-button" (click)="onCustomApply(charData)">適用</button>
+                   class="udonarium-input custom-value-input">
+            <button class="udonarium-btn" style="min-width: 40px;" (click)="onCustomApply(charData)">適用</button>
           </div>
         </ng-container>
       </div>
@@ -67,6 +62,6 @@
   </div>
 
   <div class="footer-area">
-    <button class="cancel-button" (click)="cancelAll()">全てキャンセル</button>
+    <button class="udonarium-btn" (click)="cancelAll()">全てキャンセル</button>
   </div>
 </div>

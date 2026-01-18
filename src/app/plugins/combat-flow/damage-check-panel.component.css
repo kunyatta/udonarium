@@ -1,152 +1,110 @@
-.container {
+@import "../plugin-style.css";
+
+.panel-layout {
   display: flex;
   flex-direction: column;
   height: 100%;
-  padding: 8px;
   box-sizing: border-box;
 }
 
 .header-area {
   flex-shrink: 0;
-  margin-bottom: 10px;
-  padding-bottom: 5px;
-  border-bottom: 1px solid #ccc;
+  padding: var(--spacing-s) var(--spacing-m);
+  border-bottom: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
-  gap: 5px;
+  gap: var(--spacing-xs);
 }
 
-.title-section h3 {
-  margin: 0;
-  font-size: 1.1em;
-  color: #333;
-}
-
-.settings-section {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 0.9em;
-}
-
-.settings-section select {
-  padding: 3px 5px;
-  border-radius: 3px;
-  border: 1px solid #ccc;
-  background-color: white;
-  min-width: 100px;
+.header-area small {
+  font-size: 11px;
+  color: var(--text-color-secondary);
 }
 
 .character-list-area {
   flex-grow: 1;
   overflow-y: auto;
-  padding-right: 5px; /* スクロールバーとの隙間 */
+  padding: var(--spacing-s) var(--spacing-m);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-s);
 }
 
-.character-card {
-  background-color: rgba(255, 255, 255, 0.9);
-  border: 1px solid #ddd;
-  border-radius: 5px;
-  padding: 5px;
-  margin-bottom: 4px;
-  box-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+.info-card {
+  padding: var(--spacing-s);
+  /* info-cardの背景色は plugin-style.css の rgba(255, 255, 255, 0.6) を使用 */
 }
 
 .character-info {
-  margin-bottom: 8px;
-  font-size: 0.95em;
-  color: #333;
+  margin-bottom: var(--spacing-s);
+  font-size: 13px;
+  color: var(--text-color-primary);
 }
 
 .char-name {
   font-weight: bold;
-  color: #5d4037;
 }
 
-.char-hp-mp {
-  color: #555;
-  font-size: 0.9em;
+.current-hp-mp {
+  font-size: 12px;
+  color: var(--text-color-secondary);
 }
 
-.char-ref-param {
-  font-style: italic;
-  color: #666;
-  font-size: 0.9em;
+.reference-values {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-s);
+  margin-top: 2px;
+}
+
+.reference-value {
+  font-size: 11px;
+  color: var(--text-color-secondary);
+  background: rgba(0, 0, 0, 0.05);
+  padding: 1px 4px;
+  border-radius: 2px;
 }
 
 .button-group {
   display: flex;
   flex-wrap: wrap;
-  gap: 5px;
-  margin-top: 5px;
+  gap: 4px;
 }
 
-.action-button {
-  background-color: #5d4037;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 6px;
-  cursor: pointer;
-  font-size: 0.9em;
+/* ボタンのサイズ感と配置を維持しつつ標準スタイルを適用 */
+.udonarium-btn {
+  padding: 4px 8px;
+  font-size: 12px;
   min-width: 80px;
-  text-align: center;
-  transition: background-color 0.2s ease;
-}
-
-.action-button:hover {
-  background-color: #4e342e;
-}
-
-.action-button:active {
-  background-color: #3e2723;
 }
 
 .custom-input-group {
   display: flex;
   align-items: center;
-  gap: 5px;
-  background-color: #e9ecef;
-  border: 1px solid #ced4da;
-  border-radius: 4px;
-  padding: 5px;
+  gap: 4px;
+  padding: 2px 4px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  background-color: rgba(0, 0, 0, 0.03);
+  font-size: 11px;
 }
 
-.custom-input-group input {
-  flex-grow: 1;
-  border: 1px solid #adb5bd;
-  border-radius: 3px;
-  padding: 4px 6px;
-  font-size: 0.9em;
-  background-color: white;
-}
-
-.custom-input-group .action-button {
-  background-color: #388e3c;
-}
-
-.custom-input-group .action-button:hover {
-  background-color: #2e7d32;
+.custom-value-input {
+  width: 50px !important;
+  padding: 2px 4px !important;
+  font-size: 12px !important;
 }
 
 .footer-area {
   flex-shrink: 0;
-  margin-top: 10px;
-  padding-top: 10px;
-  border-top: 1px solid #ccc;
+  padding: var(--spacing-s) var(--spacing-m);
+  border-top: 1px solid var(--border-color);
   text-align: right;
 }
 
-.cancel-button {
-  background-color: #6c757d;
-  color: white;
-  border: none;
-  border-radius: 4px;
-  padding: 8px 15px;
-  cursor: pointer;
-  font-size: 0.9em;
-}
-
-.cancel-button:hover {
-  background-color: #5a6268;
+.list-placeholder {
+  padding: var(--spacing-m);
+  text-align: center;
+  color: var(--text-color-secondary);
+  font-size: 13px;
 }

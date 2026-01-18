@@ -1,29 +1,79 @@
-.panel-container { display: flex; height: 100%; box-sizing: border-box; overflow: hidden; color: #333; }
+@import "../plugin-style.css";
 
-.sidebar { width: 180px; display: flex; flex-direction: column; border-right: 1px solid rgba(0,0,0,0.1); background: rgba(0,0,0,0.05); }
-.sidebar-header { padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); }
-.chart-list { flex: 1; overflow-y: auto; }
-.chart-item { padding: 10px; cursor: pointer; border-bottom: 1px solid rgba(0,0,0,0.05); font-size: 0.9em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.chart-item:hover { background: rgba(0,0,0,0.1); }
-.chart-item.selected { background: rgba(0,0,0,0.15); font-weight: bold; }
+:host {
+  display: block;
+  height: 100%;
+}
 
-.main-content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
-.editor-header { padding: 10px; border-bottom: 1px solid rgba(0,0,0,0.1); display: flex; gap: 10px; background: rgba(255,255,255,0.2); }
-.edit-panel { flex: 1; display: flex; flex-direction: column; gap: 15px; padding: 15px; overflow-y: auto; }
+/* リストアイテムの微調整 (cut-inと同様) */
+.list-item {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 8px 10px;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
 
-.input-column { display: flex; flex-direction: column; gap: 10px; }
-.input-group { display: flex; flex-direction: column; }
-.input-group label { font-size: 0.75em; font-weight: bold; color: #555; margin-bottom: 4px; }
-.input-group input { padding: 6px; border: 1px solid rgba(0,0,0,0.2); border-radius: 3px; background: rgba(255,255,255,0.5); }
+.list-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
 
-.full-height { flex: 1; display: flex; flex-direction: column; }
-.full-height textarea { flex: 1; min-height: 200px; font-family: 'Consolas', 'Monaco', monospace; padding: 10px; border: 1px solid rgba(0,0,0,0.2); border-radius: 3px; resize: none; line-height: 1.4; background: rgba(255,255,255,0.5); }
+.list-item.active {
+  background-color: #555555;
+  color: white;
+  font-weight: bold;
+}
 
-.empty-state { flex: 1; display: flex; align-items: center; justify-content: center; color: #777; text-align: center; }
-.empty-state .message { margin-bottom: 12px; }
-.empty-state .description { font-size: 0.8em; opacity: 0.8; max-width: 300px; line-height: 1.4; }
-.full-width { width: 100%; }
-.danger { color: #d32f2f; margin-left: auto; }
-button { padding: 6px 12px; cursor: pointer; border: 1px solid rgba(0,0,0,0.2); border-radius: 3px; background: rgba(255,255,255,0.7); }
-button:hover { background: rgba(255,255,255,0.9); }
-button:disabled { opacity: 0.5; cursor: default; }
+/* フォームのレイアウト (cut-inのスタイルを流用) */
+.flex-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-s);
+}
+
+.flex-label {
+  flex: 0 0 80px;
+  font-size: 11px;
+  color: var(--text-color-secondary);
+}
+
+.flex-controls {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}
+
+.empty-state {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color-secondary);
+  text-align: center;
+}
+
+.full-height {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+}
+
+.full-height textarea {
+  flex: 1;
+  min-height: 200px;
+  font-family: 'Consolas', 'Monaco', monospace;
+}

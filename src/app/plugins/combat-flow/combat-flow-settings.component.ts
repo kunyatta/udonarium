@@ -446,8 +446,4 @@ export class CombatFlowSettingsComponent implements OnInit, OnDestroy {
     this.damageCheckConfig.buttonConfig[key] = !this.damageCheckConfig.buttonConfig[key];
     this.saveDamageCheckConfig();
   }
-
-  close(): void {
-    this.panelService.close();
-  }
 }
