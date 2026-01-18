@@ -264,3 +264,94 @@
   padding: var(--spacing-m);
   background-color: transparent; /* 背景なし */
 }
+
+/* ==============================================
+   Common Components (List & Empty State)
+   ============================================== */
+
+/* List Item (Sidebar Menu) */
+.list-item {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 8px 10px;
+  border: none;
+  border-bottom: 1px solid var(--border-color);
+  background: transparent;
+  text-align: left;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s;
+  box-sizing: border-box;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  color: var(--text-color-primary);
+}
+
+.list-item:hover {
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+.list-item.active {
+  background-color: #555555;
+  color: white;
+  font-weight: bold;
+}
+
+/* Empty State (Placeholder) */
+.empty-state {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-color-secondary);
+  text-align: center;
+  padding: var(--spacing-m);
+  box-sizing: border-box;
+}
+
+.empty-state-icon {
+  font-size: 48px;
+  margin-bottom: var(--spacing-s);
+  color: var(--border-color); /* 薄い色にする */
+}
+
+.empty-state-message {
+  font-size: 14px;
+  font-weight: bold;
+  margin-bottom: var(--spacing-s);
+}
+
+.empty-state-description {
+  font-size: 12px;
+  opacity: 0.8;
+  max-width: 260px;
+  line-height: 1.4;
+}
+
+/* Form Layout Helper */
+.flex-row {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-s);
+  margin-bottom: var(--spacing-s);
+}
+
+.flex-label {
+  flex: 0 0 80px; /* Default width */
+  font-size: 11px;
+  color: var(--text-color-secondary);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.flex-controls {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  min-width: 0;
+}

@@ -5,65 +5,8 @@
   height: 100%;
 }
 
-/* リストアイテムの微調整 (cut-inと同様) */
-.list-item {
-  display: block;
-  width: 100%;
-  margin: 0;
-  padding: 8px 10px;
-  border: none;
-  border-bottom: 1px solid var(--border-color);
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s;
-  box-sizing: border-box;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.list-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.list-item.active {
-  background-color: #555555;
-  color: white;
-  font-weight: bold;
-}
-
-/* フォームのレイアウト (cut-inのスタイルを流用) */
-.flex-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-s);
-  margin-bottom: var(--spacing-s);
-}
-
 .flex-label {
-  flex: 0 0 80px;
-  font-size: 11px;
-  color: var(--text-color-secondary);
-}
-
-.flex-controls {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 2px;
-  min-width: 0;
-}
-
-.empty-state {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-color-secondary);
-  text-align: center;
+  /* plugin-styleのデフォルト(80px)でOK */
 }
 
 .full-height {

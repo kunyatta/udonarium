@@ -31,29 +31,12 @@
 }
 
 /* フォーム内の微調整 */
-.flex-row {
-  display: flex;
-  align-items: center;
-  gap: var(--spacing-s);
-  margin-bottom: var(--spacing-s);
-}
-
 .flex-label {
-  flex: 0 0 60px; /* 80pxから60pxに短縮 */
-  font-size: 11px;
-  color: var(--text-color-secondary);
-}
-
-.flex-controls {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  gap: 2px; /* 隙間を最小化 */
-  min-width: 0;
+  flex: 0 0 60px; /* 共通定義(80px)を上書きして短縮 */
 }
 
 .width-short {
-  width: 50px !important; /* 45pxから50pxに修正 */
+  width: 50px !important;
   flex-shrink: 0;
 }
 
@@ -61,7 +44,7 @@
   font-size: 10px;
   color: var(--text-color-secondary);
   white-space: nowrap;
-  flex-shrink: 0; /* 単位が消えないように強制 */
+  flex-shrink: 0;
 }
 
 /* クイック設定ボタンのコンテナ */
@@ -70,44 +53,6 @@
   flex-wrap: wrap;
   gap: var(--spacing-xs);
   margin-top: var(--spacing-xs);
-}
-
-/* リストアイテムの微調整 */
-.list-item {
-  display: block; /* block要素として親の幅に追従 */
-  width: 100%;
-  margin: 0;
-  padding: 8px 10px;
-  border: none;
-  border-bottom: 1px solid var(--border-color);
-  background: transparent;
-  text-align: left;
-  cursor: pointer;
-  font-size: 12px;
-  transition: all 0.2s;
-  box-sizing: border-box;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.list-item:hover {
-  background-color: rgba(0, 0, 0, 0.05);
-}
-
-.list-item.active {
-  background-color: #555555;
-  color: white;
-  font-weight: bold;
-}
-
-.empty-state {
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  color: var(--text-color-secondary);
 }
 
 .advanced-settings {

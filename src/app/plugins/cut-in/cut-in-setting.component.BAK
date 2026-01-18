@@ -274,7 +274,7 @@
       <ng-template #noSelection>
         <div class="empty-state">
           <i class="material-icons empty-state-icon">touch_app</i>
-          <div class="empty-state-message">カットインを選択するか、新規作成してください</div>
+          <div class="empty-state-message">項目を選択するか、新規作成してください</div>
           <div class="empty-state-description">
             画像や動画、音響によるダイナミックな演出を画面上に表示します
           </div>
