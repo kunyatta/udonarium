@@ -17,6 +17,8 @@ export class DynamicStandPlugin implements IPluginWithUI {
   readonly component = DynamicStandSettingComponent; 
   readonly width: number = 520;
   readonly height: number = 550;
+  readonly version = '1.1.0';
+  readonly description = 'チャットの発言に合わせてキャラクターの立ち絵画像を自動表示・演出します。';
 
   constructor(
     private service: DynamicStandPluginService,

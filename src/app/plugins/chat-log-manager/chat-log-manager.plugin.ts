@@ -17,6 +17,8 @@ export class ChatLogManagerPlugin implements IPluginWithUI {
   readonly component = ChatLogManagerPanelComponent;
   readonly width = 300;
   readonly height = 290;
+  readonly version = '1.0.0';
+  readonly description = 'チャットログの保存、一括削除、チャットタブの管理を行います。';
 
   constructor(
     private uiExtensionService: UIExtensionService,

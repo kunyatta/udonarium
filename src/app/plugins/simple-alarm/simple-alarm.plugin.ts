@@ -21,6 +21,8 @@ export class SimpleAlarmPlugin implements IPluginWithUI, OnDestroy { // OnDestro
   readonly width = 250;
   readonly height = 315;
   // readonly layout = 'full-auto'; // panelオプションとして渡す
+  readonly version = '1.0.0';
+  readonly description = '設定した時間が経過するとアラーム音を鳴らして通知します。全プレイヤーに共有されます。';
 
   // private destroy$ = new Subject<void>(); // 不要
 

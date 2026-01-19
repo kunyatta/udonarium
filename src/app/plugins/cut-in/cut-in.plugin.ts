@@ -16,6 +16,8 @@ export class CutInPlugin implements IPluginWithUI {
   readonly component = CutInSettingComponent;
   readonly width: number = 550;
   readonly height: number = 600;
+  readonly version = '1.0.0';
+  readonly description = 'チャットの発言に合わせて画面全体にカットイン画像を演出します。';
 
   constructor(
     private uiExtensionService: UIExtensionService,

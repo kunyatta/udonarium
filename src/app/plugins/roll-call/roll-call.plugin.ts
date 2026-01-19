@@ -23,6 +23,8 @@ export class RollCallPlugin implements IPluginWithUI, OnDestroy {
   readonly height = ROLL_CALL_UI_DEFAULTS.CONTROL.height;
   readonly layout = 'full-auto';
   readonly isSingleton = true; // 管理パネルはシングルトン
+  readonly version = '1.0.0';
+  readonly description = 'PLへの点呼や簡単な投票機能を提供します。全員の回答を一覧できます。';
 
   constructor(
     private ngZone: NgZone,

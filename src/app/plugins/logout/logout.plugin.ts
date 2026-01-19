@@ -9,6 +9,8 @@ export class LogoutPlugin implements IPluginWithUI {
   readonly name: string = '退出';
   readonly icon: string = 'exit_to_app';
   readonly type: 'toggle' = 'toggle';
+  readonly version: string = '1.0.0';
+  readonly description: string = 'ルームから退出してトップ画面に戻ります。他の参加者との接続をすべて切断し、ページを再読み込みします。';
 
   constructor() {
     console.log(`[${this.pluginName}] Constructed`);

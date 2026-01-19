@@ -15,6 +15,10 @@ export class CharacterImageViewerPlugin implements IPluginWithUI {
   width: number = 800;
   height: number = 600;
 
+  readonly version = '0.1.0';
+  readonly description = 'キャラクターの画像を拡大表示するためのテストプラグインです。';
+  readonly isExperimental = true;
+
   initialize(): void { }
   initializeUI(): void { }
 }

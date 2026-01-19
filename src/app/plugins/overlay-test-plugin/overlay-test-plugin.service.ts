@@ -19,6 +19,10 @@ export class OverlayTestPlugin implements IPluginWithUI {
   width: number = 250;
   height: number = 400; // 少し高く調整
 
+  readonly version = '0.1.0';
+  readonly description = 'P2P同期されるオーバーレイ表示の検証用プラグインです。';
+  readonly isExperimental = true;
+
   constructor(
     private pluginOverlayService: PluginOverlayService,
     private effectsService: OverlayEffectsService

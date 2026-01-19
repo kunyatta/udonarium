@@ -13,6 +13,8 @@ export class RollResultChartPlugin implements IPluginWithUI {
   readonly component = RollResultChartPanelComponent;
   readonly width = 600;
   readonly height = 600;
+  readonly version = '1.0.0';
+  readonly description = 'ダイスの出目によって結果が変わる複雑な表を自動化します。TRPGのアクシデント表などを登録し、チャットからコマンドで呼び出すことができます。';
 
   constructor(
     private chartService: RollResultChartService,

@@ -12,6 +12,7 @@ import { PluginUiService, PluginPanelOption } from '../service/plugin-ui.service
 export class PluginLauncherPanelComponent implements OnInit, OnDestroy {
   
   pluginUIs: IPluginWithUI[] = [];
+  selectedPlugin: IPluginWithUI | null = null;
   private openPanelCount: number = 0;
 
   constructor(
@@ -32,6 +33,14 @@ export class PluginLauncherPanelComponent implements OnInit, OnDestroy {
 
   private isPluginWithUI(plugin: IPlugin): plugin is IPluginWithUI {
     return 'initializeUI' in plugin;
+  }
+
+  selectPlugin(pluginUI: IPluginWithUI): void {
+    this.selectedPlugin = pluginUI;
+  }
+
+  clearSelection(): void {
+    this.selectedPlugin = null;
   }
 
   openPluginPanel(pluginUI: IPluginWithUI): void {

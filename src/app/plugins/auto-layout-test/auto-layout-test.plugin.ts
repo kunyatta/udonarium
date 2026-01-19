@@ -16,6 +16,9 @@ export class AutoLayoutTestPlugin implements IPluginWithUI, OnDestroy {
   width: number = 400; // 初期幅（AutoLayoutで自動調整される）
   height: number = 400; // 初期高さ（AutoLayoutで自動調整される）
   layout: 'full-auto' = 'full-auto'; // 自動レイアウトを有効にする
+  readonly version = '0.1.0';
+  readonly description = '自動レイアウト機能（AutoLayoutPanel）の動作確認用プラグインです。';
+  readonly isExperimental = true;
 
   constructor(
     private pluginUiService: PluginUiService,

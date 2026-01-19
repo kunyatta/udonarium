@@ -16,6 +16,9 @@ export class TurnEngineTestPlugin implements IPluginWithUI, OnDestroy {
   width: number = 400;
   height: number = 400;
   layout: 'full-auto' = 'full-auto';
+  readonly version = '0.1.0';
+  readonly description = 'ターン制エンジンの動作テストを行うためのプラグインです。';
+  readonly isExperimental = true;
 
   constructor(
     private pluginUiService: PluginUiService,

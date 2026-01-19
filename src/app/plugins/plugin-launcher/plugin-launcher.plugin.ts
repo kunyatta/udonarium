@@ -13,7 +13,7 @@ export class PluginLauncherPlugin implements IPluginWithUI {
   type: 'panel' = 'panel';
   icon: string = 'extension';
   component = PluginLauncherPanelComponent;
-  width: number = 150;
+  width: number = 500;
   height: number = 400;
 
   constructor(

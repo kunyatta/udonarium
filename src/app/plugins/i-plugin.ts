@@ -43,6 +43,13 @@ export interface IPluginWithUI extends IPlugin {
   // シングルトンとして扱うかどうかの設定 (任意)。trueの場合、同種のパネルは1つしか開かない。
   isSingleton?: boolean;
 
+  // バージョン情報 (任意)。
+  version?: string;
+  // プラグインの概要 (任意)。
+  description?: string;
+  // 実験的/テスト用プラグインかどうかのフラグ (任意)。trueの場合、ランチャーから起動可能になる。
+  isExperimental?: boolean;
+
   /**
    * メインアプリケーションのビューが初期化された後に呼び出されます。
    * モーダルを開くなど、UI関連の初期化に適しています。

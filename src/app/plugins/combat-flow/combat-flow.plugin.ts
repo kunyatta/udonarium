@@ -34,13 +34,15 @@ export const COMBAT_FLOW_UI_DEFAULTS = {
 @Injectable()
 export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
   readonly pluginName: string = PLUGIN_ID;
-  readonly name: string = COMBAT_FLOW_UI_DEFAULTS.MANAGER.title; // メインメニュー用
+  readonly name: string = '戦闘フロー'; // プラグイン全体の名称
   readonly type: 'panel' = 'panel';
   readonly icon: string = 'swords'; // ----- MODIFICATION (kunyatta) -----
   readonly iconClass: string = 'material-symbols-outlined'; // ----- MODIFICATION (kunyatta) -----
   readonly component = CombatFlowManagerComponent; // メインメニュー用
   width: number = COMBAT_FLOW_UI_DEFAULTS.MANAGER.width;
   height: number = COMBAT_FLOW_UI_DEFAULTS.MANAGER.height;
+  readonly version = '1.0.0';
+  readonly description = '汎用的な戦闘進行管理機能を提供します。戦況を一覧するマネージャに加え、盤面と連動する戦闘中パネル、キャラクターごとの戦闘アクションパネルなどが連携して動作します。';
 
   private readonly PLUGIN_ID = PLUGIN_ID;
   private readonly FILE_NAME_HINT = 'default';

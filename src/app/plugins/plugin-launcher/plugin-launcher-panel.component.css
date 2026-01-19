@@ -1,47 +1,168 @@
-/* Copied from app.component.css for style consistency */
-nav ul {
+@import '../plugin-style.css';
+
+/* Panel Layout Override */
+.panel-layout {
+  /* Inherit background from parent or let it be transparent to show the orange panel */
+  background-color: transparent;
+}
+
+/* 
+  Grid View
+  ----------------------------------------------- */
+.grid-container {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-start;
+  align-content: flex-start;
+  padding: 0;
+  margin: 0;
   list-style: none;
-  padding: 0px;
-  margin: 0px;
 }
 
-nav ul > li {
+.grid-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  
+  width: 72px;
+  height: 80px;
+  padding: 4px;
+  margin: 4px;
+  
   text-align: center;
-  padding: 5px;
-  color: #444;
+  color: var(--text-color-primary);
   cursor: pointer;
-  white-space: nowrap;
+  border-radius: var(--border-radius);
+  transition: all 0.2s ease;
+  position: relative;
 }
 
-nav ul > li:hover {
-  color: #CCC;
-  background-color: rgba(30, 30, 30, 0.8);
+.grid-item:hover {
+  background-color: rgba(0, 0, 0, 0.05); /* Slight darkening */
 }
 
-nav ul > li > a {
-  font-size: 8px;
-  user-select: none;
-  display: block; /* Ensure the anchor fills the list item */
+.grid-item:active {
+  background-color: rgba(0, 0, 0, 0.1);
+  transform: translateY(1px);
 }
 
-nav ul > a,
-nav ul > a:hover,
-nav ul > a:active,
-nav ul > a:visited {
+.grid-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  height: 100%;
   text-decoration: none;
+  color: inherit;
+}
+
+.icon-container {
+  position: relative;
+  margin-bottom: 4px;
+  width: 48px; /* Slightly larger area */
+  height: 48px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .icon-size {
   font-size: 40px;
+  color: #555;
 }
 
-/* Style for the active/toggled button */
-nav ul > li.active {
-  color: #CCC;
-  background-color: rgba(80, 80, 80, 0.9);
+.grid-item:hover .icon-size {
+  color: #333;
 }
 
-.vertical-menu div {
-  overflow-y: hidden;
+.item-label {
+  font-size: 11px;
+  line-height: 1.2;
+  width: 100%;
+  
+  white-space: normal;
+  overflow: hidden;
   text-overflow: ellipsis;
+  
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+/* Badge Styles */
+.badge-experimental {
+  position: absolute;
+  top: 0;
+  right: -4px;
+  background-color: var(--color-primary); /* Orange */
+  color: white;
+  font-size: 10px;
+  font-weight: bold;
+  padding: 1px 4px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.2);
+  z-index: 10;
+}
+
+/* 
+  Detail View
+  ----------------------------------------------- */
+/* Header is handled by .panel-header in plugin-style.css */
+
+.detail-header-content {
+  display: flex;
+  align-items: center;
+}
+
+.detail-icon {
+  font-size: 24px;
+  margin-right: 8px;
+  color: #555;
+}
+
+.detail-title {
+  font-size: 16px;
+  font-weight: bold;
+}
+
+/* Content Area */
+.detail-content {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-m);
+}
+
+.meta-info {
+  display: flex;
+  gap: var(--spacing-l);
+  font-size: 12px;
+  color: var(--text-color-secondary);
+}
+
+.description-area {
+  min-height: 100px;
+  white-space: pre-wrap;
+  line-height: 1.5;
+  font-size: 13px;
+}
+
+/* Action Area */
+.action-area {
+  margin-top: auto; /* Push to bottom */
+  padding-top: var(--spacing-l);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-s);
+}
+
+.warning-text {
+  font-size: 11px;
+  color: var(--color-primary-dark);
+}
+
+.launch-icon {
+  font-size: 18px;
+  margin-right: 6px;
 }
