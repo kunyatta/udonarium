@@ -36,7 +36,7 @@
       </option>
     </select>
     <button class="primary execute-button" 
-      (click)="operationMode === 'parameter' ? applyParameterChange() : applyStatusEffect()" 
+      (click)="operationMode === 'parameter' ? applyParameterChange($event) : applyStatusEffect()" 
       [disabled]="!selectedCasterId || selectedTargetIds.size === 0 || (operationMode === 'parameter' && (!selectedParameterName || parameterValue === 0)) || (operationMode === 'statusEffect' && !selectedStatusEffectId)">
       実行
     </button>

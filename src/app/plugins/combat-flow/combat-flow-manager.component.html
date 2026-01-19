@@ -34,7 +34,7 @@
     <span class="current-turn-name" *ngIf="state.isCombat">{{ getCharacterName(state.currentId) }}</span>
     <span class="current-turn-name" *ngIf="!state.isCombat" style="color: #888;">(戦闘準備中)</span>
     <button class="primary action-open-button" 
-            (click)="openBattleAction(state.currentId)" 
+            (click)="openBattleAction(state.currentId, $event)" 
             title="戦闘アクション画面を開きます">⚔️ 操作</button>
   </div>
 

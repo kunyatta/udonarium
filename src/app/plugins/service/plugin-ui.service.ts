@@ -59,9 +59,11 @@ export class PluginUiService {
   private handlePanelOpen(panelId: string, panelRef: ComponentRef<UIPanelComponent>, componentType: any, option: PluginPanelOption): void {
     if (!panelId) return;
 
-    // コンテキストチェック (instance.contextが存在するか確認)
-    const instance = panelRef.instance as any;
-    const isParentPanel = instance.context?.panelType === 'parent';
+    const isParentPanel = (option?.panelType || 'parent') === 'parent';
+
+    if (isParentPanel) {
+      this.parentPanelCount++;
+    }
 
     this.openPanels.set(panelId, { ref: panelRef, option: option || {} });
 

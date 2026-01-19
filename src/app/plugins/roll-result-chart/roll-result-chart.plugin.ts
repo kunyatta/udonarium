@@ -13,7 +13,6 @@ export class RollResultChartPlugin implements IPluginWithUI {
   readonly component = RollResultChartPanelComponent;
   readonly width = 600;
   readonly height = 600;
-  readonly isSingleton = true;
 
   constructor(
     private chartService: RollResultChartService,
@@ -39,8 +38,7 @@ export class RollResultChartPlugin implements IPluginWithUI {
     this.pluginUiService.open(RollResultChartPanelComponent, {
       title: 'ダイスチャート',
       width: 600,
-      height: 600,
-      isSingleton: true
+      height: 600
     });
   }
 }

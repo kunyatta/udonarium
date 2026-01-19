@@ -204,14 +204,15 @@ export class CombatFlowManagerComponent {
     return char ? char.name : '不明なキャラクター';
   }
 
-  openBattleAction(characterId: string | null): void {
-    this.pluginUiService.open(BattleActionComponent, {
+  openBattleAction(characterId: string | null, event: MouseEvent): void {
+    this.pluginUiService.openAtCursor(BattleActionComponent, {
       title: COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.title,
       width: COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.width,
       height: COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.height,
       isSingleton: false,
-      inputs: { initialCasterIdentifier: characterId }
-    });
+      inputs: { initialCasterIdentifier: characterId },
+      align: 'center'
+    }, event);
   }
 
   openHelp(event: MouseEvent): void {
@@ -221,6 +222,6 @@ export class CombatFlowManagerComponent {
       width: 320,
       height: 350,
       isSingleton: true
-    });
+    }, event);
   }
 }

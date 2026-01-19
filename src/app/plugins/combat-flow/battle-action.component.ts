@@ -281,7 +281,7 @@ export class BattleActionComponent implements OnInit, OnDestroy {
     }
   }
 
-  applyParameterChange(): void {
+  applyParameterChange(event?: MouseEvent): void {
     if (!this.selectedCasterId || this.selectedTargetIds.size === 0 || !this.selectedParameterName || this.parameterValue === 0) {
       return;
     }
@@ -305,8 +305,9 @@ export class BattleActionComponent implements OnInit, OnDestroy {
           baseValue: this.parameterValue,
           targetParamName: elementName,
           config: config
-        }
-      });
+        },
+        align: 'center'
+      }, event);
     } else {
       const targetIds = Array.from(this.selectedTargetIds);
       this.combatStateService.applyParameterChange(
@@ -382,7 +383,7 @@ export class BattleActionComponent implements OnInit, OnDestroy {
       width: 340,
       height: 380,
       isSingleton: true
-    });
+    }, event);
   }
 
   onTargetSelectButtonClick(): void {

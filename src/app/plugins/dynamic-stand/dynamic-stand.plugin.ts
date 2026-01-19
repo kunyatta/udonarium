@@ -40,8 +40,7 @@ export class DynamicStandPlugin implements IPluginWithUI {
         this.pluginUiService.open(this.component, {
           title: '立ち絵共通設定',
           width: this.width,
-          height: this.height,
-          isSingleton: true
+          height: this.height
         });
       }
     });

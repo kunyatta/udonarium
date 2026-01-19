@@ -40,8 +40,6 @@ export class PluginLauncherPanelComponent implements OnInit, OnDestroy {
         title: pluginUI.name,
         width: pluginUI.width,
         height: pluginUI.height,
-        top: (this.openPanelCount % 10 + 1) * 20,
-        left: 100 + (this.openPanelCount % 20 + 1) * 5,
         layout: pluginUI.layout,
         isSingleton: pluginUI.isSingleton // プラグイン側の設定に従う
       };

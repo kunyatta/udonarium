@@ -33,8 +33,7 @@ export class PluginLauncherPlugin implements IPluginWithUI {
         this.pluginUiService.open(this.component, {
           title: this.name,
           width: this.width,
-          height: this.height,
-          isSingleton: true
+          height: this.height
         });
       }
     });

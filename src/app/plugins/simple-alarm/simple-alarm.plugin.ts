@@ -21,7 +21,6 @@ export class SimpleAlarmPlugin implements IPluginWithUI, OnDestroy { // OnDestro
   readonly width = 250;
   readonly height = 315;
   // readonly layout = 'full-auto'; // panelオプションとして渡す
-  readonly isSingleton = true; // 設定パネルをシングルトンにする
 
   // private destroy$ = new Subject<void>(); // 不要
 
@@ -43,15 +42,13 @@ export class SimpleAlarmPlugin implements IPluginWithUI, OnDestroy { // OnDestro
       name: this.name,
       icon: this.icon,
       action: (context, pointer) => {
-        this.pluginUiService.open(this.component, {
+        this.pluginUiService.openAtCursor(this.component, {
           title: this.name,
           width: this.width,
           height: this.height,
-          left: pointer ? pointer.x - this.width / 2 : undefined,
-          top: pointer ? pointer.y - this.height / 2 : undefined,
-          isSingleton: this.isSingleton
+          align: 'bottom-center'
           // layout: 'full-auto' // SimpleAlarmは固定サイズっぽいのでコメントアウトのままにするか、必要なら追加
-        });
+        }, pointer);
       }
     });
 

@@ -16,7 +16,6 @@ export class CutInPlugin implements IPluginWithUI {
   readonly component = CutInSettingComponent;
   readonly width: number = 550;
   readonly height: number = 600;
-  readonly isSingleton: boolean = true;
 
   constructor(
     private uiExtensionService: UIExtensionService,
@@ -41,8 +40,7 @@ export class CutInPlugin implements IPluginWithUI {
         this.pluginUiService.open(this.component, {
           title: this.name,
           width: this.width,
-          height: this.height,
-          isSingleton: this.isSingleton
+          height: this.height
         });
       }
     });

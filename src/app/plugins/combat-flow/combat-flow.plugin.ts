@@ -66,8 +66,7 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
         this.pluginUiService.open(this.component, {
           title: this.name,
           width: this.width,
-          height: this.height,
-          isSingleton: true
+          height: this.height
         });
       }
     });
@@ -80,8 +79,7 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
         this.pluginUiService.open(CombatFlowSettingsComponent, {
           title: '戦闘設定',
           width: 590,
-          height: 600,
-          isSingleton: true
+          height: 600
         });
       }
     });
@@ -90,15 +88,14 @@ export class CombatFlowPlugin implements IPluginWithUI, OnDestroy {
       name: '戦闘アクションを表示',
       action: (context: GameCharacter, pointer) => {
         // コンテキストメニューからは「戦闘アクション」を開く
-        this.pluginUiService.open(BattleActionComponent, {
+        this.pluginUiService.openAtCursor(BattleActionComponent, {
           title: COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.title,
           width: COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.width,
           height: COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.height,
-          left: pointer ? pointer.x - COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.width / 2 : undefined,
-          top: pointer ? pointer.y - COMBAT_FLOW_UI_DEFAULTS.CONTROLLER.height / 2 : undefined,
           isSingleton: false, // 複数キャラ同時に開けるようにする
-          inputs: { initialCasterIdentifier: context.identifier }
-        });
+          inputs: { initialCasterIdentifier: context.identifier },
+          align: 'center'
+        }, pointer);
       },
       condition: (context) => context instanceof GameCharacter,
       insertBeforeSeparator: 1
