@@ -82,8 +82,8 @@ function main() {
   }
 
   // ファイル生成
-  generateRegistryFile(OUTPUT_DEV, allPlugins);
-  generateRegistryFile(OUTPUT_PROD, prodPlugins);
+  generateRegistryFile(OUTPUT_DEV, allPlugins, false);
+  generateRegistryFile(OUTPUT_PROD, prodPlugins, true);
 }
 
 function extractFlag(content, key, defaultValue) {
@@ -124,7 +124,7 @@ function findPluginFile(dirPath) {
   return files.find(f => f.endsWith('.plugin.ts'));
 }
 
-function generateRegistryFile(outputPath, plugins) {
+function generateRegistryFile(outputPath, plugins, isProduction) {
   const imports = plugins.map(p => 
     `import { ${p.className} } from './${p.dirName}/${p.fileName}';`
   ).join('\n');
@@ -139,10 +139,12 @@ ${imports}
 export const pluginModules = [
   ${list}
 ];
+
+export const isProduction = ${isProduction};
 `;
 
   fs.writeFileSync(outputPath, content);
-  console.log(`Generated: ${outputPath} (${plugins.length} plugins)`);
+  console.log(`Generated: ${outputPath} (${plugins.length} plugins, isProduction: ${isProduction})`);
 }
 
 main();

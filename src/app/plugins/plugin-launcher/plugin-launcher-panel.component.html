@@ -60,4 +60,11 @@
     </div>
   </ng-template>
 
+  <div class="panel-footer">
+    <div class="mod-version-info">
+      Udonarium v{{ MOD_MANIFEST.basedOn }} | Mod v{{ MOD_MANIFEST.version }}
+      <span *ngIf="!isProduction" class="dev-launch-time"> [Start: {{ launchTime }}]</span>
+    </div>
+  </div>
+
 </div>

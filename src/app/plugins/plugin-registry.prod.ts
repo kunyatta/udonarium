@@ -26,3 +26,5 @@ export const pluginModules = [
   SimpleAlarmModule,
   TargetSelectorModule
 ];
+
+export const isProduction = true;

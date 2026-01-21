@@ -158,11 +158,53 @@
 }
 
 .warning-text {
+
   font-size: 11px;
+
   color: var(--color-primary-dark);
+
 }
 
+
+
 .launch-icon {
+
   font-size: 18px;
+
   margin-right: 6px;
+
+}
+
+
+
+/* 
+
+  Footer
+
+  ----------------------------------------------- */
+
+.panel-footer {
+
+  margin-top: auto;
+
+  padding: 8px;
+
+  border-top: 1px solid rgba(0, 0, 0, 0.05);
+
+  background-color: rgba(0, 0, 0, 0.02);
+
+}
+
+
+
+.mod-version-info {
+
+  font-size: 10px;
+
+  color: var(--text-color-secondary);
+
+  text-align: right;
+
+  opacity: 0.7;
+
 }

@@ -38,3 +38,5 @@ export const pluginModules = [
   TargetSelectorModule,
   TurnEngineTestModule
 ];
+
+export const isProduction = false;

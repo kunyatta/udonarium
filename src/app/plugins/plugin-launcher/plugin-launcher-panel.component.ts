@@ -2,6 +2,8 @@ import { ChangeDetectionStrategy, ChangeDetectorRef, Component, OnDestroy, OnIni
 import { IPlugin, IPluginWithUI } from '../i-plugin';
 import { PluginService } from '../service/plugin.service';
 import { PluginUiService, PluginPanelOption } from '../service/plugin-ui.service';
+import { MOD_SYSTEM_MANIFEST } from '../mod-manifest';
+import { isProduction } from '../plugin-registry';
 
 @Component({
   selector: 'app-plugin-launcher-panel',
@@ -11,6 +13,10 @@ import { PluginUiService, PluginPanelOption } from '../service/plugin-ui.service
 })
 export class PluginLauncherPanelComponent implements OnInit, OnDestroy {
   
+  readonly MOD_MANIFEST = MOD_SYSTEM_MANIFEST;
+  readonly isProduction = isProduction;
+  launchTime: string = '';
+
   pluginUIs: IPluginWithUI[] = [];
   selectedPlugin: IPluginWithUI | null = null;
   private openPanelCount: number = 0;
@@ -22,9 +28,13 @@ export class PluginLauncherPanelComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
+    // Record launch time for development debugging
+    const now = new Date();
+    this.launchTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+
     // Get all plugins that have a manifest and are not the launcher itself
     this.pluginUIs = this.pluginService.getPlugins()
-      .filter(p => !!p.manifest && p.pluginName !== 'plugin-launcher') as IPluginWithUI[];
+      .filter(p => !!p.manifest) as IPluginWithUI[];
   }
 
   ngOnDestroy(): void {

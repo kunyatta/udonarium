@@ -15,7 +15,7 @@ export class PluginLauncherPlugin implements IPluginWithUI {
   readonly icon = MANIFEST.icon;
   readonly type: 'panel' = 'panel';
   component = PluginLauncherPanelComponent;
-  width: number = 500;
+  width: number = 600;
   height: number = 400;
 
   constructor(
