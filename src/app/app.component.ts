@@ -46,7 +46,7 @@ import { SaveDataService } from 'service/save-data.service';
 // ----- MODIFICATION START (kunyatta) for PluginSystem -----
 import { PluginService } from './plugins/service/plugin.service';
 import { PluginUiService } from './plugins/service/plugin-ui.service';
-import { PluginLauncherPanelComponent } from './plugins/plugin-launcher/plugin-launcher-panel.component';
+import { PluginInfoPanelComponent } from './plugins/plugin-info/plugin-info-panel.component';
 // ----- MODIFICATION START (kunyatta) for UserPersistence -----
 import { UserPersistenceService } from './plugins/service/user-persistence.service';
 // ----- MODIFICATION END (kunyatta) for UserPersistence -----

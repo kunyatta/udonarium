@@ -1,12 +1,12 @@
 import { Injectable, Injector } from '@angular/core';
 import { IPluginWithUI } from '../i-plugin';
-import { PluginLauncherPanelComponent } from './plugin-launcher-panel.component';
+import { PluginInfoPanelComponent } from './plugin-info-panel.component';
 import { UIExtensionService } from '../service/ui-extension.service';
 import { PluginUiService } from '../service/plugin-ui.service';
 import { MANIFEST } from './manifest';
 
 @Injectable()
-export class PluginLauncherPlugin implements IPluginWithUI {
+export class PluginInfoPlugin implements IPluginWithUI {
   readonly manifest = MANIFEST;
   readonly pluginName = MANIFEST.id;
 
@@ -14,7 +14,7 @@ export class PluginLauncherPlugin implements IPluginWithUI {
   readonly name = MANIFEST.name;
   readonly icon = MANIFEST.icon;
   readonly type: 'panel' = 'panel';
-  component = PluginLauncherPanelComponent;
+  component = PluginInfoPanelComponent;
   width: number = 600;
   height: number = 400;
 
@@ -27,7 +27,7 @@ export class PluginLauncherPlugin implements IPluginWithUI {
 
   initializeUI(injector: Injector): void {
     this.uiExtensionService.registerAction('settings', {
-      name: '機能管理',
+      name: 'プラグイン情報',
       icon: 'extension',
       priority: 1000, // 末尾に配置
       separator: true, // 区切り線を入れる

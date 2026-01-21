@@ -4,8 +4,8 @@ import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { PLUGIN_TOKEN } from './i-plugin';
 import { pluginModules } from './plugin-registry';
-import { PluginLauncherPanelComponent } from './plugin-launcher/plugin-launcher-panel.component';
-import { PluginLauncherPlugin } from './plugin-launcher/plugin-launcher.plugin';
+import { PluginInfoPanelComponent } from './plugin-info/plugin-info-panel.component';
+import { PluginInfoPlugin } from './plugin-info/plugin-info.plugin';
 import { GameObjectInventoryService } from 'service/game-object-inventory.service';
 import { CharacterDataService } from './service/character-data.service';
 import { ReactiveImageService } from './service/reactive-image.service';
@@ -18,7 +18,7 @@ import { PluginMapperService } from './service/plugin-mapper.service';
 
 @NgModule({
   declarations: [
-    PluginLauncherPanelComponent,
+    PluginInfoPanelComponent,
   ],
   imports: [
     CommonModule,
@@ -29,8 +29,8 @@ import { PluginMapperService } from './service/plugin-mapper.service';
     ...pluginModules
   ],
   providers: [
-    // プラグインランチャープラグインを無条件で登録します。
-    { provide: PLUGIN_TOKEN, useClass: PluginLauncherPlugin, multi: true },
+    // プラグイン情報プラグインを無条件で登録します。
+    { provide: PLUGIN_TOKEN, useClass: PluginInfoPlugin, multi: true },
     // プラグインが一つもなくてもInjectionTokenが常に存在するようにダミーのプロバイダーを追加します。
     { provide: PLUGIN_TOKEN, useValue: [], multi: true },
     // 共通サービス

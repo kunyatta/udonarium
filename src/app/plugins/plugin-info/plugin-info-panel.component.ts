@@ -6,12 +6,12 @@ import { MOD_SYSTEM_MANIFEST } from '../mod-manifest';
 import { isProduction } from '../plugin-registry';
 
 @Component({
-  selector: 'app-plugin-launcher-panel',
-  templateUrl: './plugin-launcher-panel.component.html',
-  styleUrls: ['./plugin-launcher-panel.component.css'],
+  selector: 'app-plugin-info-panel',
+  templateUrl: './plugin-info-panel.component.html',
+  styleUrls: ['./plugin-info-panel.component.css'],
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class PluginLauncherPanelComponent implements OnInit, OnDestroy {
+export class PluginInfoPanelComponent implements OnInit, OnDestroy {
   
   readonly MOD_MANIFEST = MOD_SYSTEM_MANIFEST;
   readonly isProduction = isProduction;
