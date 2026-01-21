@@ -8,21 +8,21 @@ import { PLUGIN_ID, FILE_NAME_HINT_ALARM, NOTIFICATION_STATE_KEY } from './simpl
 import { EventSystem } from '@udonarium/core/system';
 import { UIExtensionService } from '../service/ui-extension.service';
 import { PluginUiService } from '../service/plugin-ui.service';
+import { MANIFEST } from './manifest';
 
 @Injectable() // 追加
 export class SimpleAlarmPlugin implements IPluginWithUI, OnDestroy { // OnDestroyを追加
-  readonly pluginName = 'SimpleAlarm';
+  readonly manifest = MANIFEST;
+  readonly pluginName = MANIFEST.id;
   
-  readonly name = 'タイマー';
-  readonly icon = 'alarm';
+  readonly name = MANIFEST.name;
+  readonly icon = MANIFEST.icon;
   readonly type = 'panel';
   
   readonly component = SimpleAlarmPanelComponent;
   readonly width = 250;
   readonly height = 315;
   // readonly layout = 'full-auto'; // panelオプションとして渡す
-  readonly version = '1.0.0';
-  readonly description = '設定した時間が経過するとアラーム音を鳴らして通知します。全プレイヤーに共有されます。';
 
   // private destroy$ = new Subject<void>(); // 不要
 

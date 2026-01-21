@@ -1,10 +1,32 @@
 import { InjectionToken, Injector } from '@angular/core';
+import { PluginManifest } from './plugin-manifest';
 
 /**
  * ユーザーインターフェースを持たないプラグインの基本インターフェースを表します。
  */
 export interface IPlugin {
-  readonly pluginName: string;
+  readonly pluginName: string; // 将来的には manifest.id に置き換え
+
+  /**
+   * プラグインのメタデータ定義。
+   * 自動登録システムのために、このプロパティを持つことが推奨されます。
+   */
+  readonly manifest?: PluginManifest;
+
+  // --- 以下のプロパティは manifest に移行推奨 ---
+  // ランチャー等に表示されるUIの名前。
+  name?: string;
+  // 表示されるアイコン (Material Icons)。 (任意)
+  icon?: string;
+  // 表示されるアイコンのCSSクラス。 (任意)
+  iconClass?: string;
+  // バージョン情報 (任意)。
+  version?: string;
+  // プラグインの概要 (任意)。
+  description?: string;
+  // 実験的/テスト用プラグインかどうかのフラグ (任意)。
+  isExperimental?: boolean;
+
   /**
    * アプリケーション起動時に呼び出されます (APP_INITIALIZERを使用)。
    * UI関連以外の初期化処理に適しています。
@@ -16,12 +38,6 @@ export interface IPlugin {
  * ユーザーインターフェースを持つプラグインのインターフェースを表します。
  */
 export interface IPluginWithUI extends IPlugin {
-  // ランチャーに表示されるUIの名前。
-  name: string;
-  // 表示されるアイコン (Material Icons)。
-  icon?: string;
-  // 表示されるアイコンのCSSクラス。 (任意)
-  iconClass?: string; // ----- MODIFICATION (kunyatta) -----
   // UIのタイプ: 'panel' または 'toggle'。
   type: 'panel' | 'toggle';
   // 表示するUIコンポーネント ('panel' タイプで必須)。
@@ -42,13 +58,6 @@ export interface IPluginWithUI extends IPlugin {
   layout?: 'full-auto' | 'hybrid';
   // シングルトンとして扱うかどうかの設定 (任意)。trueの場合、同種のパネルは1つしか開かない。
   isSingleton?: boolean;
-
-  // バージョン情報 (任意)。
-  version?: string;
-  // プラグインの概要 (任意)。
-  description?: string;
-  // 実験的/テスト用プラグインかどうかのフラグ (任意)。trueの場合、ランチャーから起動可能になる。
-  isExperimental?: boolean;
 
   /**
    * メインアプリケーションのビューが初期化された後に呼び出されます。

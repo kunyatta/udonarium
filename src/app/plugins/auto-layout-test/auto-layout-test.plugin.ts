@@ -3,22 +3,21 @@ import { IPluginWithUI } from '../i-plugin';
 import { PluginUiService } from '../service/plugin-ui.service';
 import { AutoLayoutTestComponent } from './auto-layout-test.component';
 import { EventSystem } from '@udonarium/core/system';
+import { MANIFEST } from './manifest';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AutoLayoutTestPlugin implements IPluginWithUI, OnDestroy {
-  readonly pluginName: string = 'AutoLayoutTestPlugin';
-  readonly name: string = '自動レイアウトテスト';
-  readonly type: 'panel' = 'panel';
-  readonly icon: string = 'photo_size_select_large';
+  readonly manifest = MANIFEST;
+  readonly pluginName = MANIFEST.id;
+  readonly name = MANIFEST.name;
+  readonly type = 'panel';
+  readonly icon = MANIFEST.icon;
   readonly component = AutoLayoutTestComponent;
   width: number = 400; // 初期幅（AutoLayoutで自動調整される）
   height: number = 400; // 初期高さ（AutoLayoutで自動調整される）
   layout: 'full-auto' = 'full-auto'; // 自動レイアウトを有効にする
-  readonly version = '0.1.0';
-  readonly description = '自動レイアウト機能（AutoLayoutPanel）の動作確認用プラグインです。';
-  readonly isExperimental = true;
 
   constructor(
     private pluginUiService: PluginUiService,

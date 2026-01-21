@@ -8,8 +8,8 @@
         <i class="material-icons">arrow_back</i>
       </button>
       <div class="detail-header-content">
-        <i [ngClass]="selectedPlugin.iconClass || 'material-icons'" class="detail-icon">{{ selectedPlugin.icon || 'open_in_new' }}</i>
-        <span class="detail-title">{{ selectedPlugin.name }}</span>
+        <i [ngClass]="selectedPlugin.manifest?.iconClass || selectedPlugin.iconClass || 'material-icons'" class="detail-icon">{{ selectedPlugin.manifest?.icon || selectedPlugin.icon || 'open_in_new' }}</i>
+        <span class="detail-title">{{ selectedPlugin.manifest?.name || selectedPlugin.name }}</span>
       </div>
     </div>
 
@@ -18,22 +18,21 @@
         
         <div class="meta-info">
           <div>
-            <strong>Version:</strong> {{ selectedPlugin.version || 'Unknown' }}
+            <strong>Version:</strong> {{ selectedPlugin.manifest?.version || selectedPlugin.version || 'Unknown' }}
           </div>
           <!-- 将来的に Author や UpdateDate を追加可能 -->
         </div>
 
         <div class="description-area">
-          {{ selectedPlugin.description || 'No description available.' }}
+          {{ selectedPlugin.manifest?.description || selectedPlugin.description || 'No description available.' }}
         </div>
 
-        <div class="action-area" *ngIf="selectedPlugin.isExperimental">
+        <div class="action-area" *ngIf="selectedPlugin.manifest?.isExperimental || selectedPlugin.isExperimental">
           <button class="udonarium-btn accent" (click)="openPluginPanel(selectedPlugin)">
             <i class="material-icons launch-icon">play_arrow</i> Launch Plugin
           </button>
           <div class="warning-text">※ This is an experimental plugin.</div>
         </div>
-
       </div>
     </div>
   </ng-container>
@@ -45,25 +44,14 @@
         <!-- Loop through registered UIs -->
         <ng-container *ngFor="let ui of pluginUIs">
 
-          <!-- Case: type is 'panel' -->
-          <li *ngIf="ui.type === 'panel'" class="grid-item" (click)="selectPlugin(ui)">
+          <!-- Case: Any Plugin (Grid Item) -->
+          <li class="grid-item" (click)="selectPlugin(ui)" [class.active]="ui.isActive">
             <a class="grid-link">
               <div class="icon-container">
-                <i [ngClass]="ui.iconClass || 'material-icons'" class="icon-size">{{ ui.icon || 'open_in_new' }}</i>
-                <div *ngIf="ui.isExperimental" class="badge-experimental" title="Experimental">E</div>
+                <i [ngClass]="ui.manifest?.iconClass || ui.iconClass || 'material-icons'" class="icon-size">{{ ui.manifest?.icon || ui.icon || 'extension' }}</i>
+                <div *ngIf="ui.manifest?.isExperimental || ui.isExperimental" class="badge-experimental" title="Experimental">E</div>
               </div>
-              <div class="item-label">{{ ui.name }}</div>
-            </a>
-          </li>
-
-          <!-- Case: type is 'toggle' -->
-          <li *ngIf="ui.type === 'toggle'" class="grid-item" (click)="selectPlugin(ui)" [class.active]="ui.isActive">
-            <a class="grid-link">
-              <div class="icon-container">
-                <i [ngClass]="ui.iconClass || 'material-icons'" class="icon-size">{{ ui.icon }}</i>
-                <div *ngIf="ui.isExperimental" class="badge-experimental" title="Experimental">E</div>
-              </div>
-              <div class="item-label">{{ ui.name }}</div>
+              <div class="item-label">{{ ui.manifest?.name || ui.name }}</div>
             </a>
           </li>
 

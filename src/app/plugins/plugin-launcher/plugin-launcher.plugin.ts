@@ -3,15 +3,17 @@ import { IPluginWithUI } from '../i-plugin';
 import { PluginLauncherPanelComponent } from './plugin-launcher-panel.component';
 import { UIExtensionService } from '../service/ui-extension.service';
 import { PluginUiService } from '../service/plugin-ui.service';
+import { MANIFEST } from './manifest';
 
 @Injectable()
 export class PluginLauncherPlugin implements IPluginWithUI {
-  readonly pluginName: string = 'plugin-launcher';
+  readonly manifest = MANIFEST;
+  readonly pluginName = MANIFEST.id;
 
-  // IPluginWithUI properties
-  name: string = '機能管理';
-  type: 'panel' = 'panel';
-  icon: string = 'extension';
+  // IPluginWithUI properties (Manifestから参照、または上書き)
+  readonly name = MANIFEST.name;
+  readonly icon = MANIFEST.icon;
+  readonly type: 'panel' = 'panel';
   component = PluginLauncherPanelComponent;
   width: number = 500;
   height: number = 400;

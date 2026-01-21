@@ -1,23 +1,21 @@
 import { Injectable } from '@angular/core';
 import { IPluginWithUI } from '../i-plugin';
 import { CharacterImageViewerComponent } from './character-image-viewer.component';
+import { MANIFEST } from './manifest';
 
 @Injectable({
   providedIn: 'root'
 })
 export class CharacterImageViewerPlugin implements IPluginWithUI {
-  readonly pluginName: string = 'CharacterImageViewerPlugin';
+  readonly manifest = MANIFEST;
+  readonly pluginName = MANIFEST.id;
 
-  name: string = 'キャラクター画像ビューア';
+  name = MANIFEST.name;
   type: 'panel' = 'panel';
-  icon: string = 'image_search';
+  icon = MANIFEST.icon;
   component = CharacterImageViewerComponent;
   width: number = 800;
   height: number = 600;
-
-  readonly version = '0.1.0';
-  readonly description = 'キャラクターの画像を拡大表示するためのテストプラグインです。';
-  readonly isExperimental = true;
 
   initialize(): void { }
   initializeUI(): void { }

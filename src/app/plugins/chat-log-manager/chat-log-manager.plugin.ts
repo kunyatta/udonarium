@@ -3,22 +3,22 @@ import { IPluginWithUI } from '../i-plugin';
 import { PluginUiService } from '../service/plugin-ui.service';
 import { ChatLogManagerPanelComponent } from './chat-log-manager-panel.component';
 import { UIExtensionService } from '../service/ui-extension.service';
+import { MANIFEST } from './manifest';
 
 @Injectable()
 export class ChatLogManagerPlugin implements IPluginWithUI {
-  readonly pluginName = 'ChatLogManager';
+  readonly manifest = MANIFEST;
+  readonly pluginName = MANIFEST.id;
   
   // ランチャー表示設定
-  readonly name = 'ログ管理';
-  readonly icon = 'history_edu'; // または delete_sweep
+  readonly name = MANIFEST.name;
+  readonly icon = MANIFEST.icon;
   readonly type = 'panel';
   
   // パネル設定
   readonly component = ChatLogManagerPanelComponent;
   readonly width = 300;
   readonly height = 290;
-  readonly version = '1.0.0';
-  readonly description = 'チャットログの保存、一括削除、チャットタブの管理を行います。';
 
   constructor(
     private uiExtensionService: UIExtensionService,

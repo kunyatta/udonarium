@@ -5,23 +5,21 @@ import { OverlayControllerComponent } from './overlay-test/overlay-controller.co
 import { OverlayObject } from '../overlay-object';
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
 import { OverlayEffectsService } from '../service/overlay-effects.service';
+import { MANIFEST } from './manifest';
 
 @Injectable({
   providedIn: 'root'
 })
 export class OverlayTestPlugin implements IPluginWithUI {
-  readonly pluginName = 'OverlayTestPlugin';
+  readonly manifest = MANIFEST;
+  readonly pluginName = MANIFEST.id;
 
-  name: string = 'オーバーレイ検証(P2P)';
+  name = MANIFEST.name;
   type: 'panel' = 'panel';
-  icon: string = 'layers';
+  icon = MANIFEST.icon;
   component = OverlayControllerComponent;
   width: number = 250;
   height: number = 400; // 少し高く調整
-
-  readonly version = '0.1.0';
-  readonly description = 'P2P同期されるオーバーレイ表示の検証用プラグインです。';
-  readonly isExperimental = true;
 
   constructor(
     private pluginOverlayService: PluginOverlayService,

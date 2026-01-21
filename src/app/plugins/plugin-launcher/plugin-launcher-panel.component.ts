@@ -22,17 +22,13 @@ export class PluginLauncherPanelComponent implements OnInit, OnDestroy {
   ) { }
 
   ngOnInit(): void {
-    // Get all plugins that have a UI and are not the launcher itself
+    // Get all plugins that have a manifest and are not the launcher itself
     this.pluginUIs = this.pluginService.getPlugins()
-      .filter(p => this.isPluginWithUI(p) && p.pluginName !== 'plugin-launcher') as IPluginWithUI[];
+      .filter(p => !!p.manifest && p.pluginName !== 'plugin-launcher') as IPluginWithUI[];
   }
 
   ngOnDestroy(): void {
     // Clean up if needed
-  }
-
-  private isPluginWithUI(plugin: IPlugin): plugin is IPluginWithUI {
-    return 'initializeUI' in plugin;
   }
 
   selectPlugin(pluginUI: IPluginWithUI): void {

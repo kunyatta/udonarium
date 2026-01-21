@@ -4,20 +4,20 @@ import { Injectable, Injector } from '@angular/core';
 import { CutInService } from './cut-in.service';
 import { UIExtensionService } from '../service/ui-extension.service';
 import { PluginUiService } from '../service/plugin-ui.service';
+import { MANIFEST } from './manifest';
 
 @Injectable()
 export class CutInPlugin implements IPluginWithUI {
-  readonly pluginName: string = 'cut-in-plugin';
+  readonly manifest = MANIFEST;
+  readonly pluginName = MANIFEST.id;
 
   // IPluginWithUI properties
-  readonly name: string = 'カットイン';
+  readonly name = MANIFEST.name;
   readonly type: 'panel' = 'panel';
-  readonly icon: string = 'burst_mode'; 
+  readonly icon = MANIFEST.icon;
   readonly component = CutInSettingComponent;
   readonly width: number = 550;
   readonly height: number = 600;
-  readonly version = '1.0.0';
-  readonly description = 'チャットの発言に合わせて画面全体にカットイン画像を演出します。';
 
   constructor(
     private uiExtensionService: UIExtensionService,

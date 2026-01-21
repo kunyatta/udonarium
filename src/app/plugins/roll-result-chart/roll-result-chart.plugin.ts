@@ -4,17 +4,17 @@ import { RollResultChartPanelComponent } from './roll-result-chart-panel.compone
 import { RollResultChartService } from './roll-result-chart.service';
 import { PluginUiService } from '../service/plugin-ui.service';
 import { UIExtensionService } from '../service/ui-extension.service';
+import { MANIFEST } from './manifest';
 
 export class RollResultChartPlugin implements IPluginWithUI {
-  readonly pluginName = 'Roll Result Chart Plugin';
-  readonly name = 'ダイスチャート';
-  readonly icon = 'list_alt';
+  readonly manifest = MANIFEST;
+  readonly pluginName = MANIFEST.id;
+  readonly name = MANIFEST.name;
+  readonly icon = MANIFEST.icon;
   readonly type = 'panel';
   readonly component = RollResultChartPanelComponent;
   readonly width = 600;
   readonly height = 600;
-  readonly version = '1.0.0';
-  readonly description = 'ダイスの出目によって結果が変わる複雑な表を自動化します。TRPGのアクシデント表などを登録し、チャットからコマンドで呼び出すことができます。';
 
   constructor(
     private chartService: RollResultChartService,

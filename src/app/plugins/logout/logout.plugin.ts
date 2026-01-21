@@ -2,15 +2,16 @@ import { Injectable, Injector } from '@angular/core';
 import { IPluginWithUI } from '../i-plugin';
 import { UIExtensionService } from '../service/ui-extension.service';
 import { Network } from '@udonarium/core/system';
+import { MANIFEST } from './manifest';
 
 @Injectable()
 export class LogoutPlugin implements IPluginWithUI {
-  readonly pluginName: string = 'logout-plugin';
-  readonly name: string = '退出';
-  readonly icon: string = 'exit_to_app';
+  readonly manifest = MANIFEST;
+  readonly pluginName = MANIFEST.id;
+
+  readonly name = MANIFEST.name;
+  readonly icon = MANIFEST.icon;
   readonly type: 'toggle' = 'toggle';
-  readonly version: string = '1.0.0';
-  readonly description: string = 'ルームから退出してトップ画面に戻ります。他の参加者との接続をすべて切断し、ページを再読み込みします。';
 
   constructor() {
     console.log(`[${this.pluginName}] Constructed`);

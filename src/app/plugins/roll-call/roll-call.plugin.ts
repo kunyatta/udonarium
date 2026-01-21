@@ -7,14 +7,16 @@ import { EventSystem } from '@udonarium/core/system';
 import { ROLL_CALL_UI_DEFAULTS } from './roll-call.constants';
 import { UIExtensionService } from '../service/ui-extension.service';
 import { PluginUiService } from '../service/plugin-ui.service';
+import { MANIFEST } from './manifest';
 
 @Injectable()
 export class RollCallPlugin implements IPluginWithUI, OnDestroy {
-  readonly pluginName = 'RollCall';
+  readonly manifest = MANIFEST;
+  readonly pluginName = MANIFEST.id;
   
   // ランチャー表示設定
-  readonly name = '点呼/投票';
-  readonly icon = 'group';
+  readonly name = MANIFEST.name;
+  readonly icon = MANIFEST.icon;
   readonly type = 'panel';
   
   // 管理パネルの設定
@@ -23,8 +25,6 @@ export class RollCallPlugin implements IPluginWithUI, OnDestroy {
   readonly height = ROLL_CALL_UI_DEFAULTS.CONTROL.height;
   readonly layout = 'full-auto';
   readonly isSingleton = true; // 管理パネルはシングルトン
-  readonly version = '1.0.0';
-  readonly description = 'PLへの点呼や簡単な投票機能を提供します。全員の回答を一覧できます。';
 
   constructor(
     private ngZone: NgZone,

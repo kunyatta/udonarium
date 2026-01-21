@@ -2,10 +2,14 @@ import { Injectable } from '@angular/core';
 import { IPlugin } from '../i-plugin';
 import { UIExtensionService } from '../service/ui-extension.service';
 import { ContextMenuService, ContextMenuSeparator, ContextMenuType } from '../../service/context-menu.service';
+import { MANIFEST } from './manifest';
 
 @Injectable()
 export class SettingsPlugin implements IPlugin {
-  readonly pluginName: string = 'settings';
+  readonly manifest = MANIFEST;
+  readonly pluginName = MANIFEST.id;
+  readonly name = MANIFEST.name;
+  readonly icon = MANIFEST.icon;
 
   constructor(
     private uiExtensionService: UIExtensionService,

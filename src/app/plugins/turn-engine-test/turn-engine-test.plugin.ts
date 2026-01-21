@@ -3,22 +3,21 @@ import { IPluginWithUI } from '../i-plugin';
 import { PluginUiService } from '../service/plugin-ui.service';
 import { TurnEngineTestComponent } from './turn-engine-test.component';
 import { EventSystem } from '@udonarium/core/system';
+import { MANIFEST } from './manifest';
 
 @Injectable({
   providedIn: 'root'
 })
 export class TurnEngineTestPlugin implements IPluginWithUI, OnDestroy {
-  readonly pluginName: string = 'TurnEngineTestPlugin';
-  readonly name: string = 'ターンエンジンテスト';
-  readonly type: 'panel' = 'panel';
-  readonly icon: string = 'settings_backup_restore';
+  readonly manifest = MANIFEST;
+  readonly pluginName = MANIFEST.id;
+  readonly name = MANIFEST.name;
+  readonly type = 'panel';
+  readonly icon = MANIFEST.icon;
   readonly component = TurnEngineTestComponent;
   width: number = 400;
   height: number = 400;
   layout: 'full-auto' = 'full-auto';
-  readonly version = '0.1.0';
-  readonly description = 'ターン制エンジンの動作テストを行うためのプラグインです。';
-  readonly isExperimental = true;
 
   constructor(
     private pluginUiService: PluginUiService,

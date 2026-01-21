@@ -6,19 +6,20 @@ import { UIExtensionService } from '../service/ui-extension.service';
 import { PluginUiService } from '../service/plugin-ui.service';
 import { GameCharacter } from '@udonarium/game-character';
 import { DynamicStandSettingComponent } from './dynamic-stand-setting.component';
+import { MANIFEST } from './manifest';
 
 @Injectable()
 export class DynamicStandPlugin implements IPluginWithUI {
-  readonly pluginName = 'dynamic-stand-plugin';
-  readonly name = '立ち絵';
+  readonly manifest = MANIFEST;
+  readonly pluginName = MANIFEST.id;
+
+  readonly name = MANIFEST.name;
   readonly type = 'panel'; // 設定画面用
-  readonly icon = 'recent_actors';
+  readonly icon = MANIFEST.icon;
 
   readonly component = DynamicStandSettingComponent; 
   readonly width: number = 520;
   readonly height: number = 550;
-  readonly version = '1.1.0';
-  readonly description = 'チャットの発言に合わせてキャラクターの立ち絵画像を自動表示・演出します。';
 
   constructor(
     private service: DynamicStandPluginService,

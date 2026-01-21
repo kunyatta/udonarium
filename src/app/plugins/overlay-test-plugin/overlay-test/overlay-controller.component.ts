@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { OverlayTestPlugin } from '../overlay-test-plugin.service';
+import { Component, OnInit } from '@angular/core';
+import { OverlayTestPlugin } from '../overlay-test-plugin.plugin';
 import { OverlayObject } from '../../overlay-object';
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
 import { ModalService } from 'service/modal.service';
