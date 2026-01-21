@@ -1,10 +1,9 @@
-import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy, HostBinding } from '@angular/core';
+import { Component, ElementRef, Input, OnDestroy, OnInit, ViewChild, ChangeDetectorRef, ChangeDetectionStrategy, HostBinding, isDevMode } from '@angular/core';
 import { OverlayObject } from '../../overlay-object';
 import { ObjectNode } from '@udonarium/core/synchronize-object/object-node';
 import { EventSystem } from '@udonarium/core/system';
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
 import { DataElement } from '@udonarium/data-element';
-import { environment } from '../../../../environments/environment';
 import { ImageStorage } from '@udonarium/core/file-storage/image-storage';
 import { ImageFile } from '@udonarium/core/file-storage/image-file';
 import { AudioPlayer, VolumeType } from '@udonarium/core/file-storage/audio-player';
@@ -22,7 +21,7 @@ export class OverlayComponent implements OnInit, OnDestroy {
   @Input() overlayObject: OverlayObject = null;
   @ViewChild('effectTarget', { static: true }) effectTargetRef: ElementRef<HTMLElement>;
 
-  isProduction = environment.production;
+  isProduction = !isDevMode();
   isVisible = true;
 
   protected audioPlayer: AudioPlayer = new AudioPlayer();

@@ -4,10 +4,13 @@
   "license": "MIT",
   "scripts": {
     "ng": "ng",
+    "prestart": "node scripts/generate-plugin-registry.js",
+    "prebuild": "node scripts/generate-plugin-registry.js",
     "start": "ng serve",
     "build": "ng build",
     "watch": "ng build --watch --configuration development",
-    "test": "ng test"
+    "test": "ng test",
+    "generate-registry": "node scripts/generate-plugin-registry.js"
   },
   "private": true,
   "dependencies": {

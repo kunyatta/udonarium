@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { HttpClientModule } from '@angular/common/http';
 import { FormsModule } from '@angular/forms';
 import { PLUGIN_TOKEN } from './i-plugin';
-import { environment } from '../../environments/environment';
+import { pluginModules } from './plugin-registry';
 import { PluginLauncherPanelComponent } from './plugin-launcher/plugin-launcher-panel.component';
 import { PluginLauncherPlugin } from './plugin-launcher/plugin-launcher.plugin';
 import { GameObjectInventoryService } from 'service/game-object-inventory.service';
@@ -26,7 +26,7 @@ import { PluginMapperService } from './service/plugin-mapper.service';
     HttpClientModule,
     SharedModule,
     PluginsComponentsModule,
-    ...environment.pluginModules
+    ...pluginModules
   ],
   providers: [
     // プラグインランチャープラグインを無条件で登録します。

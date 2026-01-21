@@ -1,4 +1,4 @@
-import { Component, OnInit, OnDestroy, ChangeDetectorRef } from '@angular/core';
+import { Component, OnInit, OnDestroy, ChangeDetectorRef, isDevMode } from '@angular/core';
 import { PanelService } from '../../service/panel.service';
 import { PluginUiService, PluginPanelOption } from '../service/plugin-ui.service';
 import { CombatStateService } from './combat-state.service';
@@ -21,7 +21,6 @@ import { PluginDataTransferService } from '../service/plugin-data-transfer.servi
 import { DataElement } from '@udonarium/data-element';
 import { DICTIONARY_FILE_NAME_HINT, PLUGIN_ID, DATA_TAG_STATUS_EFFECT_DATA } from './combat-flow.constants';
 import { DamageCheckConfig } from './combat-flow-config.model';
-import { environment } from '../../../environments/environment';
 
 @Component({
   selector: 'app-combat-flow-settings',
@@ -32,7 +31,7 @@ export class CombatFlowSettingsComponent implements OnInit, OnDestroy {
   activeTab: 'status-effects' | 'settings' = 'settings';
   private unsubscribe$ = new Subject<void>();
 
-  get isProduction(): boolean { return environment.production; }
+  get isProduction(): boolean { return !isDevMode(); }
 
   // --- ステータス効果管理用 ---
   private readonly PLUGIN_ID = PLUGIN_ID;
