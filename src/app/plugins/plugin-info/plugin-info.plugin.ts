@@ -16,7 +16,7 @@ export class PluginInfoPlugin implements IPluginWithUI {
   readonly type: 'panel' = 'panel';
   component = PluginInfoPanelComponent;
   width: number = 600;
-  height: number = 400;
+  height: number = 500;
 
   constructor(
     private uiExtensionService: UIExtensionService,

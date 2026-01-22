@@ -111,6 +111,21 @@ export class OverlayComponent implements OnInit, OnDestroy {
   }
 
   /**
+   * 指定したアクターを即座に退場させます。
+   * クリックイベント等から呼び出されることを想定しています。
+   */
+  dismissActor(actor: StandingActor) {
+    if (actor.isDisappearing) return;
+    
+    // 退場フラグを立て、寿命を「今」に設定する
+    // これにより、サービス側の cleanupExpiredActors が次回のチェックで退去処理を開始する
+    actor.isDisappearing = true;
+    actor.expirationTime = Date.now();
+    
+    this.changeDetector.markForCheck();
+  }
+
+  /**
    * ローカルでパネルを閉じます（クリックで閉じる設定が有効な場合）。
    */
   closeLocal() {

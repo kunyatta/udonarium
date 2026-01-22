@@ -32,9 +32,27 @@ export class PluginInfoPanelComponent implements OnInit, OnDestroy {
     const now = new Date();
     this.launchTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
 
-    // Get all plugins that have a manifest and are not the launcher itself
-    this.pluginUIs = this.pluginService.getPlugins()
-      .filter(p => !!p.manifest) as IPluginWithUI[];
+    // Create a virtual plugin for the Mod system info
+    const modInfo: any = {
+      pluginName: 'mod-system',
+      name: this.MOD_MANIFEST.name,
+      icon: this.MOD_MANIFEST.icon,
+      manifest: {
+        id: 'mod-system',
+        name: this.MOD_MANIFEST.name,
+        version: this.MOD_MANIFEST.version,
+        description: `${this.MOD_MANIFEST.description}\n\nAuthors: ${this.MOD_MANIFEST.authors.join(', ')}\nBased on: Udonarium v${this.MOD_MANIFEST.basedOn} by ${(this.MOD_MANIFEST as any).originalAuthor}\nLast Updated: ${this.MOD_MANIFEST.updatedAt}`,
+        icon: this.MOD_MANIFEST.icon,
+        isExperimental: false
+      }
+    };
+
+    // Get all plugins that have a manifest and prepend the mod info
+    this.pluginUIs = [
+      modInfo,
+      ...this.pluginService.getPlugins()
+        .filter(p => !!p.manifest) as IPluginWithUI[]
+    ];
   }
 
   ngOnDestroy(): void {

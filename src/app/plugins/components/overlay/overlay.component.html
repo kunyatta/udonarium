@@ -48,7 +48,8 @@
                  [class.is-left]="data.side === 'left'" 
                  [class.is-right]="data.side === 'right'"
                  [class.is-disappearing]="data.isDisappearing"
-                 [style.transition]="'all 500ms ease-out'">
+                 [style.transition]="'all 500ms ease-out'"
+                 (click)="dismissActor(actor); $event.stopPropagation()">
               
               <!-- Character Image -->
               <div class="standing-character" 
