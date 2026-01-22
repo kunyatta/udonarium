@@ -288,6 +288,8 @@ export class CutInSettingComponent implements OnInit, OnDestroy {
       console.log('[CutInSetting] URL Input:', url, '-> ID:', videoId);
       if (videoId) {
         this.editingCutIn.videoIdentifier = videoId;
+        // Shorts判定: URLに 'shorts/' が含まれているかチェック
+        this.editingCutIn.isShorts = url.toLowerCase().includes('shorts/');
       }
       this.update();
     }
@@ -295,7 +297,7 @@ export class CutInSettingComponent implements OnInit, OnDestroy {
 
   private extractYouTubeId(url: string): string | null {
     if (!url) return null;
-    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|shorts\/|watch\?v=|\&v=)([^#\&\?]*).*/;
     const match = url.match(regExp);
     return (match && match[2].length === 11) ? match[2] : null;
   }
@@ -373,6 +375,7 @@ export class CutInSettingComponent implements OnInit, OnDestroy {
     overlay.height = c.height > 0 ? c.height : 0; 
     overlay.imageIdentifier = c.imageIdentifier;
     overlay.videoIdentifier = c.videoIdentifier;
+    overlay.updateContent('isShorts', c.isShorts ? 1 : 0);
     overlay.update(); 
   }
 

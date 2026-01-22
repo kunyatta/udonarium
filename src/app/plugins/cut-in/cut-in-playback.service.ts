@@ -168,6 +168,7 @@ export class CutInPlaybackService {
     if (cutIn.type === 'video' && cutIn.videoIdentifier) {
       overlay.videoIdentifier = cutIn.videoIdentifier;
       overlay.sourceType = 'youtube-video';
+      overlay.updateContent('isShorts', cutIn.isShorts ? 1 : 0);
     } else {
       overlay.imageIdentifier = cutIn.imageIdentifier;
       overlay.sourceType = 'udonarium-image';

@@ -2,6 +2,7 @@ import { Component, Input, OnInit, ChangeDetectorRef, OnDestroy, ChangeDetection
 import { OverlayObject } from '../overlay-object';
 import { EventSystem } from '@udonarium/core/system';
 import { ImageStorage } from '@udonarium/core/file-storage/image-storage';
+import { DataElement } from '@udonarium/data-element';
 
 @Component({
   selector: 'overlay-rect-guide',
@@ -51,13 +52,30 @@ export class OverlayRectGuideComponent implements OnInit, OnDestroy {
     if (!this.overlayObject) return '0vw';
     if (this.overlayObject.height > 0) return this.overlayObject.height + 'vh';
 
+    // 比率の決定
+    let aspectRatio = 1;
+    
     if (this.overlayObject.videoIdentifier) {
-      const w = this.overlayObject.width > 0 ? this.overlayObject.width : (this.overlayObject.scale || 1) * 30;
-      return (w / (16/9)) + 'vw';
+      // YouTubeの場合: Shorts判定
+      const isShorts = this.getIsShorts();
+      aspectRatio = isShorts ? (9 / 16) : (16 / 9);
+    } else {
+      // 画像の場合
+      aspectRatio = this.imageAspectRatio;
     }
 
     const w = this.overlayObject.width > 0 ? this.overlayObject.width : (this.overlayObject.scale || 1) * 30;
-    return (w / this.imageAspectRatio) + 'vw';
+    return (w / aspectRatio) + 'vw';
+  }
+
+  private getIsShorts(): boolean {
+    if (!this.overlayObject) return false;
+    const content = this.overlayObject.content;
+    if (content) {
+      const elm = content.children.find(c => (c instanceof DataElement) && c.name === 'isShorts') as DataElement;
+      return elm && elm.value == 1;
+    }
+    return false;
   }
 
   get borderColor() {
@@ -69,7 +87,6 @@ export class OverlayRectGuideComponent implements OnInit, OnDestroy {
   }
 
   get borderWidth() {
-    // 開始・終了ガイドは少し細くする
     return (this.overlayObject?.type === 'rect-guide') ? 8 : 4;
   }
 

@@ -191,7 +191,14 @@ export class OverlayComponent implements OnInit, OnDestroy {
     if (!this.overlayObject) return undefined;
     if (this.overlayObject.height > 0) return (window.innerHeight * this.overlayObject.height) / 100;
     const widthPx = this.videoWidth;
-    return widthPx ? (widthPx * 9) / 16 : undefined;
+    if (!widthPx) return undefined;
+
+    // Shorts判定
+    const content = this.overlayObject.content;
+    const isShortsElm = content?.children.find(c => (c instanceof DataElement) && c.name === 'isShorts') as DataElement;
+    const isShorts = isShortsElm && isShortsElm.value == 1;
+
+    return isShorts ? (widthPx * 16) / 9 : (widthPx * 9) / 16;
   }
 
   /**

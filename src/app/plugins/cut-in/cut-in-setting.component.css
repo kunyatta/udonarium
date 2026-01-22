@@ -32,11 +32,11 @@
 
 /* フォーム内の微調整 */
 .flex-label {
-  flex: 0 0 60px; /* 共通定義(80px)を上書きして短縮 */
+  flex: 0 0 70px; /* 共通定義(80px)を上書きして短縮 */
 }
 
 .width-short {
-  width: 50px !important;
+  width: 60px !important;
   flex-shrink: 0;
 }
 

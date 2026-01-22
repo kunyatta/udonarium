@@ -4,6 +4,7 @@ export interface CutIn {
   type?: 'image' | 'video';// カットインの種類 (省略時はimage)
   imageIdentifier: string; // Udonariumの画像識別子
   videoIdentifier?: string;// YouTube Video ID
+  isShorts?: boolean;      // Shorts動画かどうか
   duration: number;        // 表示時間 (秒)
   left: number;            // X座標 (%)
   top: number;             // Y座標 (%)
@@ -42,6 +43,7 @@ export const DEFAULT_CUT_IN: Omit<CutIn, 'identifier'> = {
   type: 'image',
   imageIdentifier: '',
   videoIdentifier: '',
+  isShorts: false,
   duration: 5,
   left: 50,
   top: 50,
