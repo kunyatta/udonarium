@@ -7,6 +7,7 @@ import { ImageStorage } from '@udonarium/core/file-storage/image-storage';
 import { AudioStorage } from '@udonarium/core/file-storage/audio-storage';
 import { CutInPlaybackService } from './cut-in-playback.service';
 import { PluginDataTransferService } from '../service/plugin-data-transfer.service';
+import { PluginOverlayService } from '../service/plugin-overlay.service';
 import { Subject } from 'rxjs';
 import { takeUntil } from 'rxjs/operators';
 
@@ -21,6 +22,15 @@ export class CutInSettingComponent implements OnInit, OnDestroy {
   editingCutIn: CutIn | null = null;
   activeInEffect: string | null = null;
   activeOutEffect: string | null = null;
+  
+  showGuide: boolean = false;
+  showInGuide: boolean = false;
+  showOutGuide: boolean = false;
+
+  private guideOverlay: any | null = null;
+  private inGuideOverlay: any | null = null;
+  private outGuideOverlay: any | null = null;
+
   private onDestroy$ = new Subject<void>();
   
   get sizeMode(): 'ratio' | 'scale' {
@@ -43,6 +53,7 @@ export class CutInSettingComponent implements OnInit, OnDestroy {
     public cutInService: CutInService,
     private playbackService: CutInPlaybackService,
     private pluginUiService: PluginUiService,
+    private overlayService: PluginOverlayService,
     private changeDetector: ChangeDetectorRef,
     private pluginDataTransfer: PluginDataTransferService
   ) {}
@@ -199,6 +210,9 @@ export class CutInSettingComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.destroyGuide('main');
+    this.destroyGuide('in');
+    this.destroyGuide('out');
     this.onDestroy$.next();
     this.onDestroy$.complete();
   }
@@ -212,6 +226,12 @@ export class CutInSettingComponent implements OnInit, OnDestroy {
   }
 
   select(identifier: string) {
+    this.destroyGuide('main');
+    this.destroyGuide('in');
+    this.destroyGuide('out');
+    this.showGuide = false;
+    this.showInGuide = false;
+    this.showOutGuide = false;
     this.selectedIdentifier = identifier;
     this.activeInEffect = null;
     this.activeOutEffect = null;
@@ -290,7 +310,81 @@ export class CutInSettingComponent implements OnInit, OnDestroy {
   update() {
     if (!this.editingCutIn) return;
     this.cutInService.save();
+    this.updateAllGuides();
     this.changeDetector.markForCheck();
+  }
+
+  updateAllGuides() {
+    if (this.showGuide) this.updateGuide(this.guideOverlay, 'main');
+    if (this.showInGuide) this.updateGuide(this.inGuideOverlay, 'in');
+    if (this.showOutGuide) this.updateGuide(this.outGuideOverlay, 'out');
+  }
+
+  onGuideToggle() {
+    if (this.showGuide) {
+      this.guideOverlay = this.createGuide('rect-guide');
+      this.updateGuide(this.guideOverlay, 'main');
+    } else {
+      this.destroyGuide('main');
+    }
+  }
+
+  onInGuideToggle() {
+    if (this.showInGuide) {
+      this.inGuideOverlay = this.createGuide('rect-guide-in');
+      this.updateGuide(this.inGuideOverlay, 'in');
+    } else {
+      this.destroyGuide('in');
+    }
+  }
+
+  onOutGuideToggle() {
+    if (this.showOutGuide) {
+      this.outGuideOverlay = this.createGuide('rect-guide-out');
+      this.updateGuide(this.outGuideOverlay, 'out');
+    } else {
+      this.destroyGuide('out');
+    }
+  }
+
+  private createGuide(type: string) {
+    return this.overlayService.createLocalOverlay(type);
+  }
+
+  private updateGuide(overlay: any, mode: 'main' | 'in' | 'out') {
+    if (!overlay || !this.editingCutIn) return;
+    const c = this.editingCutIn;
+    
+    if (mode === 'main') {
+      overlay.left = c.left;
+      overlay.top = c.top;
+      overlay.scale = c.scale;
+    } else if (mode === 'in') {
+      overlay.left = c.startLeft;
+      overlay.top = c.startTop;
+      overlay.scale = c.startScale;
+    } else if (mode === 'out') {
+      overlay.left = c.endLeft;
+      overlay.top = c.endTop;
+      overlay.scale = c.endScale;
+    }
+
+    overlay.width = c.width > 0 ? c.width : 0; 
+    overlay.height = c.height > 0 ? c.height : 0; 
+    overlay.imageIdentifier = c.imageIdentifier;
+    overlay.videoIdentifier = c.videoIdentifier;
+    overlay.update(); 
+  }
+
+  private destroyGuide(mode: 'main' | 'in' | 'out') {
+    let overlay: any = null;
+    if (mode === 'main') { overlay = this.guideOverlay; this.guideOverlay = null; }
+    if (mode === 'in') { overlay = this.inGuideOverlay; this.inGuideOverlay = null; }
+    if (mode === 'out') { overlay = this.outGuideOverlay; this.outGuideOverlay = null; }
+
+    if (overlay) {
+      this.overlayService.destroyLocalOverlay(overlay.identifier);
+    }
   }
 
   // 個別エクスポート

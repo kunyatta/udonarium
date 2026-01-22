@@ -150,7 +150,12 @@
           </div>
 
           <div class="info-card">
-            <div style="font-weight: bold; margin-bottom: var(--spacing-s); font-size: 12px; color: var(--text-color-secondary);">配置・サイズ</div>
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--spacing-s);">
+              <div style="font-weight: bold; font-size: 12px; color: var(--text-color-secondary);">配置・サイズ</div>
+              <label style="display: flex; align-items: center; gap: 4px; font-size: 11px; cursor: pointer; color: var(--text-color-secondary);">
+                <input type="checkbox" [(ngModel)]="showGuide" (change)="onGuideToggle()"> 配置ガイドを表示
+              </label>
+            </div>
             
             <div class="flex-row">
               <div class="flex-label">サイズ指定</div>
@@ -219,6 +224,13 @@
               <div class="advanced-settings">
                 <details>
                   <summary [class.is-custom]="editingCutIn.useInEffect && !activeInEffect">詳細設定（時間・イージング・開始状態）</summary>
+                  
+                  <div style="margin: var(--spacing-s) 0; display: flex; justify-content: flex-end;">
+                    <label style="display: flex; align-items: center; gap: 4px; font-size: 10px; cursor: pointer; color: var(--text-color-secondary);">
+                      <input type="checkbox" [(ngModel)]="showInGuide" (change)="onInGuideToggle()"> 開始位置ガイドを表示 (緑)
+                    </label>
+                  </div>
+
                   <div class="flex-row">
                     <div class="flex-label">時間(ms)</div>
                     <div class="flex-controls">
@@ -229,9 +241,17 @@
                     </div>
                   </div>
                   <div class="flex-row">
-                    <div class="flex-label">開始 X, Y</div>
+                    <div class="flex-label">開始 X</div>
                     <div class="flex-controls">
+                      <input type="range" style="flex: 1" min="-100" max="200" step="1" [(ngModel)]="editingCutIn.startLeft" (input)="onInDetailChange()">
                       <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startLeft" (change)="onInDetailChange()">
+                      <span class="unit-text">%</span>
+                    </div>
+                  </div>
+                  <div class="flex-row">
+                    <div class="flex-label">開始 Y</div>
+                    <div class="flex-controls">
+                      <input type="range" style="flex: 1" min="-100" max="200" step="1" [(ngModel)]="editingCutIn.startTop" (input)="onInDetailChange()">
                       <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startTop" (change)="onInDetailChange()">
                       <span class="unit-text">%</span>
                     </div>
@@ -268,6 +288,13 @@
               <div class="advanced-settings">
                 <details>
                   <summary [class.is-custom]="editingCutIn.useOutEffect && !activeOutEffect">詳細設定（時間・イージング・終了状態）</summary>
+                  
+                  <div style="margin: var(--spacing-s) 0; display: flex; justify-content: flex-end;">
+                    <label style="display: flex; align-items: center; gap: 4px; font-size: 10px; cursor: pointer; color: var(--text-color-secondary);">
+                      <input type="checkbox" [(ngModel)]="showOutGuide" (change)="onOutGuideToggle()"> 終了位置ガイドを表示 (赤)
+                    </label>
+                  </div>
+
                   <div class="flex-row">
                     <div class="flex-label">時間(ms)</div>
                     <div class="flex-controls">
@@ -278,9 +305,17 @@
                     </div>
                   </div>
                   <div class="flex-row">
-                    <div class="flex-label">終了 X, Y</div>
+                    <div class="flex-label">終了 X</div>
                     <div class="flex-controls">
+                      <input type="range" style="flex: 1" min="-100" max="200" step="1" [(ngModel)]="editingCutIn.endLeft" (input)="onOutDetailChange()">
                       <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endLeft" (change)="onOutDetailChange()">
+                      <span class="unit-text">%</span>
+                    </div>
+                  </div>
+                  <div class="flex-row">
+                    <div class="flex-label">終了 Y</div>
+                    <div class="flex-controls">
+                      <input type="range" style="flex: 1" min="-100" max="200" step="1" [(ngModel)]="editingCutIn.endTop" (input)="onOutDetailChange()">
                       <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endTop" (change)="onOutDetailChange()">
                       <span class="unit-text">%</span>
                     </div>

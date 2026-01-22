@@ -7,10 +7,13 @@ import { CutInSettingComponent } from './cut-in-setting.component';
 import { CutInService } from './cut-in.service';
 import { CutInPlaybackService } from './cut-in-playback.service';
 import { CutInPlugin } from './cut-in.plugin';
+import { OverlayRectGuideComponent } from './overlay-rect-guide.component';
+import { PluginOverlayService } from '../service/plugin-overlay.service';
 
 @NgModule({
   declarations: [
-    CutInSettingComponent
+    CutInSettingComponent,
+    OverlayRectGuideComponent
   ],
   imports: [
     CommonModule,
@@ -26,4 +29,10 @@ import { CutInPlugin } from './cut-in.plugin';
     CutInSettingComponent
   ]
 })
-export class CutInModule { }
+export class CutInModule {
+  constructor(private overlayService: PluginOverlayService) {
+    this.overlayService.registerRenderer('rect-guide', OverlayRectGuideComponent);
+    this.overlayService.registerRenderer('rect-guide-in', OverlayRectGuideComponent);
+    this.overlayService.registerRenderer('rect-guide-out', OverlayRectGuideComponent);
+  }
+}
