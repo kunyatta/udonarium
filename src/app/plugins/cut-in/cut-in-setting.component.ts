@@ -19,6 +19,8 @@ import { takeUntil } from 'rxjs/operators';
 export class CutInSettingComponent implements OnInit, OnDestroy {
   selectedIdentifier: string | null = null;
   editingCutIn: CutIn | null = null;
+  activeInEffect: string | null = null;
+  activeOutEffect: string | null = null;
   private onDestroy$ = new Subject<void>();
   
   get sizeMode(): 'ratio' | 'scale' {
@@ -53,6 +55,7 @@ export class CutInSettingComponent implements OnInit, OnDestroy {
 
   setQuickInEffect(effect: string) {
     if (!this.editingCutIn) return;
+    this.activeInEffect = effect;
     
     // 現在の目標状態をベースにする
     this.editingCutIn.startLeft = this.editingCutIn.left;
@@ -94,6 +97,7 @@ export class CutInSettingComponent implements OnInit, OnDestroy {
 
   setQuickOutEffect(effect: string) {
     if (!this.editingCutIn) return;
+    this.activeOutEffect = effect;
     
     // 現在の目標状態（登場後の状態）をベースにする
     this.editingCutIn.endLeft = this.editingCutIn.left;
@@ -133,6 +137,54 @@ export class CutInSettingComponent implements OnInit, OnDestroy {
     this.update();
   }
 
+  onInDetailChange() {
+    this.activeInEffect = null;
+    this.update();
+  }
+
+  onOutDetailChange() {
+    this.activeOutEffect = null;
+    this.update();
+  }
+
+  private detectPresets() {
+    if (!this.editingCutIn) return;
+
+    // 登場演出の判定
+    const inMatch = (effect: string) => {
+      const c = this.editingCutIn;
+      switch (effect) {
+        case 'fade': return c.startOpacity === 0 && c.startLeft === c.left && c.startTop === c.top && c.startScale === c.scale;
+        case 'slide-left': return c.startOpacity === 0 && c.startLeft === c.left - 20 && c.startTop === c.top && c.startScale === c.scale;
+        case 'slide-right': return c.startOpacity === 0 && c.startLeft === c.left + 20 && c.startTop === c.top && c.startScale === c.scale;
+        case 'slide-up': return c.startOpacity === 0 && c.startTop === c.top + 20 && c.startLeft === c.left && c.startScale === c.scale;
+        case 'slide-down': return c.startOpacity === 0 && c.startTop === c.top - 20 && c.startLeft === c.left && c.startScale === c.scale;
+        case 'zoom-in': return c.startOpacity === 0 && c.startScale === 0 && c.startLeft === c.left && c.startTop === c.top;
+        case 'zoom-out': return c.startOpacity === 0 && c.startScale === 2.0 && c.startLeft === c.left && c.startTop === c.top;
+        default: return false;
+      }
+    };
+
+    // 退場演出の判定
+    const outMatch = (effect: string) => {
+      const c = this.editingCutIn;
+      switch (effect) {
+        case 'fade': return c.endOpacity === 0 && c.endLeft === c.left && c.endTop === c.top && c.endScale === c.scale;
+        case 'slide-left': return c.endOpacity === 0 && c.endLeft === c.left - 20 && c.endTop === c.top && c.endScale === c.scale;
+        case 'slide-right': return c.endOpacity === 0 && c.endLeft === c.left + 20 && c.endTop === c.top && c.endScale === c.scale;
+        case 'slide-up': return c.endOpacity === 0 && c.endTop === c.top - 20 && c.endLeft === c.left && c.endScale === c.scale;
+        case 'slide-down': return c.endOpacity === 0 && c.endTop === c.top + 20 && c.endLeft === c.left && c.endScale === c.scale;
+        case 'zoom-in': return c.endOpacity === 0 && c.endScale === 2.0 && c.endLeft === c.left && c.endTop === c.top;
+        case 'zoom-out': return c.endOpacity === 0 && c.endScale === 0 && c.endLeft === c.left && c.endTop === c.top;
+        default: return false;
+      }
+    };
+
+    const effects = ['fade', 'slide-left', 'slide-right', 'slide-up', 'slide-down', 'zoom-in', 'zoom-out'];
+    this.activeInEffect = effects.find(e => inMatch(e)) || null;
+    this.activeOutEffect = effects.find(e => outMatch(e)) || null;
+  }
+
   ngOnInit(): void {
     // 最初の項目があれば選択する
     if (this.cutIns.length > 0) {
@@ -161,10 +213,16 @@ export class CutInSettingComponent implements OnInit, OnDestroy {
 
   select(identifier: string) {
     this.selectedIdentifier = identifier;
+    this.activeInEffect = null;
+    this.activeOutEffect = null;
     // 参照渡しに変更（リアルタイム更新のため）
     const found = this.cutInService.getCutInById(identifier);
     this.editingCutIn = found ? found : null;
     
+    if (this.editingCutIn) {
+      this.detectPresets();
+    }
+
     // Restore video URL for display
     if (this.editingCutIn?.type === 'video' && this.editingCutIn.videoIdentifier) {
       this._videoUrl = `https://www.youtube.com/watch?v=${this.editingCutIn.videoIdentifier}`;

@@ -65,3 +65,8 @@
   color: var(--text-color-secondary);
   margin-bottom: var(--spacing-s);
 }
+
+.advanced-settings summary.is-custom {
+  color: var(--text-color-primary);
+  font-weight: bold;
+}

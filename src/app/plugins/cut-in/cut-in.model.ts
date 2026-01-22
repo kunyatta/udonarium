@@ -12,6 +12,7 @@ export interface CutIn {
   opacity: number;         // 不透明度 (0.0-1.0)
   scale: number;           // スケール (倍率)
   // 登場演出設定
+  useInEffect: boolean;    // 登場演出を使用するか
   inDuration: number;      // 登場アニメーション時間 (ms)
   easing: string;          // イージング
   startLeft: number;       // 開始X座標 (%)
@@ -19,6 +20,7 @@ export interface CutIn {
   startOpacity: number;    // 開始不透明度
   startScale: number;      // 開始スケール
   // 退場演出設定
+  useOutEffect: boolean;   // 退場演出を使用するか
   outDuration: number;     // 退場アニメーション時間 (ms)
   outEasing: string;       // 退場イージング
   endLeft: number;         // 終了X座標 (%)
@@ -47,12 +49,14 @@ export const DEFAULT_CUT_IN: Omit<CutIn, 'identifier'> = {
   height: 0,
   opacity: 1.0,
   scale: 1.0,
+  useInEffect: true,
   inDuration: 500,
   easing: 'ease-out',
   startLeft: 50,
   startTop: 50,
   startOpacity: 0,
   startScale: 1.0,
+  useOutEffect: true,
   outDuration: 500,
   outEasing: 'ease-in',
   endLeft: 50,

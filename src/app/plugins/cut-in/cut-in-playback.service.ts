@@ -61,9 +61,9 @@ export class CutInPlaybackService {
     // 演出終了・削除のスケジュール
     if (cutIn.duration > 0) {
       const totalMs = cutIn.duration * 1000;
-      const outDuration = cutIn.outDuration || 0;
+      const outDuration = cutIn.useOutEffect ? (cutIn.outDuration || 0) : 0;
 
-      // 退場アニメーションの開始 (削除の outDuration 前に実行)
+      // 退場アニメーションの開始
       if (outDuration > 0 && outDuration < totalMs) {
         setTimeout(() => {
           if (ObjectStore.instance.get(overlay.identifier)) {
@@ -134,7 +134,7 @@ export class CutInPlaybackService {
     // 演出終了・削除のスケジュール (ローカル)
     if (cutIn.duration > 0) {
       const totalMs = cutIn.duration * 1000;
-      const outDuration = cutIn.outDuration || 0;
+      const outDuration = cutIn.useOutEffect ? (cutIn.outDuration || 0) : 0;
 
       // 退場アニメーション
       if (outDuration > 0 && outDuration < totalMs) {
@@ -192,7 +192,7 @@ export class CutInPlaybackService {
       overlay, 
       startState, 
       targetState, 
-      cutIn.inDuration, 
+      cutIn.useInEffect ? cutIn.inDuration : 0, 
       cutIn.easing
     );
   }

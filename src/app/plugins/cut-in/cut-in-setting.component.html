@@ -97,7 +97,6 @@
             </div>
           </div>
 
-          <!-- ... (以下の音響設定、サイズ、演出などは変更なし) ... -->
           <div class="info-card">
             <div style="font-weight: bold; margin-bottom: var(--spacing-s); font-size: 12px; color: var(--text-color-secondary);">音響設定</div>
             <div class="flex-row">
@@ -201,88 +200,100 @@
           </div>
 
           <div class="info-card">
-            <div style="font-weight: bold; margin-bottom: var(--spacing-s); font-size: 12px; color: var(--text-color-secondary);">登場演出</div>
-            <div class="quick-btns">
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('fade')">フェード</button>
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('slide-left')">←スライド</button>
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('slide-right')">スライド→</button>
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('slide-up')">↑スライド</button>
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('slide-down')">↓スライド</button>
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('zoom-in')">ズームイン</button>
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('zoom-out')">ズームアウト</button>
+            <div style="display: flex; align-items: center; gap: var(--spacing-s); margin-bottom: var(--spacing-s);">
+              <input type="checkbox" id="useInEffect" [(ngModel)]="editingCutIn.useInEffect" (change)="update()">
+              <label for="useInEffect" style="font-weight: bold; font-size: 12px; color: var(--text-color-secondary); cursor: pointer;">登場演出を使用する</label>
             </div>
             
-            <div class="advanced-settings">
-              <details>
-                <summary>詳細設定（時間・イージング・開始状態）</summary>
-                <div class="flex-row">
-                  <div class="flex-label">時間(ms)</div>
-                  <div class="flex-controls">
-                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.inDuration" (change)="update()" step="100" min="0">
-                    <select class="udonarium-select" [(ngModel)]="editingCutIn.easing" (change)="update()">
-                      <option *ngFor="let e of easings" [value]="e">{{e}}</option>
-                    </select>
+            <div [style.opacity]="editingCutIn.useInEffect ? 1 : 0.4" [style.pointer-events]="editingCutIn.useInEffect ? 'auto' : 'none'">
+              <div class="quick-btns">
+                <button class="udonarium-btn" [class.active]="activeInEffect === 'fade'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('fade')">フェード</button>
+                <button class="udonarium-btn" [class.active]="activeInEffect === 'slide-left'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('slide-left')">←スライド</button>
+                <button class="udonarium-btn" [class.active]="activeInEffect === 'slide-right'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('slide-right')">スライド→</button>
+                <button class="udonarium-btn" [class.active]="activeInEffect === 'slide-up'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('slide-up')">↑スライド</button>
+                <button class="udonarium-btn" [class.active]="activeInEffect === 'slide-down'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('slide-down')">↓スライド</button>
+                <button class="udonarium-btn" [class.active]="activeInEffect === 'zoom-in'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('zoom-in')">ズームイン</button>
+                <button class="udonarium-btn" [class.active]="activeInEffect === 'zoom-out'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickInEffect('zoom-out')">ズームアウト</button>
+              </div>
+              
+              <div class="advanced-settings">
+                <details>
+                  <summary [class.is-custom]="editingCutIn.useInEffect && !activeInEffect">詳細設定（時間・イージング・開始状態）</summary>
+                  <div class="flex-row">
+                    <div class="flex-label">時間(ms)</div>
+                    <div class="flex-controls">
+                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.inDuration" (change)="onInDetailChange()" step="100" min="0">
+                      <select class="udonarium-select" [(ngModel)]="editingCutIn.easing" (change)="onInDetailChange()">
+                        <option *ngFor="let e of easings" [value]="e">{{e}}</option>
+                      </select>
+                    </div>
                   </div>
-                </div>
-                <div class="flex-row">
-                  <div class="flex-label">開始 X, Y</div>
-                  <div class="flex-controls">
-                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startLeft" (change)="update()">
-                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startTop" (change)="update()">
-                    <span class="unit-text">%</span>
+                  <div class="flex-row">
+                    <div class="flex-label">開始 X, Y</div>
+                    <div class="flex-controls">
+                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startLeft" (change)="onInDetailChange()">
+                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startTop" (change)="onInDetailChange()">
+                      <span class="unit-text">%</span>
+                    </div>
                   </div>
-                </div>
-                <div class="flex-row">
-                  <div class="flex-label">開始 不透明, 拡大</div>
-                  <div class="flex-controls">
-                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startOpacity" (change)="update()" step="0.1" min="0" max="1">
-                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startScale" (change)="update()" step="0.1">
+                  <div class="flex-row">
+                    <div class="flex-label">開始 不透明, 拡大</div>
+                    <div class="flex-controls">
+                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startOpacity" (change)="onInDetailChange()" step="0.1" min="0" max="1">
+                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startScale" (change)="onInDetailChange()" step="0.1">
+                    </div>
                   </div>
-                </div>
-              </details>
+                </details>
+              </div>
             </div>
           </div>
 
           <div class="info-card">
-            <div style="font-weight: bold; margin-bottom: var(--spacing-s); font-size: 12px; color: var(--text-color-secondary);">退場演出</div>
-            <div class="quick-btns">
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('fade')">フェード</button>
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('slide-left')">←スライド</button>
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('slide-right')">スライド→</button>
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('slide-up')">↑スライド</button>
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('slide-down')">↓スライド</button>
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('zoom-in')">ズームイン</button>
-              <button class="udonarium-btn" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('zoom-out')">ズームアウト</button>
+            <div style="display: flex; align-items: center; gap: var(--spacing-s); margin-bottom: var(--spacing-s);">
+              <input type="checkbox" id="useOutEffect" [(ngModel)]="editingCutIn.useOutEffect" (change)="update()">
+              <label for="useOutEffect" style="font-weight: bold; font-size: 12px; color: var(--text-color-secondary); cursor: pointer;">退場演出を使用する</label>
             </div>
 
-            <div class="advanced-settings">
-              <details>
-                <summary>詳細設定（時間・イージング・終了状態）</summary>
-                <div class="flex-row">
-                  <div class="flex-label">時間(ms)</div>
-                  <div class="flex-controls">
-                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.outDuration" (change)="update()" step="100" min="0">
-                    <select class="udonarium-select" [(ngModel)]="editingCutIn.outEasing" (change)="update()">
-                      <option *ngFor="let e of easings" [value]="e">{{e}}</option>
-                    </select>
+            <div [style.opacity]="editingCutIn.useOutEffect ? 1 : 0.4" [style.pointer-events]="editingCutIn.useOutEffect ? 'auto' : 'none'">
+              <div class="quick-btns">
+                <button class="udonarium-btn" [class.active]="activeOutEffect === 'fade'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('fade')">フェード</button>
+                <button class="udonarium-btn" [class.active]="activeOutEffect === 'slide-left'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('slide-left')">←スライド</button>
+                <button class="udonarium-btn" [class.active]="activeOutEffect === 'slide-right'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('slide-right')">スライド→</button>
+                <button class="udonarium-btn" [class.active]="activeOutEffect === 'slide-up'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('slide-up')">↑スライド</button>
+                <button class="udonarium-btn" [class.active]="activeOutEffect === 'slide-down'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('slide-down')">↓スライド</button>
+                <button class="udonarium-btn" [class.active]="activeOutEffect === 'zoom-in'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('zoom-in')">ズームイン</button>
+                <button class="udonarium-btn" [class.active]="activeOutEffect === 'zoom-out'" style="padding: 2px 6px; font-size: 11px;" (click)="setQuickOutEffect('zoom-out')">ズームアウト</button>
+              </div>
+
+              <div class="advanced-settings">
+                <details>
+                  <summary [class.is-custom]="editingCutIn.useOutEffect && !activeOutEffect">詳細設定（時間・イージング・終了状態）</summary>
+                  <div class="flex-row">
+                    <div class="flex-label">時間(ms)</div>
+                    <div class="flex-controls">
+                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.outDuration" (change)="onOutDetailChange()" step="100" min="0">
+                      <select class="udonarium-select" [(ngModel)]="editingCutIn.outEasing" (change)="onOutDetailChange()">
+                        <option *ngFor="let e of easings" [value]="e">{{e}}</option>
+                      </select>
+                    </div>
                   </div>
-                </div>
-                <div class="flex-row">
-                  <div class="flex-label">終了 X, Y</div>
-                  <div class="flex-controls">
-                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endLeft" (change)="update()">
-                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endTop" (change)="update()">
-                    <span class="unit-text">%</span>
+                  <div class="flex-row">
+                    <div class="flex-label">終了 X, Y</div>
+                    <div class="flex-controls">
+                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endLeft" (change)="onOutDetailChange()">
+                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endTop" (change)="onOutDetailChange()">
+                      <span class="unit-text">%</span>
+                    </div>
                   </div>
-                </div>
-                <div class="flex-row">
-                  <div class="flex-label">終了 不透明, 拡大</div>
-                  <div class="flex-controls">
-                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endOpacity" (change)="update()" step="0.1" min="0" max="1">
-                    <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endScale" (change)="update()" step="0.1">
+                  <div class="flex-row">
+                    <div class="flex-label">終了 不透明, 拡大</div>
+                    <div class="flex-controls">
+                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endOpacity" (change)="onOutDetailChange()" step="0.1" min="0" max="1">
+                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endScale" (change)="onOutDetailChange()" step="0.1">
+                    </div>
                   </div>
-                </div>
-              </details>
+                </details>
+              </div>
             </div>
           </div>
 
