@@ -5,7 +5,7 @@
  */
 export const MOD_SYSTEM_MANIFEST = {
   // Mod システム (基盤・サービス) のバージョン
-  version: '0.1.0',
+  version: '0.1.3',
   // ベースとなっているオリジナルの Udonarium バージョン
   basedOn: '1.17.4',
   // 開発・提供
@@ -13,5 +13,5 @@ export const MOD_SYSTEM_MANIFEST = {
   // システムの概要
   description: 'Udonarium Sword World 2.5 Modification System',
   // 最終更新日 (配布時などのリリース日に相当。手動で更新)
-  updatedAt: '2026-01-16'
+  updatedAt: '2026-01-22'
 };

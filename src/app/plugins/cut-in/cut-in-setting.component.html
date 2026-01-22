@@ -223,7 +223,7 @@
               
               <div class="advanced-settings">
                 <details>
-                  <summary [class.is-custom]="editingCutIn.useInEffect && !activeInEffect">詳細設定（時間・イージング・開始状態）</summary>
+                  <summary [class.is-custom]="editingCutIn.useInEffect && !activeInEffect">詳細設定（時間・イージング・開始位置・状態）</summary>
                   
                   <div style="margin: var(--spacing-s) 0; display: flex; justify-content: flex-end;">
                     <label style="display: flex; align-items: center; gap: 4px; font-size: 10px; cursor: pointer; color: var(--text-color-secondary);">
@@ -241,7 +241,7 @@
                     </div>
                   </div>
                   <div class="flex-row">
-                    <div class="flex-label">開始 X</div>
+                    <div class="flex-label">位置 X</div>
                     <div class="flex-controls">
                       <input type="range" style="flex: 1" min="-100" max="200" step="1" [(ngModel)]="editingCutIn.startLeft" (input)="onInDetailChange()">
                       <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startLeft" (change)="onInDetailChange()">
@@ -249,7 +249,7 @@
                     </div>
                   </div>
                   <div class="flex-row">
-                    <div class="flex-label">開始 Y</div>
+                    <div class="flex-label">位置 Y</div>
                     <div class="flex-controls">
                       <input type="range" style="flex: 1" min="-100" max="200" step="1" [(ngModel)]="editingCutIn.startTop" (input)="onInDetailChange()">
                       <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startTop" (change)="onInDetailChange()">
@@ -257,10 +257,18 @@
                     </div>
                   </div>
                   <div class="flex-row">
-                    <div class="flex-label">開始 不透明, 拡大</div>
+                    <div class="flex-label">不透明度</div>
                     <div class="flex-controls">
+                      <input type="range" style="flex: 1" min="0" max="1" step="0.1" [(ngModel)]="editingCutIn.startOpacity" (input)="onInDetailChange()">
                       <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startOpacity" (change)="onInDetailChange()" step="0.1" min="0" max="1">
-                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startScale" (change)="onInDetailChange()" step="0.1">
+                    </div>
+                  </div>
+                  <div class="flex-row">
+                    <div class="flex-label">拡大率</div>
+                    <div class="flex-controls">
+                      <input type="range" style="flex: 1" min="0.1" max="3.0" step="0.1" [(ngModel)]="editingCutIn.startScale" (input)="onInDetailChange()">
+                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.startScale" (change)="onInDetailChange()" step="0.1" min="0.1" max="3.0">
+                      <span class="unit-text">倍</span>
                     </div>
                   </div>
                 </details>
@@ -287,7 +295,7 @@
 
               <div class="advanced-settings">
                 <details>
-                  <summary [class.is-custom]="editingCutIn.useOutEffect && !activeOutEffect">詳細設定（時間・イージング・終了状態）</summary>
+                  <summary [class.is-custom]="editingCutIn.useOutEffect && !activeOutEffect">詳細設定（時間・イージング・終了位置・状態）</summary>
                   
                   <div style="margin: var(--spacing-s) 0; display: flex; justify-content: flex-end;">
                     <label style="display: flex; align-items: center; gap: 4px; font-size: 10px; cursor: pointer; color: var(--text-color-secondary);">
@@ -305,7 +313,7 @@
                     </div>
                   </div>
                   <div class="flex-row">
-                    <div class="flex-label">終了 X</div>
+                    <div class="flex-label">位置 X</div>
                     <div class="flex-controls">
                       <input type="range" style="flex: 1" min="-100" max="200" step="1" [(ngModel)]="editingCutIn.endLeft" (input)="onOutDetailChange()">
                       <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endLeft" (change)="onOutDetailChange()">
@@ -313,7 +321,7 @@
                     </div>
                   </div>
                   <div class="flex-row">
-                    <div class="flex-label">終了 Y</div>
+                    <div class="flex-label">位置 Y</div>
                     <div class="flex-controls">
                       <input type="range" style="flex: 1" min="-100" max="200" step="1" [(ngModel)]="editingCutIn.endTop" (input)="onOutDetailChange()">
                       <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endTop" (change)="onOutDetailChange()">
@@ -321,10 +329,18 @@
                     </div>
                   </div>
                   <div class="flex-row">
-                    <div class="flex-label">終了 不透明, 拡大</div>
+                    <div class="flex-label">不透明度</div>
                     <div class="flex-controls">
+                      <input type="range" style="flex: 1" min="0" max="1" step="0.1" [(ngModel)]="editingCutIn.endOpacity" (input)="onOutDetailChange()">
                       <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endOpacity" (change)="onOutDetailChange()" step="0.1" min="0" max="1">
-                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endScale" (change)="onOutDetailChange()" step="0.1">
+                    </div>
+                  </div>
+                  <div class="flex-row">
+                    <div class="flex-label">拡大率</div>
+                    <div class="flex-controls">
+                      <input type="range" style="flex: 1" min="0.1" max="3.0" step="0.1" [(ngModel)]="editingCutIn.endScale" (input)="onOutDetailChange()">
+                      <input type="number" class="udonarium-input width-short" [(ngModel)]="editingCutIn.endScale" (change)="onOutDetailChange()" step="0.1" min="0.1" max="3.0">
+                      <span class="unit-text">倍</span>
                     </div>
                   </div>
                 </details>

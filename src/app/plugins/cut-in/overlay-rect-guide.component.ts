@@ -27,6 +27,7 @@ import { DataElement } from '@udonarium/data-element';
       box-sizing: border-box;
       box-shadow: 0 0 10px rgba(0, 0, 0, 0.3);
       pointer-events: none;
+      opacity: 0.8;
     }
   `],
   changeDetection: ChangeDetectionStrategy.Default
@@ -44,28 +45,31 @@ export class OverlayRectGuideComponent implements OnInit, OnDestroy {
   
   get width() { 
     if (!this.overlayObject) return '0vw';
-    if (this.overlayObject.width > 0) return this.overlayObject.width + 'vw';
-    return (this.overlayObject.scale || 1) * 30 + 'vw';
+    const scale = this.overlayObject.scale || 1;
+    // 画面比率モード
+    if (this.overlayObject.width > 0) return (this.overlayObject.width * scale) + 'vw';
+    // 拡大率モード時の基準幅 (30vw) に倍率を適用
+    return (30 * scale) + 'vw';
   }
 
   get height() { 
     if (!this.overlayObject) return '0vw';
-    if (this.overlayObject.height > 0) return this.overlayObject.height + 'vh';
-
-    // 比率の決定
-    let aspectRatio = 1;
+    const scale = this.overlayObject.scale || 1;
     
+    // 明示的に高さが指定されている場合
+    if (this.overlayObject.height > 0) return (this.overlayObject.height * scale) + 'vh';
+
+    // アスペクト比に基づく計算
+    let aspectRatio = 1;
     if (this.overlayObject.videoIdentifier) {
-      // YouTubeの場合: Shorts判定
       const isShorts = this.getIsShorts();
       aspectRatio = isShorts ? (9 / 16) : (16 / 9);
     } else {
-      // 画像の場合
       aspectRatio = this.imageAspectRatio;
     }
 
-    const w = this.overlayObject.width > 0 ? this.overlayObject.width : (this.overlayObject.scale || 1) * 30;
-    return (w / aspectRatio) + 'vw';
+    const baseW = this.overlayObject.width > 0 ? this.overlayObject.width : 30;
+    return ((baseW * scale) / aspectRatio) + 'vw';
   }
 
   private getIsShorts(): boolean {
@@ -80,18 +84,25 @@ export class OverlayRectGuideComponent implements OnInit, OnDestroy {
 
   get borderColor() {
     switch (this.overlayObject?.type) {
-      case 'rect-guide-in': return 'rgba(40, 167, 69, 0.7)'; // 緑
-      case 'rect-guide-out': return 'rgba(220, 53, 69, 0.7)'; // 赤
-      default: return 'rgba(0, 122, 255, 0.7)'; // 青
+      case 'rect-guide-in': return 'rgba(40, 167, 69, 1.0)';
+      case 'rect-guide-out': return 'rgba(220, 53, 69, 1.0)';
+      default: return 'rgba(0, 122, 255, 1.0)';
     }
   }
 
   get borderWidth() {
+    // scaleに依存せず、常に 8px / 4px を維持
     return (this.overlayObject?.type === 'rect-guide') ? 8 : 4;
   }
 
-  get zIndex() { return 2000000; }
-  get transform() { return `translate(-50%, -50%)`; }
+  get zIndex() { 
+    return (this.overlayObject?.type === 'rect-guide') ? 2000001 : 2000000;
+  }
+  
+  get transform() {
+    // scale() を除去し、常に 100% の描画にする（サイズは width/height で調整済み）
+    return `translate(-50%, -50%)`;
+  }
 
   get imageUrl(): string {
     if (!this.overlayObject || !this.overlayObject.imageIdentifier) return '';
