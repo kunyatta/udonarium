@@ -5,6 +5,7 @@ export const MANIFEST: PluginManifest = {
   name: 'タイマー',
   version: '1.0.0',
   description: '設定した時間が経過するとアラーム音を鳴らして通知します。全プレイヤーに共有されます。',
+  changelog: [],
   icon: 'alarm',
   isExperimental: false
 };

@@ -5,6 +5,7 @@ export const MANIFEST: PluginManifest = {
   name: 'キャラクター画像ビューア',
   version: '0.1.0',
   description: 'キャラクターの画像を拡大表示するためのテストプラグインです。',
+  changelog: [],
   icon: 'image_search',
   isExperimental: true
 };

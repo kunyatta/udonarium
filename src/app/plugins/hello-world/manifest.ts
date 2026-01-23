@@ -5,6 +5,7 @@ export const MANIFEST: PluginManifest = {
   name: 'Hello World',
   version: '0.1.0',
   description: 'プラグインシステムの動作確認用サンプルプラグインです。起動時にコンソールにメッセージを表示します。',
+  changelog: [],
   icon: 'check_circle',
   isExperimental: true
 };

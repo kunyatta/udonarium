@@ -2,7 +2,7 @@
 
 /* Panel Layout Override */
 .panel-layout {
-  /* Inherit background from parent or let it be transparent to show the orange panel */
+  /* Inherit background from parent or let it be transparent */
   background-color: transparent;
 }
 
@@ -95,7 +95,7 @@
   position: absolute;
   top: 0;
   right: -4px;
-  background-color: var(--color-primary); /* Orange */
+  background-color: var(--color-primary);
   color: white;
   font-size: 10px;
   font-weight: bold;
@@ -141,11 +141,77 @@
 }
 
 .description-area {
-  min-height: 100px;
+  min-height: 50px; /* Reduced min-height to accommodate changelog */
   white-space: pre-wrap;
   line-height: 1.5;
   font-size: 13px;
 }
+
+/* Changelog Area */
+.changelog-area {
+  margin-top: var(--spacing-m);
+  border-top: 1px solid rgba(0,0,0,0.1);
+  padding-top: var(--spacing-s);
+}
+
+.changelog-title {
+  font-size: 12px;
+  font-weight: bold;
+  color: var(--text-color-secondary);
+  margin-bottom: var(--spacing-s);
+}
+
+.changelog-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid rgba(0,0,0,0.05);
+  border-radius: 4px;
+  background-color: rgba(255,255,255,0.3);
+}
+
+.changelog-item {
+  padding: 6px 8px;
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  font-size: 12px;
+}
+
+.changelog-item:last-child {
+  border-bottom: none;
+}
+
+.log-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 2px;
+  font-size: 11px;
+  color: var(--text-color-secondary);
+}
+
+.log-date {
+  font-weight: normal;
+  opacity: 0.8;
+}
+
+.log-version {
+  background-color: #555;
+  color: white;
+  padding: 0 6px;
+  border-radius: 10px;
+  font-family: monospace;
+  font-weight: bold;
+  font-size: 10px;
+}
+
+.log-content {
+  line-height: 1.4;
+  white-space: pre-wrap;
+  color: var(--text-color-primary);
+}
+
 
 /* Action Area */
 .action-area {
@@ -158,53 +224,28 @@
 }
 
 .warning-text {
-
   font-size: 11px;
-
   color: var(--color-primary-dark);
-
 }
-
-
 
 .launch-icon {
-
   font-size: 18px;
-
   margin-right: 6px;
-
 }
-
-
 
 /* 
-
   Footer
-
   ----------------------------------------------- */
-
 .panel-footer {
-
   margin-top: auto;
-
   padding: 8px;
-
   border-top: 1px solid rgba(0, 0, 0, 0.05);
-
   background-color: rgba(0, 0, 0, 0.02);
-
 }
 
-
-
 .mod-version-info {
-
   font-size: 10px;
-
   color: var(--text-color-secondary);
-
   text-align: right;
-
   opacity: 0.7;
-
 }

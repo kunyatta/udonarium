@@ -5,6 +5,7 @@ export const MANIFEST: PluginManifest = {
   name: 'ログ管理',
   version: '1.0.0',
   description: 'チャットログの保存、一括削除を行います。',
+  changelog: [],
   icon: 'history_edu',
   isExperimental: false
 };

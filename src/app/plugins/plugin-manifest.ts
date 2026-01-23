@@ -28,4 +28,19 @@ export interface PluginManifest {
   // trueの場合、本番ビルドからは除外されます。
   // 省略時は false (本番適用) として扱われます。
   isExperimental?: boolean;
+
+  // 変更履歴 (任意)
+  changelog?: ChangelogEntry[];
+}
+
+/**
+ * 変更履歴の1項目を表すインターフェース
+ */
+export interface ChangelogEntry {
+  // バージョン (任意)
+  version?: string;
+  // 日付 (任意)
+  date?: string;
+  // 更新内容
+  content: string;
 }

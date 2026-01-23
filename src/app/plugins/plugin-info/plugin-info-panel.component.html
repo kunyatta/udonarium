@@ -27,6 +27,20 @@
           {{ selectedPlugin.manifest?.description || selectedPlugin.description || 'No description available.' }}
         </div>
 
+        <!-- Changelog Area -->
+        <div class="changelog-area" *ngIf="selectedPlugin.manifest?.changelog?.length">
+          <div class="changelog-title">Update History</div>
+          <ul class="changelog-list">
+            <li *ngFor="let log of selectedPlugin.manifest?.changelog" class="changelog-item">
+              <div class="log-header" *ngIf="log.version || log.date">
+                <span *ngIf="log.version" class="log-version">v{{ log.version }}</span>
+                <span *ngIf="log.date" class="log-date">{{ log.date }}</span>
+              </div>
+              <div class="log-content">{{ log.content }}</div>
+            </li>
+          </ul>
+        </div>
+
         <div class="action-area" *ngIf="selectedPlugin.manifest?.isExperimental || selectedPlugin.isExperimental">
           <button class="udonarium-btn accent" (click)="openPluginPanel(selectedPlugin)">
             <i class="material-icons launch-icon">play_arrow</i> Launch Plugin

@@ -5,6 +5,7 @@ export const MANIFEST: PluginManifest = {
   name: 'ターンエンジンテスト',
   version: '0.1.0',
   description: 'ターン制エンジンの動作テストを行うためのプラグインです。',
+  changelog: [],
   icon: 'settings_backup_restore',
   isExperimental: true
 };
