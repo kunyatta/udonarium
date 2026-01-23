@@ -23,8 +23,7 @@
           <!-- 将来的に Author や UpdateDate を追加可能 -->
         </div>
 
-        <div class="description-area">
-          {{ selectedPlugin.manifest?.description || selectedPlugin.description || 'No description available.' }}
+        <div class="description-area" [innerHTML]="(selectedPlugin.manifest?.description || selectedPlugin.description || 'No description available.') | autolink">
         </div>
 
         <!-- Changelog Area -->
@@ -36,7 +35,7 @@
                 <span *ngIf="log.version" class="log-version">v{{ log.version }}</span>
                 <span *ngIf="log.date" class="log-date">{{ log.date }}</span>
               </div>
-              <div class="log-content">{{ log.content }}</div>
+              <div class="log-content" [innerHTML]="log.content | autolink"></div>
             </li>
           </ul>
         </div>

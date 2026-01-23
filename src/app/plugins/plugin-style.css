@@ -353,3 +353,18 @@
   gap: 2px;
   min-width: 0;
 }
+
+/* ==============================================
+   External Link Styling (Auto-Link)
+   ============================================== */
+.outer-link {
+  color: #0056b3;
+  text-decoration: none;
+  word-break: break-all;
+}
+
+.outer-link:hover,
+.outer-link:active {
+  text-decoration: underline;
+}
+

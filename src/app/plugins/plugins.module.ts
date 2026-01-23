@@ -15,10 +15,12 @@ import { UiDependencyResolverService } from './service/ui-dependency-resolver.se
 import { PluginsComponentsModule } from './components/plugins-components.module';
 import { ChatListenerService } from './service/chat-listener.service';
 import { PluginMapperService } from './service/plugin-mapper.service';
+import { AutolinkPipe } from './pipe/autolink.pipe';
 
 @NgModule({
   declarations: [
     PluginInfoPanelComponent,
+    AutolinkPipe,
   ],
   imports: [
     CommonModule,
@@ -27,6 +29,9 @@ import { PluginMapperService } from './service/plugin-mapper.service';
     SharedModule,
     PluginsComponentsModule,
     ...pluginModules
+  ],
+  exports: [
+    AutolinkPipe
   ],
   providers: [
     // プラグイン情報プラグインを無条件で登録します。
