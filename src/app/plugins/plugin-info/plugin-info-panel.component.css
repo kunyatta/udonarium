@@ -147,6 +147,21 @@
   font-size: 13px;
 }
 
+/* Tutorial Image Area */
+.tutorial-image-area {
+  display: flex;
+  justify-content: center;
+  margin: var(--spacing-s) 0;
+}
+
+.tutorial-image {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  background-color: #eee; /* Placeholder color before image loads */
+}
+
 /* Changelog Area */
 .changelog-area {
   margin-top: var(--spacing-m);

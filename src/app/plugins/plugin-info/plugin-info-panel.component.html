@@ -26,6 +26,11 @@
         <div class="description-area" [innerHTML]="(selectedPlugin.manifest?.description || selectedPlugin.description || 'No description available.') | autolink">
         </div>
 
+        <!-- Tutorial Image Area -->
+        <div class="tutorial-image-area" *ngIf="selectedPlugin.manifest?.tutorialImage">
+          <img [src]="'assets/plugins/' + (selectedPlugin.manifest?.path || selectedPlugin.pluginName) + '/' + selectedPlugin.manifest.tutorialImage" class="tutorial-image" alt="Tutorial">
+        </div>
+
         <!-- Changelog Area -->
         <div class="changelog-area" *ngIf="selectedPlugin.manifest?.changelog?.length">
           <div class="changelog-title">Update History</div>

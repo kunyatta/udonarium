@@ -22,7 +22,8 @@
             "tsConfig": "tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              { "glob": "**/*.{png,apng,jpg,jpeg,gif,svg}", "input": "src/app/plugins", "output": "/assets/plugins" }
             ],
             "styles": [
               "src/styles.css"
@@ -102,7 +103,8 @@
             "tsConfig": "tsconfig.spec.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets"
+              "src/assets",
+              { "glob": "**/*.{png,apng,jpg,jpeg,gif,svg}", "input": "src/app/plugins", "output": "/assets/plugins" }
             ],
             "styles": [
               "src/styles.css"

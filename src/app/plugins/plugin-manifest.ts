@@ -5,6 +5,9 @@
 export interface PluginManifest {
   // システム内で一意のID (例: 'CombatFlow')
   id: string;
+  // リソースのルートとなるディレクトリ名 (例: 'combat-flow') (任意)
+  // 省略時は pluginName (id) が使用されますが、IDとフォルダ名が異なる場合は必須です。
+  path?: string;
   // ランチャー等に表示されるUIの名前
   name: string;
   // バージョン情報 (例: '1.0.0')
@@ -28,6 +31,10 @@ export interface PluginManifest {
   // trueの場合、本番ビルドからは除外されます。
   // 省略時は false (本番適用) として扱われます。
   isExperimental?: boolean;
+
+  // チュートリアル画像 (任意)。
+  // プラグインフォルダ内の画像ファイル名（例: 'tutorial.png'）を指定します。
+  tutorialImage?: string;
 
   // 変更履歴 (任意)
   changelog?: ChangelogEntry[];
