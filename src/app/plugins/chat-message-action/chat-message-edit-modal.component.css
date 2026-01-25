@@ -1,0 +1,59 @@
+.edit-container {
+  padding: 8px;
+  min-width: 250px;
+  outline: none; /* フォーカス時の枠線を消す */
+}
+
+textarea {
+  width: 100%;
+  min-height: 60px;
+  font-size: 1.0em;
+  box-sizing: border-box;
+  resize: vertical;
+  background: #fff;
+  color: #333;
+  border: 1px solid #666;
+  padding: 4px;
+  border-radius: 4px;
+  margin-bottom: 4px;
+  display: block;
+}
+
+textarea:focus {
+  outline: none;
+  border-color: #88aaff;
+}
+
+.footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 6px;
+}
+
+button {
+  font-size: 14px;
+  padding: 4px 8px;
+  cursor: pointer;
+  background: #eee;
+  color: #444;
+  border: 1px solid #aaa;
+  border-radius: 4px;
+}
+
+button:hover {
+  background: #ddd;
+}
+
+button.primary {
+  font-weight: bold;
+  border-color: #888;
+}
+
+button.primary:hover {
+  background: #ccc;
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}

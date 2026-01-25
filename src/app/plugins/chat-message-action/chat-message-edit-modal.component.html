@@ -1,0 +1,7 @@
+<div class="edit-container" tabindex="-1" (focusout)="onFocusOut($event)">
+  <textarea #textArea [(ngModel)]="text" placeholder="メッセージ編集" (keydown.control.enter)="save()"></textarea>
+  <div class="footer">
+    <button (click)="cancel()">キャンセル</button>
+    <button class="primary" [disabled]="!isChanged" (click)="save()">保存</button>
+  </div>
+</div>

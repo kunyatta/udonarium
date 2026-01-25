@@ -12,6 +12,13 @@
         <!-- ----- MODIFICATION END (kunyatta) for ColorSupport ----- -->
         <span class='tip msg-from'>{{chatMessage.from}}</span>
         <span class='tip msg-timestamp'>{{chatMessage.timestamp | date:'y/M/d H:mm'}}</span>
+        <!-- ----- MODIFICATION START (Gemini) for ChatMessageAction ----- -->
+        <span class="msg-actions">
+          <button *ngFor="let action of actions" class="msg-action-button" (click)="action.action(chatMessage, { x: $event.clientX, y: $event.clientY })" [title]="action.name">
+            <i class="material-icons">{{ action.icon }}</i>
+          </button>
+        </span>
+        <!-- ----- MODIFICATION END (Gemini) for ChatMessageAction ----- -->
       </div>
       <div class="text msg-text">
         <ng-container *ngIf="!chatMessage.isSecret || chatMessage.isSendFromSelf; then visible; else secret"></ng-container>

@@ -52,6 +52,10 @@ export class ChatMessageComponent implements OnInit {
   }
 
   // ----- MODIFICATION START (Gemini) for ChatMessageAction -----
+  get actions(): any[] {
+    return this.uiExtensionService.getActions('chat-message-menu', this.chatMessage);
+  }
+
   get processedText(): string {
     const escaped = this.uiExtensionService.escapeHtml(this.chatMessage.text);
     return this.uiExtensionService.applyFilters('chat-message-display', escaped, this.chatMessage);
