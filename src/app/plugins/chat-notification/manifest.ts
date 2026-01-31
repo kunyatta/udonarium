@@ -6,6 +6,7 @@ export const MANIFEST: PluginManifest = {
   name: 'チャット通知',
   version: '1.0.0',
   description: 'チャット受信時に通知音を再生します。',
+  icon: 'notifications',
   isEnabled: true,
   isExperimental: false,
   sounds: ['decision42.mp3']
