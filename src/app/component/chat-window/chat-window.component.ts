@@ -48,6 +48,14 @@ export class ChatWindowComponent implements OnInit, OnDestroy, AfterViewInit {
     }
     return extension.icon;
   }
+
+  getExtensionDescription(extension: ExtensionAction): string {
+    if (!extension.description) return '';
+    if (typeof extension.description === 'function') {
+      return extension.description();
+    }
+    return extension.description;
+  }
   // ----- MODIFICATION END (kunyatta) for PluginSystem -----
 
   private _chatTabidentifier: string = '';
