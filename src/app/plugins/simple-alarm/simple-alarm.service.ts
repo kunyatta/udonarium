@@ -13,6 +13,7 @@ import { PLUGIN_ID, FILE_NAME_HINT_ALARM, NOTIFICATION_STATE_KEY, ALARM_IDENTIFI
 import { PluginUiService } from '../service/plugin-ui.service'; // 追加
 import { SimpleAlarmPanelComponent } from './simple-alarm-panel.component'; // 追加
 import { ChatLoggerService } from '../service/chat-logger.service';
+import { MANIFEST } from './manifest';
 
 @Injectable({
   providedIn: 'root'
@@ -80,11 +81,10 @@ export class SimpleAlarmService {
       this.startLocalTimer();
     }
 
-    // アラーム音のロード（初回のみ）
+    // アラーム音のパス設定（自動登録されたパスを使用）
     if (!SimpleAlarmService.alarmSoundIdentifier) {
-      const audio = AudioStorage.instance.add('./assets/sounds/alarm/alarm.mp3');
-      audio.isHidden = true;
-      SimpleAlarmService.alarmSoundIdentifier = audio.identifier;
+      const pluginPath = MANIFEST.path || MANIFEST.id;
+      SimpleAlarmService.alarmSoundIdentifier = `./assets/plugins/${pluginPath}/${MANIFEST.sounds[0]}`;
     }
   }
 

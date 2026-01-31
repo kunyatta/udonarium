@@ -3,6 +3,7 @@
 
 import { ChatLogManagerModule } from './chat-log-manager/chat-log-manager.module';
 import { ChatMessageActionModule } from './chat-message-action/chat-message-action.module';
+import { ChatNotificationModule } from './chat-notification/chat-notification.module';
 import { CombatFlowModule } from './combat-flow/combat-flow.module';
 import { CutInModule } from './cut-in/cut-in.module';
 import { DynamicStandPluginModule } from './dynamic-stand/dynamic-stand.module';
@@ -16,6 +17,7 @@ import { TargetSelectorModule } from './target-selector/target-selector.module';
 export const pluginModules = [
   ChatLogManagerModule,
   ChatMessageActionModule,
+  ChatNotificationModule,
   CombatFlowModule,
   CutInModule,
   DynamicStandPluginModule,

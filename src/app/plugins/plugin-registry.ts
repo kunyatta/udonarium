@@ -5,6 +5,7 @@ import { AutoLayoutTestModule } from './auto-layout-test/auto-layout-test.module
 import { CharacterImageViewerModule } from './character-image-viewer/character-image-viewer.module';
 import { ChatLogManagerModule } from './chat-log-manager/chat-log-manager.module';
 import { ChatMessageActionModule } from './chat-message-action/chat-message-action.module';
+import { ChatNotificationModule } from './chat-notification/chat-notification.module';
 import { CombatFlowModule } from './combat-flow/combat-flow.module';
 import { ConfigPanelTestModule } from './config-panel-test/config-panel-test.module';
 import { CutInModule } from './cut-in/cut-in.module';
@@ -24,6 +25,7 @@ export const pluginModules = [
   CharacterImageViewerModule,
   ChatLogManagerModule,
   ChatMessageActionModule,
+  ChatNotificationModule,
   CombatFlowModule,
   ConfigPanelTestModule,
   CutInModule,

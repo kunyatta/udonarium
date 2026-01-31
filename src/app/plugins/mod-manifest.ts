@@ -9,7 +9,7 @@ export const MOD_SYSTEM_MANIFEST = {
   // Modのアイコン (プラグイン情報パネル等で表示)
   icon: 'info',
   // Mod システム (基盤・サービス) のバージョン
-  version: '0.1.6',
+  version: '0.1.7',
   // ベースとなっているオリジナルの Udonarium バージョン
   basedOn: '1.17.4',
   // オリジナル作者

@@ -2,6 +2,7 @@ import { Inject, Injectable, Injector } from '@angular/core';
 import { IPlugin, IPluginWithUI, PLUGIN_TOKEN } from '../i-plugin';
 
 import { PluginOverlayService } from './plugin-overlay.service';
+import { AudioStorage } from '../../class/core/file-storage/audio-storage';
 
 @Injectable({
   providedIn: 'root'
@@ -24,12 +25,33 @@ export class PluginService {
     this.pluginOverlayService.initialize();
 
     for (const plugin of this.plugins) {
+      // マニフェストに基づいたリソースの自動登録
+      this.registerPluginResources(plugin);
+
       if (plugin.initialize) {
         try {
           plugin.initialize();
         } catch (error) {
           console.error(`Error initializing plugin: ${plugin.pluginName}`, error);
         }
+      }
+    }
+  }
+
+  /**
+   * マニフェストに定義されたリソース（音声など）をシステムに登録します。
+   */
+  private registerPluginResources(plugin: IPlugin) {
+    const manifest = plugin.manifest;
+    if (!manifest) return;
+
+    // 音声リソースの登録
+    if (manifest.sounds && manifest.sounds.length > 0) {
+      const pluginPath = manifest.path || manifest.id;
+      for (const soundFile of manifest.sounds) {
+        const soundUrl = `./assets/plugins/${pluginPath}/${soundFile}`;
+        console.log(`PluginService: Registering sound resource for ${manifest.id}: ${soundUrl}`);
+        AudioStorage.instance.add(soundUrl);
       }
     }
   }

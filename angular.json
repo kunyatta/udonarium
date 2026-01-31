@@ -23,7 +23,7 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              { "glob": "**/*.{png,apng,jpg,jpeg,gif,svg}", "input": "src/app/plugins", "output": "/assets/plugins" }
+              { "glob": "**/*.{png,apng,jpg,jpeg,gif,svg,mp3,wav,ogg,m4a}", "input": "src/app/plugins", "output": "/assets/plugins" }
             ],
             "styles": [
               "src/styles.css"
@@ -104,7 +104,7 @@
             "assets": [
               "src/favicon.ico",
               "src/assets",
-              { "glob": "**/*.{png,apng,jpg,jpeg,gif,svg}", "input": "src/app/plugins", "output": "/assets/plugins" }
+              { "glob": "**/*.{png,apng,jpg,jpeg,gif,svg,mp3,wav,ogg,m4a}", "input": "src/app/plugins", "output": "/assets/plugins" }
             ],
             "styles": [
               "src/styles.css"

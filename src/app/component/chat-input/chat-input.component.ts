@@ -208,23 +208,6 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     return this.uiExtensionService.getActions('chat-input-quick', object);
   }
 
-  getExtensionIcon(action: ExtensionAction): string {
-    if (!action.icon) return '';
-    if (typeof action.icon === 'string') return action.icon;
-    
-    // 関数の場合は現在の context を渡して実行
-    let object = ObjectStore.instance.get(this.sendFrom);
-    return action.icon(object);
-  }
-
-  getExtensionColor(action: ExtensionAction): string {
-    if (!action.color) return '';
-    if (typeof action.color === 'string') return action.color;
-    
-    let object = ObjectStore.instance.get(this.sendFrom);
-    return action.color(object);
-  }
-
   getExtensionDescription(action: ExtensionAction): string {
     if (!action.description) return '';
     if (typeof action.description === 'string') return action.description;
@@ -233,10 +216,25 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     return action.description(object);
   }
 
-  getExtensionName(action: ExtensionAction): string {
-    if (typeof action.name === 'string') return action.name;
+  getExtensionLabel(action: ExtensionAction): string {
+    const label = action.label !== undefined ? action.label : action.name;
+    if (typeof label === 'string') return label;
     let object = ObjectStore.instance.get(this.sendFrom);
-    return action.name(object);
+    return label(object) || '';
+  }
+
+  getExtensionIcon(action: ExtensionAction): string {
+    if (!action.icon) return '';
+    if (typeof action.icon === 'string') return action.icon;
+    let object = ObjectStore.instance.get(this.sendFrom);
+    return action.icon(object);
+  }
+
+  getExtensionColor(action: ExtensionAction): string {
+    if (!action.color) return '';
+    if (typeof action.color === 'string') return action.color;
+    let object = ObjectStore.instance.get(this.sendFrom);
+    return action.color(object);
   }
 
   insertEmote(emote: string) {

@@ -5,6 +5,7 @@ export type ExtensionLocation = 'main-menu' | 'main-menu-bottom' | 'settings' | 
 
 export interface ExtensionAction {
   name: string | ((context?: any) => string); // ----- MODIFICATION (Gemini) for TargetSelectorPlugin -----
+  label?: string | ((context?: any) => string); // ----- MODIFICATION (kunyatta) for Label Support -----
   icon?: string | ((context?: any) => string);
   iconClass?: string; // ----- MODIFICATION (kunyatta) -----
   color?: string | ((context?: any) => string); // ----- MODIFICATION (Gemini) for StyleSupport -----

@@ -36,6 +36,13 @@ export interface PluginManifest {
   // プラグインフォルダ内の画像ファイル名（例: 'tutorial.png'）を指定します。
   tutorialImage?: string;
 
+  // プラグイン専用の音声リソース (任意)。
+  // 音声ファイル名（例: 'decision.mp3'）の配列を指定します。
+  // 登録された音声は AudioStorage に自動的にロードされ、
+  // URLパス (例: './assets/plugins/my-plugin/decision.mp3') を
+  // そのまま識別子として SoundEffect.play() 等で使用可能になります。
+  sounds?: string[];
+
   // 変更履歴 (任意)
   changelog?: ChangelogEntry[];
 }

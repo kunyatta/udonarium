@@ -13,7 +13,10 @@
       </label>
       <button class="tab-setting small-font" (click)="showTabSetting()"><i class="material-icons small-font">settings</i>タブ設定</button>
       <!-- ----- MODIFICATION START (kunyatta) for PluginSystem ----- -->
-      <button *ngFor="let extension of chatWindowExtensions" class="tab-setting small-font" (click)="onClickExtension(extension)"><i *ngIf="extension.icon" class="material-icons small-font">{{extension.icon}}</i>{{extension.name}}</button>
+      <button *ngFor="let extension of chatWindowExtensions" class="tab-setting small-font" (click)="onClickExtension(extension)" [title]="extension.description || ''">
+        <i *ngIf="extension.icon" class="material-icons small-font">{{getExtensionIcon(extension)}}</i>
+        {{getExtensionLabel(extension)}}
+      </button>
       <!-- ----- MODIFICATION END (kunyatta) for PluginSystem ----- -->
     </div>
   </form>

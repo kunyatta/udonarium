@@ -32,6 +32,22 @@ export class ChatWindowComponent implements OnInit, OnDestroy, AfterViewInit {
     const coordinate = this.pointerDeviceService.pointers[0];
     extension.action(null, coordinate);
   }
+
+  getExtensionLabel(extension: ExtensionAction): string {
+    const label = extension.label !== undefined ? extension.label : extension.name;
+    if (typeof label === 'function') {
+      return label();
+    }
+    return label || '';
+  }
+
+  getExtensionIcon(extension: ExtensionAction): string {
+    if (!extension.icon) return '';
+    if (typeof extension.icon === 'function') {
+      return extension.icon();
+    }
+    return extension.icon;
+  }
   // ----- MODIFICATION END (kunyatta) for PluginSystem -----
 
   private _chatTabidentifier: string = '';
