@@ -8,7 +8,8 @@ import {
   StandSetting,
   StandGlobalConfig,
   DEFAULT_HEAD_OFFSET,
-  DEFAULT_AUTO_X_RATIO
+  DEFAULT_AUTO_X_RATIO,
+  NOVEL_MODE_CONSTANTS
 } from './dynamic-stand.model';
 import { ChatMessage } from '@udonarium/chat-message';
 import { ImageStorage } from '@udonarium/core/file-storage/image-storage';
@@ -314,7 +315,45 @@ export class DynamicStandPluginService implements OnDestroy {
   private renderLocalStand(characterId: string, setting: StandSetting, speechText: string, floatingEmote: string) {
     this.localActors = this.localActors.filter(a => a.characterId !== characterId);
     const side = (this.localActors.filter(a => a.side === 'left').length <= this.localActors.filter(a => a.side === 'right').length) ? 'left' : 'right';
-    const headY = this.config.standHeight * (1 - (setting.headOffset ?? DEFAULT_HEAD_OFFSET) / 100);
+    
+    // --- 1. 立ち絵/アイコンの判定ロジック ---
+    let isStand = false;
+    if (setting.standType === 'stand') {
+      isStand = true;
+    } else if (setting.standType === 'icon') {
+      isStand = false;
+    } else {
+      // auto: 縦長(縦横比1.2以上)なら立ち絵、それ以外はアイコン
+      const aspect = (setting.imageWidth > 0 && setting.imageHeight > 0) ? (setting.imageHeight / setting.imageWidth) : 0;
+      isStand = aspect > NOVEL_MODE_CONSTANTS.ASPECT_RATIO_THRESHOLD;
+    }
+
+    // --- 2. 表示パラメータの決定 ---
+    // 立ち絵: 高さ100%(config基準), 下揃え(0), カバー表示(トリミング有効)
+    // アイコン: 高さ縮小, 浮かせ, コンテイン表示(全体表示)
+    const height = isStand ? this.config.standHeight : (this.config.standHeight * NOVEL_MODE_CONSTANTS.ICON_HEIGHT_RATIO);
+    const bottom = isStand ? 0 : NOVEL_MODE_CONSTANTS.ICON_BOTTOM_OFFSET;
+    const objectFit = isStand ? 'cover' : 'contain';
+    
+    // フォーカス位置の決定
+    let objectPosition = 'center bottom'; // default
+    if (isStand) {
+      // 立ち絵としてトリミングする場合のみフォーカス位置を適用
+      switch (setting.focusPosition) {
+        case 'left':   objectPosition = 'left center'; break;
+        case 'right':  objectPosition = 'right center'; break;
+        case 'top':    objectPosition = 'center top'; break;
+        case 'bottom': objectPosition = 'center bottom'; break;
+        case 'center': default: objectPosition = 'center center'; break;
+      }
+    } else {
+      // アイコンの場合は下端に吸着させる（浮いているウィンドウに乗っている感）
+      objectPosition = 'center bottom';
+    }
+
+    // 頭上の高さ計算（吹き出し位置）
+    // アイコンの場合も画像表示高さ(height)を基準にする
+    const headY = height * (1 - (setting.headOffset ?? DEFAULT_HEAD_OFFSET) / 100) + bottom;
     
     // 型安全なオブジェクト生成
     const actor: StandingActor = {
@@ -324,7 +363,7 @@ export class DynamicStandPluginService implements OnDestroy {
       expirationTime: Date.now() + (speechText.length * this.config.typingSpeed) + this.config.displayDuration + 500,
       imageIdentifier: setting.imageIdentifier,
       width: this.config.standWidth,
-      height: this.config.standHeight,
+      height: height,
       speechText: speechText,
       speechVisible: !!speechText,
       speechOffsetX: (side === 'left') ? (this.config.standWidth * DEFAULT_AUTO_X_RATIO) : -(this.config.standWidth * DEFAULT_AUTO_X_RATIO),
@@ -335,7 +374,11 @@ export class DynamicStandPluginService implements OnDestroy {
       emoteOffsetY: headY + setting.offsetY + 2,
       opacity: 1.0,
       left: 0,
-      isDisappearing: false
+      isDisappearing: false,
+      // 新パラメータ
+      objectFit: objectFit,
+      objectPosition: objectPosition,
+      bottom: bottom
     };
 
     this.localActors = [...this.localActors, actor];
@@ -354,7 +397,9 @@ export class DynamicStandPluginService implements OnDestroy {
       headOffset: Number((group.children.find(c => (c as DataElement).name === 'headOffset') as DataElement)?.value) || DEFAULT_HEAD_OFFSET,
       offsetX: Number((group.children.find(c => (c as DataElement).name === 'offsetX') as DataElement)?.value) || 0,
       offsetY: Number((group.children.find(c => (c as DataElement).name === 'offsetY') as DataElement)?.value) || 0,
-      sidePreference: (group.children.find(c => (c as DataElement).name === 'side') as DataElement)?.value as any || 'auto'
+      sidePreference: (group.children.find(c => (c as DataElement).name === 'side') as DataElement)?.value as any || 'auto',
+      standType: (group.children.find(c => (c as DataElement).name === 'standType') as DataElement)?.value as any || NOVEL_MODE_CONSTANTS.DEFAULT_STAND_TYPE,
+      focusPosition: (group.children.find(c => (c as DataElement).name === 'focusPosition') as DataElement)?.value as any || NOVEL_MODE_CONSTANTS.DEFAULT_FOCUS_POSITION
     }));
   }
 
@@ -366,7 +411,20 @@ export class DynamicStandPluginService implements OnDestroy {
       }
       const section = character.detailDataElement.children.find(c => c instanceof DataElement && c.name === DYNAMIC_STAND_SECTION_NAME);
       if (!section) this.addStandSetting(character);
-      else this.refreshStandDimensions(character);
+      else {
+        // 既存データのマイグレーション（新しい項目がなければ追加）
+        for (const group of section.children) {
+          if (group instanceof DataElement) {
+             if (!group.getFirstElementByName('standType')) {
+               group.appendChild(DataElement.create('standType', NOVEL_MODE_CONSTANTS.DEFAULT_STAND_TYPE, {}, 'st_' + group.identifier));
+             }
+             if (!group.getFirstElementByName('focusPosition')) {
+               group.appendChild(DataElement.create('focusPosition', NOVEL_MODE_CONSTANTS.DEFAULT_FOCUS_POSITION, {}, 'fp_' + group.identifier));
+             }
+          }
+        }
+        this.refreshStandDimensions(character);
+      }
     } catch (e) {
     }
   }
@@ -400,6 +458,8 @@ export class DynamicStandPluginService implements OnDestroy {
       group.appendChild(DataElement.create('side', 'auto', {}, 'side_' + group.identifier));
       group.appendChild(DataElement.create('offsetX', 0, { type: 'number' }, 'ox_' + group.identifier));
       group.appendChild(DataElement.create('offsetY', 0, { type: 'number' }, 'oy_' + group.identifier));
+      group.appendChild(DataElement.create('standType', NOVEL_MODE_CONSTANTS.DEFAULT_STAND_TYPE, {}, 'st_' + group.identifier));
+      group.appendChild(DataElement.create('focusPosition', NOVEL_MODE_CONSTANTS.DEFAULT_FOCUS_POSITION, {}, 'fp_' + group.identifier));
       section.appendChild(group);
       this.refreshStandDimensions(character);
       section.update(); character.detailDataElement.update(); character.update();

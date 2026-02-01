@@ -5,6 +5,15 @@ export const DEFAULT_HEAD_OFFSET = 35; // 画像上端からの距離 (%)
 export const DEFAULT_EMOTE_Y_OFFSET = -5; // 吹き出し基準点からのエモートの位置 (vh相当)
 export const DEFAULT_AUTO_X_RATIO = 0.4; // 立ち絵幅に対する吹き出しの横位置比率
 
+// ノベルゲーム風表示設定のデフォルト値・定数
+export const NOVEL_MODE_CONSTANTS = {
+  ICON_HEIGHT_RATIO: 0.6, // 立ち絵設定高さに対するアイコン時の縮小率 (60vh * 0.6 = 36vh)
+  ICON_BOTTOM_OFFSET: 5,  // アイコン時の下端からの浮き量 (vh)
+  ASPECT_RATIO_THRESHOLD: 1.2, // 立ち絵とみなす縦横比の閾値 (高さ / 幅)
+  DEFAULT_STAND_TYPE: 'auto',
+  DEFAULT_FOCUS_POSITION: 'center'
+} as const;
+
 // --- 設定関連 (Configuration) ---
 
 export interface StandSetting {
@@ -17,6 +26,8 @@ export interface StandSetting {
   offsetX: number;
   offsetY: number;
   sidePreference?: 'auto' | 'left' | 'right';
+  standType?: 'auto' | 'stand' | 'icon'; // 立ち絵タイプ
+  focusPosition?: 'center' | 'left' | 'right' | 'top' | 'bottom'; // フォーカス位置
 }
 
 export class StandGlobalConfig {

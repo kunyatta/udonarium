@@ -27,6 +27,10 @@ export interface StandingActor {
   emoteOffsetY: number;
   opacity: number;
   left: number;
+  // 新しい表示制御プロパティ
+  objectFit?: string;      // 'contain' | 'cover'
+  objectPosition?: string; // 'center bottom' etc.
+  bottom?: number;         // 画面下端からの距離 (vh)
   isDisappearing?: boolean;
 }
 

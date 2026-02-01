@@ -42,7 +42,7 @@
           <ng-container *ngIf="getActorData(actor); let data">
             <div class="standing-unit-wrapper stage-actor"
                  [style.left]="data.left + 'vw'"
-                 [style.bottom]="'0'"
+                 [style.bottom]="(data.bottom || 0) + 'vh'"
                  [style.opacity]="data.opacity"
                  [style.height]="data.height + 'vh'"
                  [class.is-left]="data.side === 'left'" 
@@ -55,7 +55,9 @@
               <div class="standing-character" 
                    [style.width]="data.width + 'vw'" 
                    [style.height]="'100%'">
-                <img [src]="getActorImageUrl(data.imageIdentifier)" draggable="false">
+                <img [src]="getActorImageUrl(data.imageIdentifier)" draggable="false"
+                     [style.object-fit]="data.objectFit || 'contain'"
+                     [style.object-position]="data.objectPosition || 'center bottom'">
               </div>
 
 
