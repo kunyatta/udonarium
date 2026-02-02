@@ -51,7 +51,11 @@ export class PluginService {
       for (const soundFile of manifest.sounds) {
         const soundUrl = `./assets/plugins/${pluginPath}/${soundFile}`;
         console.log(`PluginService: Registering sound resource for ${manifest.id}: ${soundUrl}`);
-        AudioStorage.instance.add(soundUrl);
+        // 登録した音源を取得し、ジュークボックスに表示されないよう非表示設定にする
+        const audio = AudioStorage.instance.add(soundUrl);
+        if (audio) {
+          audio.isHidden = true;
+        }
       }
     }
   }

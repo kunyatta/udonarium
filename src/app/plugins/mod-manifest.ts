@@ -8,8 +8,6 @@ export const MOD_SYSTEM_MANIFEST = {
   name: 'このModについて',
   // Modのアイコン (プラグイン情報パネル等で表示)
   icon: 'info',
-  // Mod システム (基盤・サービス) のバージョン
-  version: '0.1.7',
   // ベースとなっているオリジナルの Udonarium バージョン
   basedOn: '1.17.4',
   // オリジナル作者
@@ -18,6 +16,8 @@ export const MOD_SYSTEM_MANIFEST = {
   authors: ['kunyatta(Code generator: Gemini CLI)'],
   // システムの概要
   description: 'Gemini CLIというAIを使ったコード生成による改造。主だった派生Udonariumを参考にしつつソードワールド2.5用に向けた機能中心に実装しています。このModの名前はまだ思いついていません。',
+  // Mod システム (基盤・サービス) のバージョン
+  version: '0.1.8',
   // 最終更新日 (配布時などのリリース日に相当。手動で更新)
-  updatedAt: '2026-01-26'
+  updatedAt: '2026-02-02'
 };
