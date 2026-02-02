@@ -13,6 +13,7 @@ import { Room } from '@udonarium/room';
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store'; // ----- MODIFICATION (kunyatta) for PluginSystem -----
 import { PluginDataContainer } from '../class/plugin-data-container'; // ----- MODIFICATION (kunyatta) for PluginSystem -----
 import { DataElement } from '@udonarium/data-element'; // ----- MODIFICATION (kunyatta) for PluginSystem -----
+import { DataElementExtensionService } from '../plugins/service/data-element-extension.service'; // ----- MODIFICATION (kunyatta) for DataElementExtension -----
 
 import Beautify from 'vkbeautify';
 
@@ -25,7 +26,8 @@ export class SaveDataService {
   private static queue: PromiseQueue = new PromiseQueue('SaveDataServiceQueue');
 
   constructor(
-    private ngZone: NgZone
+    private ngZone: NgZone,
+    private dataElementExtensionService: DataElementExtensionService // ----- MODIFICATION (kunyatta) for DataElementExtension -----
   ) { }
 
   saveRoomAsync(fileName: string = 'ルームデータ', updateCallback?: UpdateCallback): Promise<void> {
@@ -184,12 +186,22 @@ export class SaveDataService {
     if (!xmlElement) return files;
 
     let images: { [identifier: string]: ImageFile } = {};
-    let imageElements = xmlElement.ownerDocument.querySelectorAll('*[type="image"]');
+    // ----- MODIFICATION START (kunyatta) for DataElementExtension -----
+    let imageTypes = ['image'];
+    for (const ext of this.dataElementExtensionService.getAll()) {
+      if (ext.isImage && !imageTypes.includes(ext.type)) {
+        imageTypes.push(ext.type);
+      }
+    }
+
+    let query = imageTypes.map(type => `*[type="${type}"]`).join(',');
+    let imageElements = xmlElement.ownerDocument.querySelectorAll(query);
 
     for (let i = 0; i < imageElements.length; i++) {
       let identifier = imageElements[i].innerHTML;
-      images[identifier] = ImageStorage.instance.get(identifier);
+      if (identifier) images[identifier] = ImageStorage.instance.get(identifier);
     }
+    // ----- MODIFICATION END (kunyatta) for DataElementExtension -----
 
     imageElements = xmlElement.ownerDocument.querySelectorAll('*[imageIdentifier], *[backgroundImageIdentifier]');
 

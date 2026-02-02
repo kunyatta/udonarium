@@ -1,0 +1,66 @@
+.image-input-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 4px 0;
+}
+
+.thumbnail-box {
+  width: 48px;
+  height: 48px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+  cursor: pointer;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.thumbnail-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.thumbnail-box i {
+  color: #999;
+  font-size: 24px;
+}
+
+.image-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 0;
+  flex-grow: 1;
+}
+
+.image-change-btn {
+  background: none;
+  border: none;
+  border-radius: 2px;
+  outline: none;
+  color: #444;
+  font-family: Cambria, Georgia;
+  font-size: 0.75rem;
+  padding: 2px 8px;
+  align-self: flex-start;
+  box-sizing: border-box;
+}
+
+.image-change-btn:hover {
+  background: #444;
+  color: #CCC;
+}
+
+.image-id-text {
+  font-size: 0.65rem;
+  color: #666;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-family: monospace;
+}

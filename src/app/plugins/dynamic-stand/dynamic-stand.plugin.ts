@@ -7,6 +7,8 @@ import { PluginUiService } from '../service/plugin-ui.service';
 import { GameCharacter } from '@udonarium/game-character';
 import { DynamicStandSettingComponent } from './dynamic-stand-setting.component';
 import { MANIFEST } from './manifest';
+import { DataElementExtensionService } from '../service/data-element-extension.service';
+import { ImageDataElementComponent } from '../components/image-data-element/image-data-element.component';
 
 @Injectable()
 export class DynamicStandPlugin implements IPluginWithUI {
@@ -25,12 +27,20 @@ export class DynamicStandPlugin implements IPluginWithUI {
     private service: DynamicStandPluginService,
     private emoteManager: EmoteManagerService,
     private uiExtensionService: UIExtensionService,
-    private pluginUiService: PluginUiService
+    private pluginUiService: PluginUiService,
+    private dataElementExtensionService: DataElementExtensionService
   ) {}
 
   initialize(): void {
     this.service.initialize();
     this.emoteManager.initialize();
+
+    this.dataElementExtensionService.register({
+      type: 'imageIdentifier',
+      component: ImageDataElementComponent,
+      isImage: true,
+      label: '画像'
+    });
   }
 
   initializeUI(injector: Injector): void {

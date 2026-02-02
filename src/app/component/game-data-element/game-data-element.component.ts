@@ -1,12 +1,7 @@
-import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, Injector } from '@angular/core';
 import { EventSystem } from '@udonarium/core/system';
 import { DataElement } from '@udonarium/data-element';
-// ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
-import { ModalService } from 'service/modal.service';
-import { FileSelecterComponent } from 'component/file-selecter/file-selecter.component';
-import { ImageStorage } from '@udonarium/core/file-storage/image-storage';
-import { ImageFile } from '@udonarium/core/file-storage/image-file';
-// ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
+import { DataElementExtensionService, DataElementExtension } from '../../plugins/service/data-element-extension.service'; // ----- MODIFICATION (kunyatta) for DataElementExtension -----
 
 @Component({
   selector: 'game-data-element, [game-data-element]',
@@ -36,9 +31,8 @@ export class GameDataElementComponent implements OnInit, OnChanges, OnDestroy {
 
   constructor(
     private changeDetector: ChangeDetectorRef,
-    // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
-    private modalService: ModalService
-    // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
+    private injector: Injector, // ----- MODIFICATION (kunyatta) for DataElementExtension -----
+    private dataElementExtensionService: DataElementExtensionService // ----- MODIFICATION (kunyatta) for DataElementExtension -----
   ) { }
 
   ngOnInit() {
@@ -93,22 +87,22 @@ export class GameDataElementComponent implements OnInit, OnChanges, OnDestroy {
     this.gameDataElement.setAttribute('type', type);
   }
 
-  // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
-  openModal() {
-    this.modalService.open<string>(FileSelecterComponent, { isAllowedEmpty: true }).then(value => {
-      if (!this.gameDataElement || value == null) return;
-      this.gameDataElement.value = value;
-      this.setValues(this.gameDataElement);
-      this.changeDetector.markForCheck();
-    });
+  // ----- MODIFICATION START (kunyatta) for DataElementExtension -----
+  get customExtension(): DataElementExtension | undefined {
+    return this.dataElementExtensionService.get(this.gameDataElement?.type);
   }
 
-  get imageFile(): ImageFile {
-    if (!this.gameDataElement || this.gameDataElement.type !== 'imageIdentifier') return ImageFile.Empty;
-    const file = ImageStorage.instance.get(<string>this.gameDataElement.value);
-    return file ? file : ImageFile.Empty;
+  get allExtensions(): DataElementExtension[] {
+    return this.dataElementExtensionService.getAll();
   }
-  // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
+
+  get extensionInjector(): Injector {
+    return Injector.create({
+      providers: [{ provide: DataElement, useValue: this.gameDataElement }],
+      parent: this.injector
+    });
+  }
+  // ----- MODIFICATION END (kunyatta) for DataElementExtension -----
 
   private setValues(object: DataElement) {
     this._name = object.name;

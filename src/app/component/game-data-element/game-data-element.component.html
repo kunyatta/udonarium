@@ -6,9 +6,9 @@
         <option value="">通常</option>
         <option value="numberResource">リソース</option>
         <option value="note">ノート</option>
-        <!-- ----- MODIFICATION START (kunyatta) for DynamicStandPlugin ----- -->
-        <option value="imageIdentifier">画像</option>
-        <!-- ----- MODIFICATION END (kunyatta) for DynamicStandPlugin ----- -->
+        <!-- ----- MODIFICATION START (kunyatta) for DataElementExtension ----- -->
+        <option *ngFor="let ext of allExtensions" [value]="ext.type">{{ext.label || ext.type}}</option>
+        <!-- ----- MODIFICATION END (kunyatta) for DataElementExtension ----- -->
       </select>
     </div>
     <div class="table-cell table-cell_solid">
@@ -34,21 +34,13 @@
         <ng-container *ngSwitchCase="'note'">
           <textarea style="width:100%; height:5em; min-width:50px; resize: none; font-size: 0.8em;" [(ngModel)]="value" placeholder="Note"></textarea>
         </ng-container>
-        <!-- ----- MODIFICATION START (kunyatta) for DynamicStandPlugin ----- -->
-        <ng-container *ngSwitchCase="'imageIdentifier'">
-          <div class="image-input-container">
-            <div class="thumbnail-box" (click)="openModal()">
-              <img *ngIf="imageFile.url" [src]="imageFile.url | safe: 'resourceUrl'" />
-              <i *ngIf="!imageFile.url" class="material-icons">add_photo_alternate</i>
-            </div>
-            <div class="image-info">
-              <button class="image-change-btn" (click)="openModal()">画像選択</button>
-              <div class="image-id-text">{{value}}</div>
-            </div>
-          </div>
-        </ng-container>
-        <!-- ----- MODIFICATION END (kunyatta) for DynamicStandPlugin ----- -->
         <ng-container *ngSwitchDefault>
+          <!-- ----- MODIFICATION START (kunyatta) for DataElementExtension ----- -->
+          <ng-container *ngIf="customExtension as ext; else defaultInput">
+            <ng-container *ngComponentOutlet="ext.component; injector: extensionInjector"></ng-container>
+          </ng-container>
+          <ng-template #defaultInput>
+          <!-- ----- MODIFICATION END (kunyatta) for DataElementExtension ----- -->
           <!-- size属性がないと小さくならない -->
           <div class="hidden-spacer" style="font-size: 1.0em; font-family: Cambria, Georgia;">{{value}}</div>
           <!-- ----- MODIFICATION START (kunyatta) for DynamicStandPlugin ----- -->
@@ -63,6 +55,9 @@
             <input style="width:100%; min-width:10px;" size="1" [(ngModel)]="value" placeholder="Value" />
           </ng-template>
           <!-- ----- MODIFICATION END (kunyatta) for DynamicStandPlugin ----- -->
+          <!-- ----- MODIFICATION START (kunyatta) for DataElementExtension ----- -->
+          </ng-template>
+          <!-- ----- MODIFICATION END (kunyatta) for DataElementExtension ----- -->
         </ng-container>
       </ng-container>
     </div>

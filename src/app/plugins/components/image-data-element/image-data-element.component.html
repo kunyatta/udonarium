@@ -1,0 +1,10 @@
+<div class="image-input-container">
+  <div class="thumbnail-box" (click)="openModal()">
+    <img *ngIf="imageFile.url" [src]="imageFile.url | safe: 'resourceUrl'" />
+    <i *ngIf="!imageFile.url" class="material-icons">add_photo_alternate</i>
+  </div>
+  <div class="image-info">
+    <button class="image-change-btn" (click)="openModal()">画像選択</button>
+    <div class="image-id-text">{{value}}</div>
+  </div>
+</div>

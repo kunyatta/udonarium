@@ -17,7 +17,7 @@ export const MOD_SYSTEM_MANIFEST = {
   // システムの概要
   description: 'Gemini CLIというAIを使ったコード生成による改造。主だった派生Udonariumを参考にしつつソードワールド2.5用に向けた機能中心に実装しています。このModの名前はまだ思いついていません。',
   // Mod システム (基盤・サービス) のバージョン
-  version: '0.1.8',
+  version: '0.2.0',
   // 最終更新日 (配布時などのリリース日に相当。手動で更新)
-  updatedAt: '2026-02-02'
+  updatedAt: '2026-02-03'
 };
