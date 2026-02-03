@@ -28,6 +28,9 @@ export class GameDataElementComponent implements OnInit, OnChanges, OnDestroy {
   set currentValue(currentValue: number | string) { this._currentValue = currentValue; this.setUpdateTimer(); }
 
   private updateTimer: NodeJS.Timeout = null;
+  // ----- MODIFICATION START (kunyatta) for DataElementExtension -----
+  extensionInjector: Injector = null;
+  // ----- MODIFICATION END (kunyatta) for DataElementExtension -----
 
   constructor(
     private changeDetector: ChangeDetectorRef,
@@ -36,10 +39,18 @@ export class GameDataElementComponent implements OnInit, OnChanges, OnDestroy {
   ) { }
 
   ngOnInit() {
-    if (this.gameDataElement) this.setValues(this.gameDataElement);
+    if (this.gameDataElement) {
+      this.setValues(this.gameDataElement);
+      // ----- MODIFICATION START (kunyatta) for DataElementExtension -----
+      this.createExtensionInjector();
+      // ----- MODIFICATION END (kunyatta) for DataElementExtension -----
+    }
   }
 
   ngOnChanges(): void {
+    // ----- MODIFICATION START (kunyatta) for DataElementExtension -----
+    this.createExtensionInjector();
+    // ----- MODIFICATION END (kunyatta) for DataElementExtension -----
     EventSystem.unregister(this);
     EventSystem.register(this)
       .on(`UPDATE_GAME_OBJECT/identifier/${this.gameDataElement?.identifier}`, event => {
@@ -96,8 +107,8 @@ export class GameDataElementComponent implements OnInit, OnChanges, OnDestroy {
     return this.dataElementExtensionService.getAll();
   }
 
-  get extensionInjector(): Injector {
-    return Injector.create({
+  private createExtensionInjector() {
+    this.extensionInjector = Injector.create({
       providers: [{ provide: DataElement, useValue: this.gameDataElement }],
       parent: this.injector
     });

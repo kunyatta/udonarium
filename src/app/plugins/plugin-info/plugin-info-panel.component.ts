@@ -43,7 +43,8 @@ export class PluginInfoPanelComponent implements OnInit, OnDestroy {
         version: this.MOD_MANIFEST.version,
         description: `${this.MOD_MANIFEST.description}\n\nAuthors: ${this.MOD_MANIFEST.authors.join(', ')}\nBased on: Udonarium v${this.MOD_MANIFEST.basedOn} by ${(this.MOD_MANIFEST as any).originalAuthor}\nLast Updated: ${this.MOD_MANIFEST.updatedAt}`,
         icon: this.MOD_MANIFEST.icon,
-        isExperimental: false
+        isExperimental: false,
+        changelog: (this.MOD_MANIFEST as any).changelog
       }
     };
 

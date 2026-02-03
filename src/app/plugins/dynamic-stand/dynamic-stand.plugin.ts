@@ -9,6 +9,7 @@ import { DynamicStandSettingComponent } from './dynamic-stand-setting.component'
 import { MANIFEST } from './manifest';
 import { DataElementExtensionService } from '../service/data-element-extension.service';
 import { ImageDataElementComponent } from '../components/image-data-element/image-data-element.component';
+import { StandSideDataElementComponent } from './stand-side-data-element/stand-side-data-element.component';
 
 @Injectable()
 export class DynamicStandPlugin implements IPluginWithUI {
@@ -40,6 +41,12 @@ export class DynamicStandPlugin implements IPluginWithUI {
       component: ImageDataElementComponent,
       isImage: true,
       label: '画像'
+    });
+
+    this.dataElementExtensionService.register({
+      type: 'standSide',
+      component: StandSideDataElementComponent,
+      label: '立ち絵位置'
     });
   }
 

@@ -7,6 +7,7 @@ import { DynamicStandPluginService } from './dynamic-stand.service';
 import { DynamicStandSettingComponent } from './dynamic-stand-setting.component';
 import { EmotePaletteComponent } from './emote-palette.component';
 import { ImageDataElementComponent } from '../components/image-data-element/image-data-element.component';
+import { StandSideDataElementComponent } from './stand-side-data-element/stand-side-data-element.component';
 import { PLUGIN_TOKEN } from '../i-plugin';
 
 @NgModule({
@@ -18,12 +19,14 @@ import { PLUGIN_TOKEN } from '../i-plugin';
   declarations: [
     DynamicStandSettingComponent,
     EmotePaletteComponent,
-    ImageDataElementComponent
+    ImageDataElementComponent,
+    StandSideDataElementComponent
   ],
   exports: [
     DynamicStandSettingComponent,
     EmotePaletteComponent,
-    ImageDataElementComponent
+    ImageDataElementComponent,
+    StandSideDataElementComponent
   ],
   providers: [
     DynamicStandPluginService,

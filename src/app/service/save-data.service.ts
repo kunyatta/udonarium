@@ -81,6 +81,8 @@ export class SaveDataService {
     files = files.concat(this.searchImageFiles(roomXml));
     files = files.concat(this.searchImageFiles(chatXml));
 
+    files = this.uniqueFiles(files); // ----- MODIFICATION (kunyatta) for DuplicateFileFix -----
+
     return this.saveAsync(files, this.appendTimestamp(fileName), updateCallback);
   }
 
@@ -120,6 +122,8 @@ export class SaveDataService {
     files.push(new File([xml], xmlFileName + '.xml', { type: 'text/plain' }));
     files = files.concat(this.searchImageFiles(xml));
 
+    files = this.uniqueFiles(files); // ----- MODIFICATION (kunyatta) for DuplicateFileFix -----
+
     return this.saveAsync(files, this.appendTimestamp(zipFileName));
   }
 
@@ -147,6 +151,8 @@ export class SaveDataService {
 
     files.push(new File([xml], 'data.xml', { type: 'text/plain' }));
     files = files.concat(this.searchImageFiles(xml));
+
+    files = this.uniqueFiles(files); // ----- MODIFICATION (kunyatta) for DuplicateFileFix -----
 
     return this.saveAsync(files, this.appendTimestamp(fileName), updateCallback);
   }
@@ -219,6 +225,16 @@ export class SaveDataService {
       }
     }
     return files;
+  }
+
+  private uniqueFiles(files: File[]): File[] {
+    let uniqueMap = new Map<string, File>();
+    for (let file of files) {
+      if (!uniqueMap.has(file.name)) {
+        uniqueMap.set(file.name, file);
+      }
+    }
+    return Array.from(uniqueMap.values());
   }
 
   private appendTimestamp(fileName: string): string {

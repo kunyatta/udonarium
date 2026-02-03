@@ -1,0 +1,19 @@
+select {
+  background: none;
+  border: none;
+  border-radius: 2px;
+  outline: none;
+  color: #444;
+  font-family: Cambria, Georgia;
+  font-size: 1.0em;
+  padding: 2px;
+  box-sizing: border-box;
+}
+
+select:hover {
+  background: #EEE;
+}
+
+select:focus {
+  background: #FFF;
+}

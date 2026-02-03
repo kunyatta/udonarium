@@ -412,9 +412,13 @@ export class DynamicStandPluginService implements OnDestroy {
       const section = character.detailDataElement.children.find(c => c instanceof DataElement && c.name === DYNAMIC_STAND_SECTION_NAME);
       if (!section) this.addStandSetting(character);
       else {
-        // 既存データのマイグレーション（新しい項目がなければ追加）
+        // 既存データのマイグレーション（新しい項目がなければ追加、既存の型を修正）
         for (const group of section.children) {
           if (group instanceof DataElement) {
+             const sideElm = group.getFirstElementByName('side');
+             if (sideElm && sideElm.getAttribute('type') !== 'standSide') {
+               sideElm.setAttribute('type', 'standSide');
+             }
              if (!group.getFirstElementByName('standType')) {
                group.appendChild(DataElement.create('standType', NOVEL_MODE_CONSTANTS.DEFAULT_STAND_TYPE, {}, 'st_' + group.identifier));
              }
@@ -455,7 +459,7 @@ export class DynamicStandPluginService implements OnDestroy {
       group.appendChild(DataElement.create('imageWidth', 0, { type: 'number' }, 'w_' + group.identifier));
       group.appendChild(DataElement.create('imageHeight', 0, { type: 'number' }, 'h_' + group.identifier));
       group.appendChild(DataElement.create('headOffset', DEFAULT_HEAD_OFFSET, { type: 'number' }, 'ho_' + group.identifier));
-      group.appendChild(DataElement.create('side', 'auto', {}, 'side_' + group.identifier));
+      group.appendChild(DataElement.create('side', 'auto', { type: 'standSide' }, 'side_' + group.identifier));
       group.appendChild(DataElement.create('offsetX', 0, { type: 'number' }, 'ox_' + group.identifier));
       group.appendChild(DataElement.create('offsetY', 0, { type: 'number' }, 'oy_' + group.identifier));
       group.appendChild(DataElement.create('standType', NOVEL_MODE_CONSTANTS.DEFAULT_STAND_TYPE, {}, 'st_' + group.identifier));
