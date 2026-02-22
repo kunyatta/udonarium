@@ -1,8 +1,10 @@
 import { Inject, Injectable, Injector } from '@angular/core';
+import { Title } from '@angular/platform-browser';
 import { IPlugin, IPluginWithUI, PLUGIN_TOKEN } from '../i-plugin';
 
 import { PluginOverlayService } from './plugin-overlay.service';
 import { AudioStorage } from '../../class/core/file-storage/audio-storage';
+import { MOD_SYSTEM_MANIFEST } from '../mod-manifest';
 
 @Injectable({
   providedIn: 'root'
@@ -12,7 +14,8 @@ export class PluginService {
   constructor(
     @Inject(PLUGIN_TOKEN) private plugins: IPlugin[],
     private injector: Injector,
-    private pluginOverlayService: PluginOverlayService
+    private pluginOverlayService: PluginOverlayService,
+    private titleService: Title
   ) { }
 
   /**
@@ -20,6 +23,10 @@ export class PluginService {
    * UIを持たないプラグインを初期化します。
    */
   initialize() {
+    // Modの情報をタイトルに追加
+    const currentTitle = this.titleService.getTitle();
+    this.titleService.setTitle(`${currentTitle} [${MOD_SYSTEM_MANIFEST.name} v${MOD_SYSTEM_MANIFEST.version}]`);
+
     console.log('PluginService: Initializing non-UI plugins...');
     // オーバーレイ基盤の初期化
     this.pluginOverlayService.initialize();
