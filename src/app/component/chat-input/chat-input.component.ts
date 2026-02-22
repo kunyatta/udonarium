@@ -13,6 +13,9 @@ import { BatchService } from 'service/batch.service';
 import { ChatMessageService } from 'service/chat-message.service';
 import { PanelOption, PanelService } from 'service/panel.service';
 import { PointerDeviceService } from 'service/pointer-device.service';
+// ----- MODIFICATION START (kunyatta) for Chat Icon Extension -----
+import { CharacterDataService } from '../../plugins/service/character-data.service';
+// ----- MODIFICATION END (kunyatta) -----
 // ----- MODIFICATION START (kunyatta) for Chat Input Extension Hook -----
 import { UIExtensionService, ExtensionAction } from '../../plugins/service/ui-extension.service';
 // ----- MODIFICATION END (kunyatta) -----
@@ -62,7 +65,8 @@ export class ChatInputComponent implements OnInit, OnDestroy {
   get text(): string { return this._text };
   set text(text: string) { this._text = text; this.textChange.emit(text); }
 
-  @Output() chat = new EventEmitter<{ text: string, gameType: string, sendFrom: string, sendTo: string }>();
+  // @Output() chat = new EventEmitter<{ text: string, gameType: string, sendFrom: string, sendTo: string }>();
+  @Output() chat = new EventEmitter<{ text: string, gameType: string, sendFrom: string, sendTo: string, imageIdentifier?: string }>(); // ----- MODIFICATION (kunyatta) for Chat Icon Extension -----
 
   get isDirect(): boolean { return this.sendTo != null && this.sendTo.length ? true : false }
   gameHelp: string = '';
@@ -132,6 +136,9 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     private batchService: BatchService,
     private panelService: PanelService,
     private pointerDeviceService: PointerDeviceService,
+    // ----- MODIFICATION START (kunyatta) for Chat Icon Extension -----
+    private characterDataService: CharacterDataService,
+    // ----- MODIFICATION END (kunyatta) -----
     // ----- MODIFICATION START (kunyatta) for Chat Input Extension Hook -----
     public uiExtensionService: UIExtensionService
     // ----- MODIFICATION END (kunyatta) -----
@@ -328,7 +335,16 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     // ----- MODIFICATION START (kunyatta) for Chat Input Filter Hook -----
     // this.chat.emit({ text: this.text, gameType: this.gameType, sendFrom: this.sendFrom, sendTo: this.sendTo });
     let sendText = this.uiExtensionService.applyFilters('chat-send', this.text, ObjectStore.instance.get(this.sendFrom));
-    this.chat.emit({ text: sendText, gameType: this.gameType, sendFrom: this.sendFrom, sendTo: this.sendTo });
+    
+    // ----- MODIFICATION START (kunyatta) for Chat Icon Extension -----
+    let imageIdentifier: string = '';
+    const sender = ObjectStore.instance.get(this.sendFrom);
+    if (sender instanceof GameCharacter) {
+      imageIdentifier = this.characterDataService.getChatImageIdentifier(sender);
+    }
+    
+    // this.chat.emit({ text: sendText, gameType: this.gameType, sendFrom: this.sendFrom, sendTo: this.sendTo });
+    this.chat.emit({ text: sendText, gameType: this.gameType, sendFrom: this.sendFrom, sendTo: this.sendTo, imageIdentifier: imageIdentifier });
     // ----- MODIFICATION END (kunyatta) -----
 
     this.text = '';

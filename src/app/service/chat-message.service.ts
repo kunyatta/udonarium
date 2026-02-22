@@ -74,13 +74,16 @@ export class ChatMessageService {
     return Math.floor(this.timeOffset + (performance.now() - this.performanceOffset));
   }
 
-  // sendMessage(chatTab: ChatTab, text: string, gameType: string, sendFrom: string, sendTo?: string): ChatMessage {
-  sendMessage(chatTab: ChatTab, text: string, gameType: string, sendFrom: string, sendTo?: string, color?: string): ChatMessage { // ----- MODIFICATION (kunyatta) for Chat Message Color Extension -----
+  // sendMessage(chatTab: ChatTab, text: string, gameType: string, sendFrom: string, sendTo?: string, color?: string): ChatMessage {
+  sendMessage(chatTab: ChatTab, text: string, gameType: string, sendFrom: string, sendTo?: string, color?: string, imageIdentifier?: string): ChatMessage { // ----- MODIFICATION (kunyatta) for Chat Message Icon Extension -----
     let chatMessage: ChatMessageContext = {
       from: Network.peer.userId,
       to: this.findId(sendTo),
       name: this.makeMessageName(sendFrom, sendTo),
-      imageIdentifier: this.findImageIdentifier(sendFrom),
+      // ----- MODIFICATION START (kunyatta) for Chat Message Icon Extension -----
+      // imageIdentifier: this.findImageIdentifier(sendFrom),
+      imageIdentifier: imageIdentifier ? imageIdentifier : this.findImageIdentifier(sendFrom),
+      // ----- MODIFICATION END (kunyatta) -----
       timestamp: this.calcTimeStamp(chatTab),
       tag: gameType,
       text: text,

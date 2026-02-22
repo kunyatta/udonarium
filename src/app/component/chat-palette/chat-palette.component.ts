@@ -9,6 +9,9 @@ import { PeerCursor } from '@udonarium/peer-cursor';
 import { ChatInputComponent } from 'component/chat-input/chat-input.component';
 import { ChatMessageService } from 'service/chat-message.service';
 import { PanelService } from 'service/panel.service';
+// ----- MODIFICATION START (kunyatta) for Chat Icon Extension -----
+import { CharacterDataService } from '../../plugins/service/character-data.service';
+// ----- MODIFICATION END (kunyatta) -----
 
 @Component({
   selector: 'chat-palette',
@@ -51,7 +54,10 @@ export class ChatPaletteComponent implements OnInit, OnDestroy {
 
   constructor(
     public chatMessageService: ChatMessageService,
-    private panelService: PanelService
+    private panelService: PanelService,
+    // ----- MODIFICATION START (kunyatta) for Chat Icon Extension -----
+    private characterDataService: CharacterDataService
+    // ----- MODIFICATION END (kunyatta) -----
   ) { }
 
   ngOnInit() {
@@ -104,10 +110,18 @@ export class ChatPaletteComponent implements OnInit, OnDestroy {
     }
   }
 
-  sendChat(value: { text: string, gameType: string, sendFrom: string, sendTo: string }) {
+  // sendChat(value: { text: string, gameType: string, sendFrom: string, sendTo: string }) {
+  sendChat(value: { text: string, gameType: string, sendFrom: string, sendTo: string, imageIdentifier?: string }) { // ----- MODIFICATION (kunyatta) for Chat Icon Extension -----
     if (this.chatTab) {
       let text = this.palette.evaluate(value.text, this.character.rootDataElement);
-      this.chatMessageService.sendMessage(this.chatTab, text, value.gameType, value.sendFrom, value.sendTo);
+      // ----- MODIFICATION START (kunyatta) for Chat Icon Extension -----
+      // this.chatMessageService.sendMessage(this.chatTab, text, value.gameType, value.sendFrom, value.sendTo);
+      let imageIdentifier = value.imageIdentifier;
+      if (!imageIdentifier) {
+        imageIdentifier = this.characterDataService.getChatImageIdentifier(this.character);
+      }
+      this.chatMessageService.sendMessage(this.chatTab, text, value.gameType, value.sendFrom, value.sendTo, null, imageIdentifier);
+      // ----- MODIFICATION END (kunyatta) -----
     }
   }
 

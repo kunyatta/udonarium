@@ -272,4 +272,24 @@ export class CharacterDataService {
 
     return idElement.value.toString();
   }
+
+  /**
+   * キャラクターのチャット用画像IDを解決して返します。
+   * 「チャット設定」セクションにアイコン画像が設定されていればそれを、
+   * なければキャラクターのメイン画像IDを返します。
+   * @param character 対象のキャラクター
+   */
+  getChatImageIdentifier(character: GameCharacter): string {
+    if (!character) return '';
+
+    // 1. チャット設定セクション内の「アイコン画像」を探す
+    // ※内部名 chatIconIdentifier を優先して探す
+    const chatIcon = character.detailDataElement?.getFirstElementByName('chatIconIdentifier')?.value;
+    if (chatIcon && typeof chatIcon === 'string' && chatIcon.length > 0 && chatIcon !== 'null') {
+      return chatIcon;
+    }
+
+    // 2. なければメイン画像を返す
+    return character.imageFile ? character.imageFile.identifier : '';
+  }
 }
