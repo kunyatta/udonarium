@@ -71,7 +71,7 @@ input, button, textarea, select{
   box-sizing: border-box;
 }
 
-/* ----- MODIFICATION START (kunyatta) for DynamicStandPlugin ----- */
+/* ----- MODIFICATION START (kunyatta) for Image Input UI Styling ----- */ 
 .image-input-container {
   display: flex;
   align-items: center;
@@ -126,8 +126,7 @@ input, button, textarea, select{
   text-overflow: ellipsis;
   font-family: monospace;
 }
-/* ----- MODIFICATION END (kunyatta) for DynamicStandPlugin ----- */
-
+/* ----- MODIFICATION END (kunyatta) ----- */ 
 input:hover, textarea:hover, select:hover  {
   background: #EEE;
 }

@@ -7,7 +7,7 @@ import { AudioStorage } from './audio-storage';
 import { FileReaderUtil } from './file-reader-util';
 import { ImageStorage } from './image-storage';
 import { MimeType } from './mime-type';
-import { ObjectSerializer } from '../synchronize-object/object-serializer'; // ----- MODIFICATION (kunyatta) for PluginDataIndependence -----
+import { ObjectSerializer } from '../synchronize-object/object-serializer'; // ----- MODIFICATION (kunyatta) for Plugin-Aware File Processing -----
 
 type MetaData = { percent: number, currentFile: string };
 type UpdateCallback = (metadata: MetaData) => void;
@@ -82,14 +82,14 @@ export class FileArchiver {
     if (!files) return;
     let loadFiles: File[] = files instanceof FileList ? toArrayOfFileList(files) : files;
 
-    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    // ----- MODIFICATION START (kunyatta) for Plugin-Aware File Processing -----
     // data.xmlを最優先で読み込み、部屋の初期化(Room.parseInnerXml)を完了させてからプラグインデータを読み込む
     loadFiles.sort((a, b) => {
       if (a.name === 'data.xml') return -1;
       if (b.name === 'data.xml') return 1;
       return 0;
     });
-    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+    // ----- MODIFICATION END (kunyatta) -----
 
     for (let file of loadFiles) {
       await this.handleImage(file);
@@ -125,7 +125,7 @@ export class FileArchiver {
     console.log(file.name + ' type:' + file.type);
     try {
       let xmlElement: Element = XmlUtil.xml2element(await FileReaderUtil.readAsTextAsync(file));
-      // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+      // ----- MODIFICATION START (kunyatta) for Plugin-Aware File Processing -----
       if (!xmlElement) return;
 
       if (file.name.startsWith('plugin_') && xmlElement.tagName.toLowerCase() === 'data') {
@@ -148,7 +148,7 @@ export class FileArchiver {
         // メインデータのパース（Roomのリセット等）が完了するまで待つ
         await waitLoad;
       }
-      // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+      // ----- MODIFICATION END (kunyatta) -----
     } catch (reason) {
       console.warn(reason);
     }

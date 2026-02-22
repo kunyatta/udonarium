@@ -15,7 +15,7 @@ export class PluginDataContainer extends ObjectNode {
   @SyncVar() fileNameHint: string = '';
 
   // 古いPluginDataContainerのデータ属性を読み込むためのフィールド (下位互換性のため)
-  @SyncVar() data: string = ''; // ----- MODIFICATION (Gemini) for PluginSystem: Backward compatibility for 'data' attribute -----
+  @SyncVar() data: string = ''; // ----- MODIFICATION (kunyatta) for Legacy Data Migration Support -----
 
   // データの本体は、このGameObjectの子要素としてDataElementツリーで表現される
   // 'state' という名前のDataElementを取得、なければ作成する

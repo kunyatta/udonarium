@@ -20,9 +20,7 @@ import { Jukebox } from '@udonarium/Jukebox';
 import { PeerCursor } from '@udonarium/peer-cursor';
 import { PresetSound, SoundEffect } from '@udonarium/sound-effect';
 import { TableSelecter } from '@udonarium/table-selecter';
-// ----- MODIFICATION START (kunyatta) for PluginSystem -----
-import { Room } from '@udonarium/room';
-// ----- MODIFICATION END (kunyatta) for PluginSystem -----
+import { Room } from '@udonarium/room'; // ----- MODIFICATION (kunyatta) for Application Extension Hook -----
 
 import { ChatWindowComponent } from 'component/chat-window/chat-window.component';
 import { ContextMenuComponent } from 'component/context-menu/context-menu.component';
@@ -43,17 +41,14 @@ import { PanelOption, PanelService } from 'service/panel.service';
 import { PointerDeviceService } from 'service/pointer-device.service';
 import { SaveDataService } from 'service/save-data.service';
 
-// ----- MODIFICATION START (kunyatta) for PluginSystem -----
+// ----- MODIFICATION START (kunyatta) for Application Extension Hook -----
 import { PluginService } from './plugins/service/plugin.service';
 import { PluginUiService } from './plugins/service/plugin-ui.service';
 import { PluginInfoPanelComponent } from './plugins/plugin-info/plugin-info-panel.component';
-// ----- MODIFICATION START (kunyatta) for UserPersistence -----
 import { UserPersistenceService } from './plugins/service/user-persistence.service';
-// ----- MODIFICATION END (kunyatta) for UserPersistence -----
-// ----- MODIFICATION START (kunyatta) for PluginSystem -----
 import { PluginOverlayService } from './plugins/service/plugin-overlay.service';
 import { UIExtensionService, ExtensionAction } from './plugins/service/ui-extension.service';
-// ----- MODIFICATION END (kunyatta) for PluginSystem -----
+// ----- MODIFICATION END (kunyatta) -----
 
 @Component({
   selector: 'app-root',
@@ -63,18 +58,15 @@ import { UIExtensionService, ExtensionAction } from './plugins/service/ui-extens
 export class AppComponent implements AfterViewInit, OnDestroy {
 
   @ViewChild('modalLayer', { read: ViewContainerRef, static: true }) modalLayerViewContainerRef: ViewContainerRef;
-  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
-  @ViewChild('pluginOverlayLayer', { read: ViewContainerRef, static: true }) pluginOverlayLayerRef: ViewContainerRef;
-  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+  @ViewChild('pluginOverlayLayer', { read: ViewContainerRef, static: true }) pluginOverlayLayerRef: ViewContainerRef; // ----- MODIFICATION (kunyatta) for Application Extension Hook -----
+  
   private immediateUpdateTimer: NodeJS.Timeout = null;
   private lazyUpdateTimer: NodeJS.Timeout = null;
   private openPanelCount: number = 0;
   isSaveing: boolean = false;
   progresPercent: number = 0;
 
-  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
-  private extensionSubscription: Subscription;
-  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+  private extensionSubscription: Subscription; // ----- MODIFICATION (kunyatta) for Application Extension Hook -----
 
   constructor(
     private modalService: ModalService,
@@ -84,15 +76,13 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     private appConfigService: AppConfigService,
     private saveDataService: SaveDataService,
     private ngZone: NgZone,
-    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    // ----- MODIFICATION START (kunyatta) for Application Extension Hook -----
     private pluginService: PluginService,
     private pluginUiService: PluginUiService,
     private pluginOverlayService: PluginOverlayService,
     private uiExtensionService: UIExtensionService,
-    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
-    // ----- MODIFICATION START (kunyatta) for UserPersistence -----
     private userPersistenceService: UserPersistenceService
-    // ----- MODIFICATION END (kunyatta) for UserPersistence -----
+    // ----- MODIFICATION END (kunyatta) -----
   ) {
 
     this.ngZone.runOutsideAngular(() => {
@@ -168,11 +158,9 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     AudioStorage.instance.get(PresetSound.selectionStart).isHidden = true;
 
     PeerCursor.createMyCursor();
-    // ----- MODIFICATION START (kunyatta) for UserPersistence -----
-    this.userPersistenceService.initialize();
+    this.userPersistenceService.initialize(); // ----- MODIFICATION (kunyatta) for Application Extension Hook -----
     // PeerCursor.myCursor.name = 'プレイヤー';
     // PeerCursor.myCursor.imageIdentifier = noneIconImage.identifier;
-    // ----- MODIFICATION END (kunyatta) for UserPersistence -----
 
     EventSystem.register(this)
       .on('UPDATE_GAME_OBJECT', event => { this.lazyNgZoneUpdate(event.isSendFromSelf); })
@@ -185,7 +173,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         Network.configure(event.data);
         Network.open();
       })
-      // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+      // ----- MODIFICATION START (kunyatta) for Application Extension Hook -----
       .on('XML_LOADED', event => {
         console.log('XML_LOADED !!!');
         let xmlElement: Element = event.data.xmlElement;
@@ -195,7 +183,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         // 処理完了を通知
         EventSystem.trigger('XML_LOAD_COMPLETED', { tagName: xmlElement.tagName });
       })
-      // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+      // ----- MODIFICATION END (kunyatta) -----
       .on<File>('FILE_LOADED', event => {
         this.lazyNgZoneUpdate(false);
       })
@@ -230,24 +218,24 @@ export class AppComponent implements AfterViewInit, OnDestroy {
         this.lazyNgZoneUpdate(event.isSendFromSelf);
       });
 
-    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    // ----- MODIFICATION START (kunyatta) for Application Extension Hook -----
     this.extensionSubscription = this.uiExtensionService.onUpdate$.subscribe(() => {
       this.lazyNgZoneUpdate(true);
     });
-    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+    // ----- MODIFICATION END (kunyatta) -----
 
     workaroundForMobileSafari();
   }
 
   ngAfterViewInit() {
     PanelService.defaultParentViewContainerRef = ModalService.defaultParentViewContainerRef = ContextMenuService.defaultParentViewContainerRef = this.modalLayerViewContainerRef;
-    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    // ----- MODIFICATION START (kunyatta) for Application Extension Hook -----
     PluginOverlayService.defaultParentViewContainerRef = this.pluginOverlayLayerRef;
-    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+    // ----- MODIFICATION END (kunyatta) -----
     setTimeout(() => {
-      // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+      // ----- MODIFICATION START (kunyatta) for Application Extension Hook -----
       this.pluginService.initializeUiPlugins();
-      // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+      // ----- MODIFICATION END (kunyatta) -----
       this.panelService.open(PeerMenuComponent, { width: 500, height: 450, left: 100 });
       this.panelService.open(ChatWindowComponent, { width: 700, height: 400, left: 100, top: 450 });
     }, 0);
@@ -255,9 +243,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
 
   ngOnDestroy() {
     EventSystem.unregister(this);
-    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
-    if (this.extensionSubscription) this.extensionSubscription.unsubscribe();
-    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+    if (this.extensionSubscription) this.extensionSubscription.unsubscribe(); // ----- MODIFICATION (kunyatta) for Application Extension Hook -----
   }
 
   open(componentName: string) {
@@ -296,7 +282,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     }
   }
 
-  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  // ----- MODIFICATION START (kunyatta) for Main Menu Extension Hooks -----
   get mainMenuExtensions(): ExtensionAction[] {
     return this.uiExtensionService.getActions('main-menu');
   }
@@ -323,7 +309,7 @@ export class AppComponent implements AfterViewInit, OnDestroy {
     const pointer = { x: event.pageX, y: event.pageY };
     extension.action(null, pointer);
   }
-  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+  // ----- MODIFICATION END (kunyatta) -----
 
 
   async save() {

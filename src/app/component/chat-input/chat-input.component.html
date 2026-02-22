@@ -4,58 +4,57 @@
   </div>
   <div class="table-cell">
     <div>
-      <!-- ----- MODIFICATION START (kunyatta) for ColorSupport ----- -->
+      <!-- ----- MODIFICATION START (kunyatta) for Chat Input Color Extension ----- -->
       <input *ngIf="showColorPicker" type="color" [(ngModel)]="sendFromColor" class="color-picker" />
-      <!-- ----- MODIFICATION END (kunyatta) for ColorSupport ----- -->
-      <!-- ----- MODIFICATION START (kunyatta) for CSS Separation ----- -->
+      <!-- ----- MODIFICATION END (kunyatta) ----- -->
+      <!-- ----- MODIFICATION START (kunyatta) for Chat Input UI Styling ----- -->
       <!-- <select style="width: 12em;" [(ngModel)]="sendFrom"> -->
       <select class="select-send-from" [(ngModel)]="sendFrom">
-      <!-- ----- MODIFICATION END (kunyatta) for CSS Separation ----- -->
+      <!-- ----- MODIFICATION END (kunyatta) ----- -->
         <option *ngIf="!onlyCharacters" value="{{myPeer?.identifier}}">{{myPeer?.name}}（あなた）</option>
         <option *ngFor="let gameCharacter of gameCharacters" value="{{gameCharacter.identifier}}">{{gameCharacter.name}}
         </option>
       </select> ＞
-      <!-- ----- MODIFICATION START (kunyatta) for CSS Separation ----- -->
+      <!-- ----- MODIFICATION START (kunyatta) for Chat Input UI Styling ----- -->
       <!-- <select style="width: 10em;" [(ngModel)]="sendTo"> -->
       <select class="select-send-to" [(ngModel)]="sendTo">
-      <!-- ----- MODIFICATION END (kunyatta) for CSS Separation ----- -->
+      <!-- ----- MODIFICATION END (kunyatta) ----- -->
         <option value="">全員</option>
         <option *ngFor="let peer of otherPeers" value="{{peer.identifier}}">{{peer.name}}
           <ng-container *ngIf="peer === myPeer">（あなた）</ng-container>
         </option>
       </select>
       <ng-container *ngIf="0 < diceBotInfos.length">
-        <!-- ----- MODIFICATION START (kunyatta) for CSS Separation ----- -->
+        <!-- ----- MODIFICATION START (kunyatta) for Chat Input UI Styling ----- -->
         <!-- <select #select style="width: 12em;" (change)="loadDiceBot(select.value)" [(ngModel)]="gameType" -->
         <select #select class="select-dice-bot" (change)="loadDiceBot(select.value)" [(ngModel)]="gameType"
           [ngModelOptions]="{standalone: true}">
-        <!-- ----- MODIFICATION END (kunyatta) for CSS Separation ----- -->
-          <!-- ----- MODIFICATION START (kunyatta) for PluginSystem ----- -->
+        <!-- ----- MODIFICATION END (kunyatta) ----- -->
+          <!-- ----- MODIFICATION START (kunyatta) for Chat Input DiceBot Customization ----- -->
           <!-- <option *ngFor="let diceBotInfo of diceBotInfos" value="{{diceBotInfo.id}}">{{diceBotInfo.name}}</option> -->
           <option *ngFor="let diceBotInfo of diceBotInfos" value="{{diceBotInfo.id}}">{{diceBotInfo.name === "DiceBot" ? "ダイスボット指定なし" : diceBotInfo.name}}</option>
-          <!-- ----- MODIFICATION END (kunyatta) for PluginSystem ----- -->
+          <!-- ----- MODIFICATION END (kunyatta) ----- -->
         </select>
       </ng-container>
       <ng-container *ngIf="diceBotInfos.length < 1">
-        <!-- ----- MODIFICATION START (kunyatta) for CSS Separation ----- -->
+        <!-- ----- MODIFICATION START (kunyatta) for Chat Input UI Styling ----- -->
         <!-- <select style="width: 12em;" disabled> -->
         <select class="select-dice-bot" disabled>
-        <!-- ----- MODIFICATION END (kunyatta) for CSS Separation ----- -->
+        <!-- ----- MODIFICATION END (kunyatta) ----- -->
           <option value="">ダイスボット読込中...</option>
         </select>
       </ng-container>
       <button (click)="showDicebotHelp()" [disabled]="diceBotInfos.length < 1">?</button>
     </div>
-    <!-- ----- MODIFICATION START (kunyatta) for DynamicStandPlugin ----- -->
+    <!-- ----- MODIFICATION START (kunyatta) for Chat Input Extension UI Slots ----- -->
     <div *ngIf="showColorPicker && onlyCharacters" class="extension-button-row" style="margin: 4px 0; display: flex; align-items: center; gap: 4px; flex-wrap: wrap;">
       <button *ngFor="let extension of chatInputExtensions" (click)="extension.action({ character: $any(ObjectStore.instance.get(sendFrom)), component: this }, { x: $event.clientX, y: $event.clientY }); $event.stopPropagation()" 
         style="font-size: 0.75rem; padding: 2px 6px; display: inline-flex; align-items: center; gap: 2px; height: 24px; vertical-align: middle;"
-        [title]="getExtensionDescription(extension)"> <!-- ----- MODIFICATION (Gemini) for TargetSelectorPlugin ----- -->
-        <!-- ----- MODIFICATION START (kunyatta) for MaterialSymbolsSupport ----- -->
+        [title]="getExtensionDescription(extension)"> <!-- for Extension UI Metadata Support -->
+        <!-- Icon support (MaterialSymbols) -->
         <!-- <i *ngIf="extension.icon" class="material-icons" style="font-size: 1rem;">{{getExtensionIcon(extension)}}</i> -->
         <i *ngIf="extension.icon" [ngClass]="extension.iconClass || 'material-icons'" style="font-size: 1rem;">{{getExtensionIcon(extension)}}</i>
-        <!-- ----- MODIFICATION END (kunyatta) ----- -->
-        <span>{{getExtensionLabel(extension)}}</span> <!-- ----- MODIFICATION (Gemini) for TargetSelectorPlugin ----- -->
+        <span>{{getExtensionLabel(extension)}}</span> <!-- for Extension UI Metadata Support -->
       </button>
 
       <!-- クイックアクション用（アイコンのみ・枠なし） -->
@@ -67,15 +66,15 @@
         <span *ngIf="!quick.icon">{{ getExtensionLabel(quick) }}</span>
       </button>
     </div>
-    <!-- ----- MODIFICATION START (kunyatta) for Dynamic UI Slot ----- -->
+    
+    <!-- Dynamic UI Slot -->
     <div *ngIf="showColorPicker && onlyCharacters && uiExtensionService.activeComponent && uiExtensionService.activeContext?.component === this" class="extension-custom-slot" (click)="$event.stopPropagation()">
       <ng-container *ngComponentOutlet="uiExtensionService.activeComponent"></ng-container>
     </div>
-    <!-- ----- MODIFICATION END (kunyatta) for Dynamic UI Slot ----- -->
-    <!-- ----- MODIFICATION END (kunyatta) for DynamicStandPlugin ----- -->
+    <!-- ----- MODIFICATION END (kunyatta) ----- -->
     <div>
       <form>
-        <!-- ----- MODIFICATION START (kunyatta) for ChatHistory ----- -->
+        <!-- ----- MODIFICATION START (kunyatta) for Chat Input History Extension ----- -->
         <!-- <textarea class="chat-input" placeholder="Enterで送信  Shift+Enterで改行" [(ngModel)]="text"
           [ngModelOptions]="{standalone: true}" (input)="onInput()" (keydown.enter)="sendChat($event)"
           (keydown.control.arrowup)="moveHistory($event, 1)" (keydown.control.arrowdown)="moveHistory($event, -1)"
@@ -84,7 +83,7 @@
           [ngModelOptions]="{standalone: true}" (input)="onInput()" (keydown.enter)="sendChat($event)"
           (keydown.control.arrowup)="moveHistory($event, 1)" (keydown.control.arrowdown)="moveHistory($event, -1)"
           #textArea></textarea>
-        <!-- ----- MODIFICATION END (kunyatta) for ChatHistory ----- -->
+        <!-- ----- MODIFICATION END (kunyatta) ----- -->
         <button type="submit" (click)="sendChat(null)">SEND</button>
       </form>
     </div>

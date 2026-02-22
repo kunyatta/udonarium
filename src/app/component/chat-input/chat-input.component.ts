@@ -13,9 +13,9 @@ import { BatchService } from 'service/batch.service';
 import { ChatMessageService } from 'service/chat-message.service';
 import { PanelOption, PanelService } from 'service/panel.service';
 import { PointerDeviceService } from 'service/pointer-device.service';
-// ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+// ----- MODIFICATION START (kunyatta) for Chat Input Extension Hook -----
 import { UIExtensionService, ExtensionAction } from '../../plugins/service/ui-extension.service';
-// ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
+// ----- MODIFICATION END (kunyatta) -----
 
 @Component({
   selector: 'chat-input',
@@ -24,7 +24,7 @@ import { UIExtensionService, ExtensionAction } from '../../plugins/service/ui-ex
 })
 export class ChatInputComponent implements OnInit, OnDestroy {
   @ViewChild('textArea', { static: true }) textAreaElementRef: ElementRef;
-  // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+  // ----- MODIFICATION START (kunyatta) for Chat Input Extension Hook -----
   ObjectStore = ObjectStore; // テンプレート参照用
   
   @HostListener('document:click', ['$event'])
@@ -33,14 +33,14 @@ export class ChatInputComponent implements OnInit, OnDestroy {
       this.uiExtensionService.closeCustomUI();
     }
   }
-  // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
+  // ----- MODIFICATION END (kunyatta) -----
 
   @Input() onlyCharacters: boolean = false;
   @Input() chatTabidentifier: string = '';
   
-  // ----- MODIFICATION START (kunyatta) for ColorSupport -----
+  // ----- MODIFICATION START (kunyatta) for Chat Input Color Extension -----
   @Input() showColorPicker: boolean = false;
-  // ----- MODIFICATION END (kunyatta) for ColorSupport -----
+  // ----- MODIFICATION END (kunyatta) -----
 
   @Input('gameType') _gameType: string = '';
   @Output() gameTypeChange = new EventEmitter<string>();
@@ -67,11 +67,11 @@ export class ChatInputComponent implements OnInit, OnDestroy {
   get isDirect(): boolean { return this.sendTo != null && this.sendTo.length ? true : false }
   gameHelp: string = '';
 
-  // ----- MODIFICATION START (kunyatta) for ChatHistory -----
+  // ----- MODIFICATION START (kunyatta) for Chat Input History Extension -----
   private static chatHistory: string[] = [];
   private historyIndex: number = -1;
   private tempInputText: string = '';
-  // ----- MODIFICATION END (kunyatta) for ChatHistory -----
+  // ----- MODIFICATION END (kunyatta) -----
 
   get imageFile(): ImageFile {
     let object = ObjectStore.instance.get(this.sendFrom);
@@ -84,7 +84,7 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     return image ? image : ImageFile.Empty;
   }
 
-  // ----- MODIFICATION START (kunyatta) for ColorSupport -----
+  // ----- MODIFICATION START (kunyatta) for Chat Input Color Extension -----
   get sendFromColor(): string {
     let object = ObjectStore.instance.get(this.sendFrom);
     if (object instanceof GameCharacter) {
@@ -103,7 +103,7 @@ export class ChatInputComponent implements OnInit, OnDestroy {
       object.color = color;
     }
   }
-  // ----- MODIFICATION END (kunyatta) for ColorSupport -----
+  // ----- MODIFICATION END (kunyatta) -----
 
   private shouldUpdateCharacterList: boolean = true;
   private _gameCharacters: GameCharacter[] = [];
@@ -132,14 +132,14 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     private batchService: BatchService,
     private panelService: PanelService,
     private pointerDeviceService: PointerDeviceService,
-    // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+    // ----- MODIFICATION START (kunyatta) for Chat Input Extension Hook -----
     public uiExtensionService: UIExtensionService
-    // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
+    // ----- MODIFICATION END (kunyatta) -----
   ) { }
 
   ngOnInit(): void {
     EventSystem.register(this)
-      // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+      // ----- MODIFICATION START (kunyatta) for Chat Message Lifecycle Hook -----
       .on('MESSAGE_ADDED', event => {
         if (event.data.tabIdentifier !== this.chatTabidentifier) return;
         let message = ObjectStore.instance.get<ChatMessage>(event.data.messageIdentifier);
@@ -151,7 +151,7 @@ export class ChatInputComponent implements OnInit, OnDestroy {
           this.updateWritingPeerNames();
         }
       })
-      // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+      // ----- MODIFICATION END (kunyatta) -----
       .on(`UPDATE_GAME_OBJECT/aliasName/${GameCharacter.aliasName}`, event => {
         this.shouldUpdateCharacterList = true;
         if (event.data.identifier !== this.sendFrom) return;
@@ -197,7 +197,7 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     });
   }
 
-  // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+  // ----- MODIFICATION START (kunyatta) for Chat Input Extension Logic -----
   get chatInputExtensions(): ExtensionAction[] {
     let object = ObjectStore.instance.get(this.sendFrom);
     return this.uiExtensionService.getActions('chat-input', object);
@@ -252,7 +252,7 @@ export class ChatInputComponent implements OnInit, OnDestroy {
       textArea.setSelectionRange(start + emote.length, start + emote.length);
     }, 0);
   }
-  // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
+  // ----- MODIFICATION END (kunyatta) ----- 
 
   onInput() {
     if (this.writingEventInterval === null && this.previousWritingLength <= this.text.length) {
@@ -273,7 +273,7 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     this.calcFitHeight();
   }
 
-  // ----- MODIFICATION START (kunyatta) for ChatHistory -----
+  // ----- MODIFICATION START (kunyatta) for Chat Input History Extension -----
   moveHistory(event: Event, direction: number) {
     if (event) event.preventDefault();
 
@@ -301,10 +301,10 @@ export class ChatInputComponent implements OnInit, OnDestroy {
     textArea.value = this.text;
     this.calcFitHeight();
   }
-  // ----- MODIFICATION END (kunyatta) for ChatHistory -----
+  // ----- MODIFICATION END (kunyatta) -----
 
   // sendChat(event: KeyboardEvent) {
-  sendChat(event: Partial<KeyboardEvent>) { // ----- MODIFICATION (kunyatta) -----
+  sendChat(event: Partial<KeyboardEvent>) { // ----- MODIFICATION (kunyatta) for Partial KeyboardEvent Support -----
     if (event) event.preventDefault();
 
     if (!this.text.length) return;
@@ -312,7 +312,7 @@ export class ChatInputComponent implements OnInit, OnDestroy {
 
     if (!this.sendFrom.length) this.sendFrom = this.myPeer.identifier;
 
-    // ----- MODIFICATION START (kunyatta) for ChatHistory -----
+    // ----- MODIFICATION START (kunyatta) for Chat Input History Extension -----
     if (this.text && this.text.trim().length > 0) {
       if (ChatInputComponent.chatHistory.length === 0 || ChatInputComponent.chatHistory[0] !== this.text) {
         ChatInputComponent.chatHistory.unshift(this.text);
@@ -323,13 +323,13 @@ export class ChatInputComponent implements OnInit, OnDestroy {
       this.historyIndex = -1;
       this.tempInputText = '';
     }
-    // ----- MODIFICATION END (kunyatta) for ChatHistory -----
+    // ----- MODIFICATION END (kunyatta) -----
 
-    // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+    // ----- MODIFICATION START (kunyatta) for Chat Input Filter Hook -----
     // this.chat.emit({ text: this.text, gameType: this.gameType, sendFrom: this.sendFrom, sendTo: this.sendTo });
     let sendText = this.uiExtensionService.applyFilters('chat-send', this.text, ObjectStore.instance.get(this.sendFrom));
     this.chat.emit({ text: sendText, gameType: this.gameType, sendFrom: this.sendFrom, sendTo: this.sendTo });
-    // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
+    // ----- MODIFICATION END (kunyatta) -----
 
     this.text = '';
     this.previousWritingLength = this.text.length;

@@ -10,10 +10,12 @@ import { PromiseQueue } from '@udonarium/core/system/util/promise-queue';
 import { XmlUtil } from '@udonarium/core/system/util/xml-util';
 import { DataSummarySetting } from '@udonarium/data-summary-setting';
 import { Room } from '@udonarium/room';
-import { ObjectStore } from '@udonarium/core/synchronize-object/object-store'; // ----- MODIFICATION (kunyatta) for PluginSystem -----
-import { PluginDataContainer } from '../class/plugin-data-container'; // ----- MODIFICATION (kunyatta) for PluginSystem -----
-import { DataElement } from '@udonarium/data-element'; // ----- MODIFICATION (kunyatta) for PluginSystem -----
-import { DataElementExtensionService } from '../plugins/service/data-element-extension.service'; // ----- MODIFICATION (kunyatta) for DataElementExtension -----
+// ----- MODIFICATION START (kunyatta) for Save Data Extension Hooks -----
+import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
+import { PluginDataContainer } from '../class/plugin-data-container';
+import { DataElement } from '@udonarium/data-element';
+import { DataElementExtensionService } from '../plugins/service/data-element-extension.service';
+// ----- MODIFICATION END (kunyatta) -----
 
 import Beautify from 'vkbeautify';
 
@@ -27,7 +29,7 @@ export class SaveDataService {
 
   constructor(
     private ngZone: NgZone,
-    private dataElementExtensionService: DataElementExtensionService // ----- MODIFICATION (kunyatta) for DataElementExtension -----
+    private dataElementExtensionService: DataElementExtensionService // ----- MODIFICATION (kunyatta) for Data Element XML Serialization Hook -----
   ) { }
 
   saveRoomAsync(fileName: string = 'ルームデータ', updateCallback?: UpdateCallback): Promise<void> {
@@ -43,7 +45,7 @@ export class SaveDataService {
     files.push(new File([chatXml], 'chat.xml', { type: 'text/plain' }));
     files.push(new File([summarySetting], 'summary.xml', { type: 'text/plain' }));
 
-    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    // ----- MODIFICATION START (kunyatta) for Generic Data Container Persistence -----
     // PluginDataContainerをpluginIdとfileNameHintの組み合わせでグループ化
     const pluginDataMap = new Map<string, PluginDataContainer[]>();
     for (const container of ObjectStore.instance.getObjects(PluginDataContainer)) {
@@ -76,12 +78,12 @@ export class SaveDataService {
       // プラグインデータ内で使用されている画像も収集する
       files = files.concat(this.searchImageFiles(finalXml));
     }
-    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+    // ----- MODIFICATION END (kunyatta) -----
 
     files = files.concat(this.searchImageFiles(roomXml));
     files = files.concat(this.searchImageFiles(chatXml));
 
-    files = this.uniqueFiles(files); // ----- MODIFICATION (kunyatta) for DuplicateFileFix -----
+    files = this.uniqueFiles(files); // ----- MODIFICATION (kunyatta) for File Deduplication Logic -----
 
     return this.saveAsync(files, this.appendTimestamp(fileName), updateCallback);
   }
@@ -90,7 +92,7 @@ export class SaveDataService {
     return SaveDataService.queue.add((resolve, reject) => resolve(this._saveGameObjectAsync(gameObject, fileName, updateCallback)));
   }
 
-  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  // ----- MODIFICATION START (kunyatta) for Save Data Serialization Extension -----
   /**
    * 任意の DataElement を単一のXMLファイルとして保存します。
    * ZIP圧縮するかどうかを選択可能です。
@@ -143,7 +145,7 @@ export class SaveDataService {
     link.click();
     return Promise.resolve();
   }
-  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+  // ----- MODIFICATION END (kunyatta) -----
 
   private _saveGameObjectAsync(gameObject: GameObject, fileName: string = 'xml_data', updateCallback?: UpdateCallback): Promise<void> {
     let files: File[] = [];
@@ -152,7 +154,7 @@ export class SaveDataService {
     files.push(new File([xml], 'data.xml', { type: 'text/plain' }));
     files = files.concat(this.searchImageFiles(xml));
 
-    files = this.uniqueFiles(files); // ----- MODIFICATION (kunyatta) for DuplicateFileFix -----
+    files = this.uniqueFiles(files); // ----- MODIFICATION (kunyatta) for File Deduplication Logic -----
 
     return this.saveAsync(files, this.appendTimestamp(fileName), updateCallback);
   }
@@ -167,7 +169,7 @@ export class SaveDataService {
     });
   }
 
-  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  // ----- MODIFICATION START (kunyatta) for Save Data Serialization Extension -----
   /*
   private convertToXml(gameObject: GameObject): string {
     let xmlDeclaration = '<?xml version="1.0" encoding="UTF-8"?>';
@@ -184,7 +186,7 @@ export class SaveDataService {
     }
     return xmlDeclaration + '\n' + Beautify.xml(contentXml, 2);
   }
-  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+  // ----- MODIFICATION END (kunyatta) -----
 
   private searchImageFiles(xml: string): File[] {
     let xmlElement: Element = XmlUtil.xml2element(xml);
@@ -192,7 +194,7 @@ export class SaveDataService {
     if (!xmlElement) return files;
 
     let images: { [identifier: string]: ImageFile } = {};
-    // ----- MODIFICATION START (kunyatta) for DataElementExtension -----
+    // ----- MODIFICATION START (kunyatta) for Data Element XML Serialization Hook -----
     let imageTypes = ['image'];
     for (const ext of this.dataElementExtensionService.getAll()) {
       if (ext.isImage && !imageTypes.includes(ext.type)) {
@@ -207,7 +209,7 @@ export class SaveDataService {
       let identifier = imageElements[i].innerHTML;
       if (identifier) images[identifier] = ImageStorage.instance.get(identifier);
     }
-    // ----- MODIFICATION END (kunyatta) for DataElementExtension -----
+    // ----- MODIFICATION END (kunyatta) -----
 
     imageElements = xmlElement.ownerDocument.querySelectorAll('*[imageIdentifier], *[backgroundImageIdentifier]');
 

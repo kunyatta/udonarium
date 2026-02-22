@@ -19,9 +19,9 @@
     <button (click)="openModal('imageIdentifier', true)">画像変更</button>
   </ng-container>
 </ng-container>
-<!-- ----- MODIFICATION START (kunyatta) for DynamicStandPlugin ----- -->
+<!-- ----- MODIFICATION START (kunyatta) for Character Sheet Extension Buttons ----- -->
 <button *ngFor="let extension of characterSheetExtensions" (click)="extension.action(tabletopObject)">{{extension.name}}</button>
-<!-- ----- MODIFICATION END (kunyatta) for DynamicStandPlugin ----- -->
+<!-- ----- MODIFICATION END (kunyatta) ----- -->
 <button (click)="clone()">コピーを作る</button>
 <button [disabled]="isSaveing" (click)="saveToXML()">
   <div style="position: relative;">

@@ -40,17 +40,16 @@
           <div>インベントリ</div>
         </a>
       </li>
-      <!-- ----- MODIFICATION START (kunyatta) for PluginSystem ----- -->
+      <!-- ----- MODIFICATION START (kunyatta) for Main Menu Extension Slots ----- -->
       <li *ngFor="let extension of mainMenuExtensions" (click)="onExtensionClick(extension, $event)">
         <a routerLink="/" routerLinkActive="active">
-          <!-- ----- MODIFICATION START (kunyatta) for MaterialSymbolsSupport ----- -->
+          <!-- Icon support (MaterialSymbols) -->
           <!-- <div><i class="material-icons icon-size">{{extension.icon}}</i></div> -->
           <div><i [ngClass]="extension.iconClass || 'material-icons'" class="icon-size">{{extension.icon}}</i></div>
-          <!-- ----- MODIFICATION END (kunyatta) ----- -->
           <div>{{extension.name}}</div>
         </a>
       </li>
-      <!-- ----- MODIFICATION END (kunyatta) for PluginSystem ----- -->
+      <!-- ----- MODIFICATION END (kunyatta) ----- -->
       <li>
         <a routerLink="/" routerLinkActive="active">
           <label>
@@ -73,19 +72,19 @@
           <div>{{progresPercent}}%</div>
         </a>
       </li>
-      <!-- ----- MODIFICATION START (kunyatta) for PluginSystem ----- -->
+      <!-- ----- MODIFICATION START (kunyatta) for Main Menu Extension Slots ----- -->
       <li *ngFor="let extension of mainMenuBottomExtensions" (click)="onExtensionClick(extension, $event)">
         <a routerLink="/" routerLinkActive="active">
           <div><i [ngClass]="extension.iconClass || 'material-icons'" class="icon-size">{{extension.icon}}</i></div>
           <div>{{extension.name}}</div>
         </a>
       </li>
-      <!-- ----- MODIFICATION END (kunyatta) for PluginSystem ----- -->
+      <!-- ----- MODIFICATION END (kunyatta) ----- -->
     </ul>
   </nav>
 </ui-panel>
 <div #modalLayer></div>
-<!-- ----- MODIFICATION START (kunyatta) for PluginSystem ----- -->
+<!-- ----- MODIFICATION START (kunyatta) for Application Overlay Layer ----- -->
 <div #pluginOverlayLayer style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2000000; overflow: hidden;"></div>
-<!-- ----- MODIFICATION END (kunyatta) for PluginSystem ----- -->
+<!-- ----- MODIFICATION END (kunyatta) ----- -->
 <network-indicator class="networkIndicator"></network-indicator>

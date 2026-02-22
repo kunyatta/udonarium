@@ -60,7 +60,7 @@ export class DataElement extends ObjectNode {
     return null;
   }
 
-  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  // ----- MODIFICATION START (kunyatta) for Case-Insensitive Element Search Extension -----
   getFirstElementByNameUnsensitive(name: string, replacePattern: string|RegExp = null, replacement=''): DataElement {
     for (let child of this.children) {
       if (child instanceof DataElement) {
@@ -84,5 +84,5 @@ export class DataElement extends ObjectNode {
     }
     return null;
   }
-  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+  // ----- MODIFICATION END (kunyatta) -----
 }

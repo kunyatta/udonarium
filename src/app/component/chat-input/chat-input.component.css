@@ -65,7 +65,7 @@
   color: #CCC;
 }
 
-/* ----- MODIFICATION START (kunyatta) for ColorSupport ----- */
+/* ----- MODIFICATION START (kunyatta) for Chat Input Color Extension Styling ----- */
 .color-picker {
   width: 24px;
   height: 18px;
@@ -75,9 +75,9 @@
   background-color: 240,240,240;
   padding: 0px 2px;
 }
-/* ----- MODIFICATION END (kunyatta) for ColorSupport ----- */
+/* ----- MODIFICATION END (kunyatta) ----- */
 
-/* ----- MODIFICATION START (kunyatta) for CSS Separation ----- */
+/* ----- MODIFICATION START (kunyatta) for Chat Input UI Styling ----- */
 .select-send-from {
   width: 12em;
 }
@@ -89,12 +89,12 @@
 .select-dice-bot {
   width: 12em;
 }
-/* ----- MODIFICATION END (kunyatta) for CSS Separation ----- */
+/* ----- MODIFICATION END (kunyatta) ----- */
 
-/* ----- MODIFICATION START (kunyatta) for DynamicStandPlugin ----- */
+/* ----- MODIFICATION START (kunyatta) for Chat Input Extension Styling ----- */
 .emote-btn:hover {
   background-color: rgba(0, 0, 0, 0.1) !important;
   border-color: #ccc !important;
   border-radius: 4px;
 }
-/* ----- MODIFICATION END (kunyatta) for DynamicStandPlugin ----- */
+/* ----- MODIFICATION END (kunyatta) ----- */

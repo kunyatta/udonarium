@@ -75,7 +75,7 @@
   /*color:#CCF;*/
 }
 
-/* ----- MODIFICATION START (Gemini) for ChatMessageAction ----- */
+/* ----- MODIFICATION START (kunyatta) for Chat Message Action Styling ----- */
 .msg-actions {
   display: inline-flex;
   margin-left: 8px;
@@ -111,4 +111,4 @@
 .direct-message .msg-action-button:hover {
   color: #fff;
 }
-/* ----- MODIFICATION END (Gemini) for ChatMessageAction ----- */
+/* ----- MODIFICATION END (kunyatta) ----- */

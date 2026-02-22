@@ -9,9 +9,9 @@ import { FileSelecterComponent } from 'component/file-selecter/file-selecter.com
 import { ModalService } from 'service/modal.service';
 import { PanelService } from 'service/panel.service';
 import { SaveDataService } from 'service/save-data.service';
-// ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+// ----- MODIFICATION START (kunyatta) for Character Sheet Extension Hook -----
 import { UIExtensionService, ExtensionAction } from '../../plugins/service/ui-extension.service';
-// ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
+// ----- MODIFICATION END (kunyatta) -----
 
 @Component({
   selector: 'game-character-sheet',
@@ -32,9 +32,9 @@ export class GameCharacterSheetComponent implements OnInit, OnDestroy {
     private saveDataService: SaveDataService,
     private panelService: PanelService,
     private modalService: ModalService,
-    // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+    // ----- MODIFICATION START (kunyatta) for Character Sheet Extension Hook -----
     private uiExtensionService: UIExtensionService
-    // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
+    // ----- MODIFICATION END (kunyatta) -----
   ) { }
 
   ngOnInit() {
@@ -94,11 +94,11 @@ export class GameCharacterSheetComponent implements OnInit, OnDestroy {
     }
   }
 
-  // ----- MODIFICATION START (kunyatta) for DynamicStandPlugin -----
+  // ----- MODIFICATION START (kunyatta) for Character Sheet Extension Hook -----
   get characterSheetExtensions(): ExtensionAction[] {
     return this.uiExtensionService.getActions('character-sheet', this.tabletopObject);
   }
-  // ----- MODIFICATION END (kunyatta) for DynamicStandPlugin -----
+  // ----- MODIFICATION END (kunyatta) -----
 
   async saveToXML() {
     if (!this.tabletopObject || this.isSaveing) return;

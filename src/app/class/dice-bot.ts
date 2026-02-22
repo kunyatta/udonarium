@@ -78,9 +78,7 @@ export class DiceBot extends GameObject {
       tag: `system dicebot${isSecret ? ' secret' : ''}`,
       name: `${id} : ${originalMessage.name}${isSecret ? ' (Secret)' : ''}`,
       text: result,
-      // ----- MODIFICATION START (kunyatta) for ColorSupport -----
-      color: originalMessage.color
-      // ----- MODIFICATION END (kunyatta) for ColorSupport -----
+      color: originalMessage.color // ----- MODIFICATION (kunyatta) for Dice Bot Message Metadata Extension -----
     };
 
     if (originalMessage.to != null && 0 < originalMessage.to.length) {

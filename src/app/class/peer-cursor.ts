@@ -15,9 +15,7 @@ export class PeerCursor extends GameObject {
   @SyncVar() peerId: PeerId = '';
   @SyncVar() name: string = '';
   @SyncVar() imageIdentifier: string = '';
-  // ----- MODIFICATION START (kunyatta) for ColorSupport -----
-  @SyncVar() color: string = '#000000';
-  // ----- MODIFICATION END (kunyatta) for ColorSupport -----
+  @SyncVar() color: string = '#000000'; // ----- MODIFICATION (kunyatta) for Peer Cursor Property Extension -----
 
   static myCursor: PeerCursor = null;
   private static userIdMap: Map<UserId, ObjectIdentifier> = new Map();

@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, ChangeDetectorRef, Component, Input, OnChanges, OnDestroy, OnInit, Injector } from '@angular/core';
 import { EventSystem } from '@udonarium/core/system';
 import { DataElement } from '@udonarium/data-element';
-import { DataElementExtensionService, DataElementExtension } from '../../plugins/service/data-element-extension.service'; // ----- MODIFICATION (kunyatta) for DataElementExtension -----
+import { DataElementExtensionService, DataElementExtension } from '../../plugins/service/data-element-extension.service'; // ----- MODIFICATION (kunyatta) for Data Element UI Injection Hook -----
 
 @Component({
   selector: 'game-data-element, [game-data-element]',
@@ -28,29 +28,25 @@ export class GameDataElementComponent implements OnInit, OnChanges, OnDestroy {
   set currentValue(currentValue: number | string) { this._currentValue = currentValue; this.setUpdateTimer(); }
 
   private updateTimer: NodeJS.Timeout = null;
-  // ----- MODIFICATION START (kunyatta) for DataElementExtension -----
-  extensionInjector: Injector = null;
-  // ----- MODIFICATION END (kunyatta) for DataElementExtension -----
+  extensionInjector: Injector = null; // ----- MODIFICATION (kunyatta) for Data Element UI Injection Hook -----
 
   constructor(
     private changeDetector: ChangeDetectorRef,
-    private injector: Injector, // ----- MODIFICATION (kunyatta) for DataElementExtension -----
-    private dataElementExtensionService: DataElementExtensionService // ----- MODIFICATION (kunyatta) for DataElementExtension -----
+    // ----- MODIFICATION START (kunyatta) for Data Element UI Injection Hook -----
+    private injector: Injector,
+    private dataElementExtensionService: DataElementExtensionService
+    // ----- MODIFICATION END (kunyatta) -----
   ) { }
 
   ngOnInit() {
     if (this.gameDataElement) {
       this.setValues(this.gameDataElement);
-      // ----- MODIFICATION START (kunyatta) for DataElementExtension -----
-      this.createExtensionInjector();
-      // ----- MODIFICATION END (kunyatta) for DataElementExtension -----
+      this.createExtensionInjector(); // ----- MODIFICATION (kunyatta) for Data Element UI Injection Hook -----
     }
   }
 
   ngOnChanges(): void {
-    // ----- MODIFICATION START (kunyatta) for DataElementExtension -----
-    this.createExtensionInjector();
-    // ----- MODIFICATION END (kunyatta) for DataElementExtension -----
+    this.createExtensionInjector(); // ----- MODIFICATION (kunyatta) for Data Element UI Injection Hook -----
     EventSystem.unregister(this);
     EventSystem.register(this)
       .on(`UPDATE_GAME_OBJECT/identifier/${this.gameDataElement?.identifier}`, event => {
@@ -98,7 +94,7 @@ export class GameDataElementComponent implements OnInit, OnChanges, OnDestroy {
     this.gameDataElement.setAttribute('type', type);
   }
 
-  // ----- MODIFICATION START (kunyatta) for DataElementExtension -----
+  // ----- MODIFICATION START (kunyatta) for Data Element UI Injection Hook -----
   get customExtension(): DataElementExtension | undefined {
     return this.dataElementExtensionService.get(this.gameDataElement?.type);
   }
@@ -113,7 +109,7 @@ export class GameDataElementComponent implements OnInit, OnChanges, OnDestroy {
       parent: this.injector
     });
   }
-  // ----- MODIFICATION END (kunyatta) for DataElementExtension -----
+  // ----- MODIFICATION END (kunyatta) -----
 
   private setValues(object: DataElement) {
     this._name = object.name;

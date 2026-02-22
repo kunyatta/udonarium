@@ -43,11 +43,11 @@ import { ResizableDirective } from 'directive/resizable.directive';
 import { RotableDirective } from 'directive/rotable.directive';
 import { TooltipDirective } from 'directive/tooltip.directive';
 
-// ----- MODIFICATION START (kunyatta) for PluginSystem & SharedModule -----
+// ----- MODIFICATION START (kunyatta) for Plugin System Integration -----
 import { PluginsModule } from './plugins/plugins.module';
 import { PluginService } from './plugins/service/plugin.service';
 import { SharedModule } from './shared.module';
-// ----- MODIFICATION END (kunyatta) for PluginSystem & SharedModule -----
+// ----- MODIFICATION END (kunyatta) -----
 
 import { AppConfigService } from 'service/app-config.service';
 import { ChatMessageService } from 'service/chat-message.service';
@@ -109,10 +109,10 @@ import { AppComponent } from './app.component';
     BrowserAnimationsModule,
     CommonModule,
     FormsModule,
-    // ----- MODIFICATION START (kunyatta) for PluginSystem & SharedModule -----
+    // ----- MODIFICATION START (kunyatta) for Plugin System Integration -----
     PluginsModule,
     SharedModule,
-    // ----- MODIFICATION END (kunyatta) for PluginSystem & SharedModule -----
+    // ----- MODIFICATION END (kunyatta) -----
   ],
   providers: [
     AppConfigService,
@@ -123,14 +123,14 @@ import { AppComponent } from './app.component';
     PanelService,
     PointerDeviceService,
     TabletopService,
-    // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+    // ----- MODIFICATION START (kunyatta) for Plugin System Integration -----
     {
       provide: APP_INITIALIZER,
       useFactory: (pluginService: PluginService) => () => pluginService.initialize(),
       deps: [PluginService],
       multi: true,
     },
-    // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+    // ----- MODIFICATION END (kunyatta) -----
   ],
   bootstrap: [AppComponent]
 })

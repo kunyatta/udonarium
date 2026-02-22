@@ -1,7 +1,7 @@
 import { ComponentRef, Injectable, ViewContainerRef } from '@angular/core';
-// ----- MODIFICATION START (kunyatta) for PluginSystem -----
+// ----- MODIFICATION START (kunyatta) for Context Menu Extension Hook -----
 import { UIExtensionService, ExtensionAction } from '../plugins/service/ui-extension.service';
-// ----- MODIFICATION END (kunyatta) for PluginSystem -----
+// ----- MODIFICATION END (kunyatta) -----
 
 interface ContextMenuPoint {
   x: number,
@@ -43,13 +43,13 @@ export class ContextMenuService {
     return this.panelComponentRef ? true : false;
   }
 
-  // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+  // ----- MODIFICATION START (kunyatta) for Context Menu Extension Hook -----
   constructor(
     private uiExtensionService: UIExtensionService
   ) { }
-  // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+  // ----- MODIFICATION END (kunyatta) -----
 
-  open(position: ContextMenuPoint, actions: ContextMenuAction[], title?: string, parentViewContainerRef?: ViewContainerRef, context?: any) { // ----- MODIFICATION (kunyatta) for PluginSystem -----
+  open(position: ContextMenuPoint, actions: ContextMenuAction[], title?: string, parentViewContainerRef?: ViewContainerRef, context?: any) { // ----- MODIFICATION (kunyatta) for Context Menu Extension Hook -----
     this.close();
     if (!parentViewContainerRef) {
       parentViewContainerRef = ContextMenuService.defaultParentViewContainerRef;
@@ -63,7 +63,7 @@ export class ContextMenuService {
     childPanelService.panelComponentRef = panelComponentRef;
     if (actions) {
       childPanelService.actions = actions;
-      // ----- MODIFICATION START (kunyatta) for PluginSystem -----
+      // ----- MODIFICATION START (kunyatta) for Context Menu Extension Hook -----
       if (context) {
         const extensions = this.uiExtensionService.getActions('context-menu', context);
         if (extensions && extensions.length > 0) {
@@ -118,7 +118,7 @@ export class ContextMenuService {
           }
         }
       }
-      // ----- MODIFICATION END (kunyatta) for PluginSystem -----
+      // ----- MODIFICATION END (kunyatta) -----
     }
     if (position) {
       childPanelService.position.x = position.x;

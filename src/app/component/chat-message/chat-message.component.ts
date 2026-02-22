@@ -4,8 +4,7 @@ import { ChangeDetectionStrategy, Component, Input, OnInit } from '@angular/core
 import { ChatMessage } from '@udonarium/chat-message';
 import { ImageFile } from '@udonarium/core/file-storage/image-file';
 import { ChatMessageService } from 'service/chat-message.service';
-
-import { UIExtensionService } from '../../plugins/service/ui-extension.service'; // ----- MODIFICATION (Gemini) for ChatMessageAction -----
+import { UIExtensionService } from '../../plugins/service/ui-extension.service'; // ----- MODIFICATION (kunyatta) for Chat Message UI Action Hook -----
 
 @Component({
   selector: 'chat-message',
@@ -37,7 +36,7 @@ export class ChatMessageComponent implements OnInit {
 
   constructor(
     private chatMessageService: ChatMessageService,
-    private uiExtensionService: UIExtensionService, // ----- MODIFICATION (Gemini) for ChatMessageAction -----
+    private uiExtensionService: UIExtensionService // ----- MODIFICATION (kunyatta) for Chat Message UI Action Hook -----
   ) { }
 
   ngOnInit() {
@@ -51,7 +50,7 @@ export class ChatMessageComponent implements OnInit {
     this.chatMessage.tag = this.chatMessage.tag.replace('secret', '');
   }
 
-  // ----- MODIFICATION START (Gemini) for ChatMessageAction -----
+  // ----- MODIFICATION START (kunyatta) for Chat Message UI Action Hook -----
   get actions(): any[] {
     return this.uiExtensionService.getActions('chat-message-menu', this.chatMessage);
   }
@@ -72,5 +71,5 @@ export class ChatMessageComponent implements OnInit {
       }
     }
   }
-  // ----- MODIFICATION END (Gemini) for ChatMessageAction -----
+  // ----- MODIFICATION END (kunyatta) -----
 }

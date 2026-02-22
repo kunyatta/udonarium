@@ -16,11 +16,9 @@ export interface PaletteVariable {
 @SyncObject('chat-palette')
 export class ChatPalette extends ObjectNode {
   @SyncVar() dicebot: string = '';
-  // ----- MODIFICATION START (kunyatta) for ColorSupport -----
+  // ----- MODIFICATION START (kunyatta) for Chat Palette Metadata and Migration -----
   @SyncVar() color: string = '#000000';
-  // ----- MODIFICATION END (kunyatta) for ColorSupport -----
 
-  // ----- MODIFICATION START (Gemini) for Compatibility -----
   // XML属性の読み込みフック。古いデータ互換性のため paletteColor を color に読み替える
   parseAttributes(attributes: NamedNodeMap) {
     super.parseAttributes(attributes);
@@ -33,7 +31,7 @@ export class ChatPalette extends ObjectNode {
       this.removeAttribute('paletteColor');
     }
   }
-  // ----- MODIFICATION END (Gemini) for Compatibility -----
+  // ----- MODIFICATION END (kunyatta) -----
 
   //TODO: キャラシ項目のコピー
 

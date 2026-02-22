@@ -6,19 +6,19 @@
     </div>
     <div class="body">
       <div class="title">
-        <!-- ----- MODIFICATION START (kunyatta) for ColorSupport ----- -->
+        <!-- ----- MODIFICATION START (kunyatta) for Chat Message Display Customization ----- -->
         <!-- <span class="msg-name" [style.color]="chatMessage.color">{{chatMessage.name}}</span> -->
         <span class="msg-name" [style.color]="chatMessage.color">{{chatMessage.name}}</span>
-        <!-- ----- MODIFICATION END (kunyatta) for ColorSupport ----- -->
+        <!-- ----- MODIFICATION END (kunyatta) ----- -->
         <span class='tip msg-from'>{{chatMessage.from}}</span>
         <span class='tip msg-timestamp'>{{chatMessage.timestamp | date:'y/M/d H:mm'}}</span>
-        <!-- ----- MODIFICATION START (Gemini) for ChatMessageAction ----- -->
+        <!-- ----- MODIFICATION START (kunyatta) for Chat Message Display Customization ----- -->
         <span class="msg-actions">
           <button *ngFor="let action of actions" class="msg-action-button" (click)="action.action(chatMessage, { x: $event.clientX, y: $event.clientY })" [title]="action.name">
             <i class="material-icons">{{ action.icon }}</i>
           </button>
         </span>
-        <!-- ----- MODIFICATION END (Gemini) for ChatMessageAction ----- -->
+        <!-- ----- MODIFICATION END (kunyatta) ----- -->
       </div>
       <div class="text msg-text">
         <ng-container *ngIf="!chatMessage.isSecret || chatMessage.isSendFromSelf; then visible; else secret"></ng-container>
@@ -27,11 +27,10 @@
   </div>
 </div>
 <ng-template #visible>
-  <!-- ----- MODIFICATION START (kunyatta) for ColorSupport ----- -->
+  <!-- ----- MODIFICATION START (kunyatta) for Chat Message Display Customization ----- -->
   <!-- <span [style.color]="chatMessage.color">{{chatMessage.text}}</span> -->
-  <!-- ----- MODIFICATION (Gemini) for ChatMessageAction ----- -->
   <span [style.color]="chatMessage.color" [innerHTML]="processedText | safe: 'html'" (click)="onLinkClick($event)"></span>
-  <!-- ----- MODIFICATION END (kunyatta) for ColorSupport ----- -->
+  <!-- ----- MODIFICATION END (kunyatta) ----- -->
   <button *ngIf="chatMessage.isSecret" (click)="discloseMessage()">結果を公開</button>
 </ng-template>
 <ng-template #secret>
