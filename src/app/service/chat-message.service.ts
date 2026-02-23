@@ -84,6 +84,7 @@ export class ChatMessageService {
       // imageIdentifier: this.findImageIdentifier(sendFrom),
       imageIdentifier: imageIdentifier ? imageIdentifier : this.findImageIdentifier(sendFrom),
       // ----- MODIFICATION END (kunyatta) -----
+      sendFromIdentifier: sendFrom, // ----- MODIFICATION (kunyatta) for Chat Message Source Identifier -----
       timestamp: this.calcTimeStamp(chatTab),
       tag: gameType,
       text: text,

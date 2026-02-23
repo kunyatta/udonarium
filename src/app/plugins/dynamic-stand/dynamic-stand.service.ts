@@ -198,7 +198,14 @@ export class DynamicStandPluginService implements OnDestroy {
     if (!message.text.includes('💬')) return;
 
     const characters = ObjectStore.instance.getObjects<GameCharacter>(GameCharacter);
-    let character = characters.find(c => c.name === message.name) || characters.find(c => message.name.startsWith(c.name));
+    
+    // 1. sendFromIdentifier による厳密検索（最優先）
+    let character = message.sendFromIdentifier ? ObjectStore.instance.get<GameCharacter>(message.sendFromIdentifier) : null;
+    
+    // 2. IDで見つからない、またはIDがない場合は名前による曖昧検索（フォールバック）
+    if (!character || !(character instanceof GameCharacter)) {
+      character = characters.find(c => c.name === message.name) || characters.find(c => message.name.startsWith(c.name));
+    }
     
     // 自分の発言の時だけ、ボタンがONかどうかを厳密にチェックする
     if (message.isSendFromSelf) {
