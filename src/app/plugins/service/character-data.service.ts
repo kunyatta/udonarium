@@ -283,8 +283,21 @@ export class CharacterDataService {
     if (!character) return '';
 
     // 1. チャット設定セクション内の「アイコン画像」を探す
-    // ※内部名 chatIconIdentifier を優先して探す
-    const chatIcon = character.detailDataElement?.getFirstElementByName('chatIconIdentifier')?.value;
+    let chatIcon = '';
+    const chatSettings = character.detailDataElement?.children.find(
+      c => c instanceof DataElement && c.name === 'チャット設定'
+    ) as DataElement;
+
+    if (chatSettings) {
+      const iconElement = chatSettings.children.find(
+        c => c instanceof DataElement && c.name === 'アイコン画像'
+      ) as DataElement;
+      
+      if (iconElement) {
+        chatIcon = iconElement.value as string;
+      }
+    }
+
     if (chatIcon && typeof chatIcon === 'string' && chatIcon.length > 0 && chatIcon !== 'null') {
       return chatIcon;
     }

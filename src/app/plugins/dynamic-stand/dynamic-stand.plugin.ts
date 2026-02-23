@@ -8,8 +8,10 @@ import { GameCharacter } from '@udonarium/game-character';
 import { DynamicStandSettingComponent } from './dynamic-stand-setting.component';
 import { MANIFEST } from './manifest';
 import { DataElementExtensionService } from '../service/data-element-extension.service';
+import { CharacterDataExtensionService } from '../service/character-data-extension.service';
 import { ImageDataElementComponent } from '../components/image-data-element/image-data-element.component';
 import { StandSideDataElementComponent } from './stand-side-data-element/stand-side-data-element.component';
+import { DYNAMIC_STAND_SECTION_NAME, DEFAULT_HEAD_OFFSET, NOVEL_MODE_CONSTANTS } from './dynamic-stand.model';
 
 @Injectable()
 export class DynamicStandPlugin implements IPluginWithUI {
@@ -29,12 +31,20 @@ export class DynamicStandPlugin implements IPluginWithUI {
     private emoteManager: EmoteManagerService,
     private uiExtensionService: UIExtensionService,
     private pluginUiService: PluginUiService,
-    private dataElementExtensionService: DataElementExtensionService
+    private dataElementExtensionService: DataElementExtensionService,
+    private characterDataExtensionService: CharacterDataExtensionService
   ) {}
 
   initialize(): void {
     this.service.initialize();
     this.emoteManager.initialize();
+
+    this.characterDataExtensionService.register({
+      pluginId: this.manifest.id,
+      sectionName: '立ち絵設定',
+      internalSectionName: DYNAMIC_STAND_SECTION_NAME,
+      items: [] // 枠（セクション）の作成のみを予約し、中身は service.addStandSetting に任せる
+    });
 
     this.dataElementExtensionService.register({
       type: 'imageIdentifier',
@@ -63,19 +73,6 @@ export class DynamicStandPlugin implements IPluginWithUI {
           height: this.height
         });
       }
-    });
-
-    // 1. キャラクターシートへの拡張
-    this.uiExtensionService.registerAction('character-sheet', {
-      name: '立ち絵設定を追加',
-      icon: 'add_photo_alternate',
-      action: (context: GameCharacter) => {
-        this.service.addStandSetting(context);
-      },
-      condition: (context) => {
-        return context instanceof GameCharacter;
-      },
-      priority: 100
     });
 
     // 2. チャットパレットへの拡張 (chat-input 内に表示)

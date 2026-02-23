@@ -3,12 +3,13 @@ import { DataElement } from '@udonarium/data-element';
 import { GameCharacter } from '@udonarium/game-character';
 import { ObjectStore } from '@udonarium/core/synchronize-object/object-store';
 import { EventSystem } from '@udonarium/core/system';
+import { UIExtensionService } from './ui-extension.service';
 
 export interface CharacterDataExtensionItem {
   name: string;
   label: string;
   type?: string;
-  defaultValue?: any;
+  defaultValue?: any | ((character: GameCharacter) => any);
 }
 
 export interface CharacterDataExtension {
@@ -24,7 +25,7 @@ export interface CharacterDataExtension {
 export class CharacterDataExtensionService implements OnDestroy {
   private extensions: Map<string, CharacterDataExtension> = new Map();
 
-  constructor() {
+  constructor(private uiExtensionService: UIExtensionService) {
     this.initialize();
   }
 
@@ -41,6 +42,29 @@ export class CharacterDataExtensionService implements OnDestroy {
           characters.forEach(c => this.applyAllExtensions(c));
         }, 1500);
       });
+
+    // 共通の演出設定追加ボタンを登録
+    this.uiExtensionService.registerAction('character-sheet', {
+      name: '演出設定追加',
+      icon: 'add_to_photos',
+      action: (context: GameCharacter) => {
+        this.applyAllExtensions(context);
+      },
+      condition: (context) => {
+        if (!(context instanceof GameCharacter)) return false;
+        // 登録されている拡張のうち、一つでも未適用のものがあれば表示
+        return Array.from(this.extensions.values()).some(ext => {
+          const sectionName = ext.internalSectionName || ext.sectionName;
+          const section = context.detailDataElement?.children.find(
+            c => c instanceof DataElement && c.name === sectionName
+          ) as DataElement;
+          
+          if (!section) return true;
+          return ext.items.some(item => !section.children.find(c => c instanceof DataElement && c.name === item.name));
+        });
+      },
+      priority: 100
+    });
   }
 
   /**
@@ -71,48 +95,80 @@ export class CharacterDataExtensionService implements OnDestroy {
     }
 
     if (changed) {
+      console.log(`[CharacterDataExtension] Applied extensions to ${character.name}`);
       character.detailDataElement.update();
       character.update();
     }
+    
+    // 拡張が完了したことを通知（中身を埋める担当プラグインへの合図）
+    EventSystem.call('CHARACTER_EXTENSIONS_APPLIED', { identifier: character.identifier });
   }
 
   private applyExtension(character: GameCharacter, extension: CharacterDataExtension): boolean {
-    const sectionName = extension.internalSectionName || extension.sectionName;
-    let section = character.detailDataElement.children.find(
-      c => c instanceof DataElement && c.name === sectionName
-    ) as DataElement;
+    try {
+      const sectionName = extension.internalSectionName || extension.sectionName;
 
-    let changed = false;
-
-    // セクションがなければ作成
-    if (!section) {
-      section = DataElement.create(sectionName, '', {}, sectionName + '_' + character.identifier);
-      character.detailDataElement.appendChild(section);
-      changed = true;
-    }
-
-    // 項目をチェックして不足があれば追加
-    for (const item of extension.items) {
-      let element = section.children.find(
-        c => c instanceof DataElement && c.name === item.name
+      // セクションを名前で検索
+      let section = character.detailDataElement.children.find(
+        c => c instanceof DataElement && c.name === sectionName
       ) as DataElement;
 
-      if (!element) {
-        element = DataElement.create(
-          item.name, 
-          item.defaultValue !== undefined ? item.defaultValue : '', 
-          { type: item.type || 'string' }, 
-          item.name + '_' + section.identifier
-        );
-        section.appendChild(element);
+      let changed = false;
+
+      // セクションがない場合
+      if (!section) {
+        // 項目が一つも予約されていない場合は、枠作りも担当プラグイン（DynamicStand等）に委ねるため、
+        // サービス側では勝手に作成しない。
+        if (extension.items.length === 0) {
+          return false;
+        }
+
+        // 大項目（セクション）として認識させるため、valueは空、attributesは空にする
+        section = DataElement.create(sectionName, '', {}, sectionName + '_' + character.identifier);
+        character.detailDataElement.appendChild(section);
         changed = true;
+        console.log(`[CharacterDataExtension] Created section: ${sectionName}`);
       }
-    }
 
-    if (changed) {
-      section.update();
-    }
+      // 項目をチェックして不足があれば追加
+      for (const item of extension.items) {
+        const itemName = item.name;
 
-    return changed;
+        let element = section.children.find(
+          c => c instanceof DataElement && c.name === itemName
+        ) as DataElement;
+
+        if (!element) {
+          let resolvedValue = item.defaultValue;
+          if (typeof item.defaultValue === 'function') {
+            try {
+              resolvedValue = item.defaultValue(character);
+            } catch (e) {
+              console.error('[CharacterDataExtension] Error resolving defaultValue:', item.name, e);
+              resolvedValue = '';
+            }
+          }
+
+          element = DataElement.create(
+            itemName, 
+            resolvedValue !== undefined ? resolvedValue : '', 
+            { type: item.type || 'string' }, 
+            itemName + '_' + section.identifier
+          );
+          section.appendChild(element);
+          changed = true;
+          console.log(`[CharacterDataExtension] Created item: ${itemName} in ${sectionName}`);
+        }
+      }
+
+      if (changed) {
+        section.update();
+      }
+
+      return changed;
+    } catch (e) {
+      console.error('[CharacterDataExtension] Error:', extension.pluginId, e);
+      return false;
+    }
   }
 }

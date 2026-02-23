@@ -81,23 +81,16 @@ export class DynamicStandPluginService implements OnDestroy {
     }, 500);
 
     EventSystem.register(this)
-      .on('ADD_GAME_OBJECT', event => {
-        if (event.data.aliasName === 'character') {
-          const character = ObjectStore.instance.get<GameCharacter>(event.data.identifier);
-          if (character) this.ensureStandSetting(character);
-        }
-      })
-      .on('XML_LOADED', () => {
-        setTimeout(() => {
-          const characters = ObjectStore.instance.getObjects<GameCharacter>(GameCharacter);
-          characters.forEach(c => this.ensureStandSetting(c));
-        }, 1000);
+      .on('CHARACTER_EXTENSIONS_APPLIED', event => {
+        const character = ObjectStore.instance.get<GameCharacter>(event.data.identifier);
+        if (character) this.ensureStandSetting(character);
       })
       .on('CUT_IN_PLAYING', event => {
         if (event.data) { this.isCutInBlocked = true; this.localActors = []; } 
         else { this.isCutInBlocked = false; }
       });
     
+    // 起動時に既存キャラクターをチェック
     setTimeout(() => {
       const characters = ObjectStore.instance.getObjects<GameCharacter>(GameCharacter);
       characters.forEach(c => this.ensureStandSetting(c));
