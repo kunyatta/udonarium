@@ -7,15 +7,17 @@ import { UIExtensionService } from './ui-extension.service';
 
 export interface CharacterDataExtensionItem {
   name: string;
-  label: string;
+  label?: string; // 表示名（将来用、現在はnameを共有）
   type?: string;
   defaultValue?: any | ((character: GameCharacter) => any);
+  aliases?: string[]; // 移行前の古い名前リスト
 }
 
 export interface CharacterDataExtension {
   pluginId: string;
-  sectionName: string; // 表示上のセクション名 (e.g. 'チャット設定')
-  internalSectionName?: string; // 内部的なDataElementのname (省略時はsectionName)
+  sectionName: string; 
+  internalSectionName?: string; // aliasesとしての役割を兼ねる
+  aliases?: string[]; // 移行前の古いセクション名リスト
   items: CharacterDataExtensionItem[];
 }
 
@@ -106,37 +108,70 @@ export class CharacterDataExtensionService implements OnDestroy {
 
   private applyExtension(character: GameCharacter, extension: CharacterDataExtension): boolean {
     try {
-      const sectionName = extension.internalSectionName || extension.sectionName;
+      const sectionName = extension.sectionName;
+      const sectionAliases = [
+        ...(extension.internalSectionName ? [extension.internalSectionName] : []),
+        ...(extension.aliases || [])
+      ];
 
-      // セクションを名前で検索
+      // 1. セクションを検索（現在の名前）
       let section = character.detailDataElement.children.find(
         c => c instanceof DataElement && c.name === sectionName
       ) as DataElement;
 
       let changed = false;
 
-      // セクションがない場合
+      // 2. 現在の名前で見つからない場合、エイリアス（古い名前）で探して移行する
       if (!section) {
-        // 項目が一つも予約されていない場合は、枠作りも担当プラグイン（DynamicStand等）に委ねるため、
-        // サービス側では勝手に作成しない。
-        if (extension.items.length === 0) {
-          return false;
+        for (const alias of sectionAliases) {
+          const oldSection = character.detailDataElement.children.find(
+            c => c instanceof DataElement && c.name === alias
+          ) as DataElement;
+          
+          if (oldSection) {
+            console.log(`[CharacterDataExtension] Migrating section: ${alias} -> ${sectionName}`);
+            oldSection.name = sectionName;
+            section = oldSection;
+            changed = true;
+            break;
+          }
         }
+      }
 
-        // 大項目（セクション）として認識させるため、valueは空、attributesは空にする
+      // 3. 依然としてセクションがない場合
+      if (!section) {
+        if (extension.items.length === 0) return false;
         section = DataElement.create(sectionName, '', {}, sectionName + '_' + character.identifier);
         character.detailDataElement.appendChild(section);
         changed = true;
         console.log(`[CharacterDataExtension] Created section: ${sectionName}`);
       }
 
-      // 項目をチェックして不足があれば追加
+      // 4. 項目をチェック
       for (const item of extension.items) {
         const itemName = item.name;
+        const itemAliases = item.aliases || [];
 
         let element = section.children.find(
           c => c instanceof DataElement && c.name === itemName
         ) as DataElement;
+
+        // エイリアス（古い項目名）で探して移行
+        if (!element) {
+          for (const alias of itemAliases) {
+            const oldElement = section.children.find(
+              c => c instanceof DataElement && c.name === alias
+            ) as DataElement;
+            
+            if (oldElement) {
+              console.log(`[CharacterDataExtension] Migrating item: ${alias} -> ${itemName} in ${sectionName}`);
+              oldElement.name = itemName;
+              element = oldElement;
+              changed = true;
+              break;
+            }
+          }
+        }
 
         if (!element) {
           let resolvedValue = item.defaultValue;

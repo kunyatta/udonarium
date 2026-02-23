@@ -23,10 +23,11 @@ export class ChatIconPlugin implements IPluginWithUI {
     this.characterDataExtensionService.register({
       pluginId: 'chat-icon',
       sectionName: 'チャット設定',
+      aliases: ['chatSettings'], // 過去に使用していた名前
       items: [
         {
           name: 'アイコン画像',
-          label: 'アイコン画像',
+          aliases: ['chatIconIdentifier'], // 過去に使用していた名前
           type: 'imageIdentifier',
           defaultValue: (character: GameCharacter) => {
             return character.imageFile ? character.imageFile.identifier : '';
