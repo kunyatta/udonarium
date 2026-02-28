@@ -75,10 +75,12 @@ export class DynamicStandPluginService implements OnDestroy {
   initialize() {
     setTimeout(() => this.getOrCreateStageObject(), 1000);
     
-    // 頻度を上げてチェックの漏れを防ぐ
-    setInterval(() => {
-      this.ngZone.run(() => this.cleanupExpiredActors());
-    }, 500);
+    // Angularの監視外でタイマーを回し、不要な全画面再描画を避ける
+    this.ngZone.runOutsideAngular(() => {
+      setInterval(() => {
+        this.cleanupExpiredActors();
+      }, 500);
+    });
 
     EventSystem.register(this)
       .on('CHARACTER_EXTENSIONS_APPLIED', event => {
@@ -169,8 +171,11 @@ export class DynamicStandPluginService implements OnDestroy {
     });
     
     if (nextActors.length !== prevCount || changed) {
-      this.localActors = nextActors;
-      this.repositionAll();
+      // 実際に見た目が変わる変更がある場合のみ、Angularの監視圏内で処理を実行する
+      this.ngZone.run(() => {
+        this.localActors = nextActors;
+        this.repositionAll();
+      });
     }
   }
 

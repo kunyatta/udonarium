@@ -52,7 +52,7 @@ export class EmoteManagerService implements OnDestroy {
   private readonly MAPPING_OPTIONS: MappingOptions = {
     tagMap: { 'emotes': 'emote-list' },
     arrayItemNames: { 'emotes': 'emote' },
-    attrProps: ['identifier', 'soundIdentifier'] // icon, label はテキストノード
+    attrProps: ['identifier'] // soundIdentifier は子要素として扱う（Cut-inと同じ安定した作法）
   };
 
   constructor(
@@ -92,7 +92,8 @@ export class EmoteManagerService implements OnDestroy {
         // XMLから読み込み
         const loadedEmotes: EmoteData[] = [];
         for (const child of container.state.children) {
-          const loaded = this.pluginMapper.fromElement<EmoteData>(child as DataElement);
+          // MAPPING_OPTIONS を指定して属性(soundIdentifier等)を正しく読み込む
+          const loaded = this.pluginMapper.fromElement<EmoteData>(child as DataElement, this.MAPPING_OPTIONS);
           if (loaded) loadedEmotes.push(loaded);
         }
         
@@ -198,7 +199,8 @@ export class EmoteManagerService implements OnDestroy {
       
       this.emotes.forEach(emote => {
         if (!emote.identifier) emote.identifier = UUID.generateUuid();
-        const elem = this.pluginMapper.toElement('emote', emote);
+        // MAPPING_OPTIONS を指定して、属性(soundIdentifier等)として正しく書き出す
+        const elem = this.pluginMapper.toElement('emote', emote, this.MAPPING_OPTIONS);
         this.currentContainer.state.appendChild(elem);
       });
       

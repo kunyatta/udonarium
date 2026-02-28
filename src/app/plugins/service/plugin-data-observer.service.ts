@@ -5,79 +5,161 @@ import { GameObject } from '@udonarium/core/synchronize-object/game-object';
 import { PluginDataContainer } from '../../class/plugin-data-container';
 import { PluginHelperService } from './plugin-helper.service';
 
+interface ObserverRegistration {
+  pluginId: string;
+  fileNameHint: string;
+  callback: (container: PluginDataContainer) => void;
+  container?: PluginDataContainer;
+}
+
 /**
  * Udonariumのプラグインデータコンテナの更新を監視するためのユーティリティサービス。
- * EventSystemの複雑な購読と、P2P同期やルームロードによるコンテナの再生成への追従ロジックをカプセル化する。
+ * 通常時は即時通知（低遅延）を行い、大量更新時のみバッチ処理を行うことで、
+ * P2P同期の正確性とパフォーマンスを両立させます。
  */
 @Injectable({
   providedIn: 'root'
 })
 export class PluginDataObserverService {
+  private registrations: Set<ObserverRegistration> = new Set();
+  private isListening = false;
+  private pendingNotifications: Set<ObserverRegistration> = new Set();
+  private isBatching = false;
+  private isLargeLoading = false;
 
   constructor(
     private pluginHelper: PluginHelperService,
     private ngZone: NgZone,
   ) { }
 
+  private startListening() {
+    if (this.isListening) return;
+    this.isListening = true;
+
+    EventSystem.register(this)
+      .on('UPDATE_GAME_OBJECT', event => this.handleEvent(event))
+      .on('ADD_GAME_OBJECT', event => this.handleEvent(event))
+      .on('DELETE_GAME_OBJECT', event => this.handleDeleteEvent(event))
+      .on('XML_LOADED', () => this.handleXmlLoaded());
+  }
+
+  private handleEvent(event: any) {
+    const identifier = event.data.identifier;
+    const object = ObjectStore.instance.get(identifier);
+    
+    for (const reg of this.registrations) {
+      let shouldNotify = false;
+
+      // 1. コンテナ自体の検出/更新
+      if (object && object.aliasName === 'plugin-data-container') {
+        const containerCandidate = object as PluginDataContainer;
+        if (containerCandidate.pluginId === reg.pluginId && containerCandidate.fileNameHint === reg.fileNameHint) {
+          if (reg.container !== containerCandidate) {
+            reg.container = containerCandidate;
+            shouldNotify = true;
+          }
+        }
+      }
+
+      // 2. 関連性チェック
+      if (reg.container) {
+        if (identifier === reg.container.identifier || this.pluginHelper.isRelated(reg.container, identifier)) {
+          shouldNotify = true;
+        }
+      } else {
+        // Late Join対応: コンテナが見つかっていない場合のみ再スキャン
+        const found = this.pluginHelper.findContainer(reg.pluginId, reg.fileNameHint);
+        if (found) {
+          reg.container = found;
+          shouldNotify = true;
+        }
+      }
+
+      if (shouldNotify) {
+        this.notify(reg);
+      }
+    }
+  }
+
+  private handleDeleteEvent(event: any) {
+    const identifier = event.data.identifier;
+    for (const reg of this.registrations) {
+      if (reg.container && reg.container.identifier === identifier) {
+        reg.container = undefined;
+        this.notify(reg);
+      }
+    }
+  }
+
+  private handleXmlLoaded() {
+    this.isLargeLoading = true;
+    for (const reg of this.registrations) {
+      reg.container = this.pluginHelper.findContainer(reg.pluginId, reg.fileNameHint);
+      this.notify(reg);
+    }
+    
+    // 大量読み込み後のバッチ処理が終わったらフラグを下ろすために、XML_LOAD_COMPLETEDを待機する
+    const listener = {};
+    EventSystem.register(listener).on('XML_LOAD_COMPLETED', event => {
+      this.isLargeLoading = false;
+      EventSystem.unregister(listener);
+    });
+  }
+
   /**
-   * 特定のプラグインデータコンテナの更新を監視し、コールバックを実行する。
-   * @param context EventSystemに登録する際のコンテキスト (通常は呼び出し元の `this`)。
-   * @param pluginId 監視対象のプラグインID。
-   * @param fileNameHint 監視対象のファイル名ヒント。
-   * @param callback コンテナまたはその子孫が更新された際に実行されるコールバック。引数には最新のコンテナが渡される。
-   * @returns 購読を停止するための `unsubscribe` メソッドを持つオブジェクト。
+   * 通知を実行する。状況に応じて即時通知かバッチ通知を切り替える。
    */
+  private notify(reg: ObserverRegistration) {
+    if (this.isLargeLoading) {
+      // 大量読み込み中（入室直後、XML読込時）はバッチ処理で負荷を抑える
+      this.queueBatchNotification(reg);
+    } else {
+      // 通常時は即時通知して同期の正確性を保つ
+      this.ngZone.run(() => reg.callback(reg.container || null));
+    }
+  }
+
+  private queueBatchNotification(reg: ObserverRegistration) {
+    this.pendingNotifications.add(reg);
+    if (this.isBatching) return;
+
+    this.isBatching = true;
+    Promise.resolve().then(() => {
+      this.ngZone.run(() => {
+        const toNotify = Array.from(this.pendingNotifications);
+        this.pendingNotifications.clear();
+        this.isBatching = false;
+        for (const r of toNotify) {
+          if (this.registrations.has(r)) {
+            r.callback(r.container || null);
+          }
+        }
+      });
+    });
+  }
+
   observe(
     context: any,
     pluginId: string,
     fileNameHint: string,
     callback: (container: PluginDataContainer) => void
   ): { unsubscribe: () => void } {
+    this.startListening();
 
-    let container = this.pluginHelper.findContainer(pluginId, fileNameHint);
-
-    const handler = (event: { data: { identifier: string } }) => {
-      const identifier = event.data.identifier;
-      const object = ObjectStore.instance.get(identifier);
-
-      // イベントで飛んできたオブジェクトが、自分の探している新しいコンテナそのものである場合
-      if (object instanceof PluginDataContainer && object.pluginId === pluginId && object.fileNameHint === fileNameHint) {
-        // 参照を新しいコンテナに乗り換える
-        if (!container || container.identifier !== identifier) {
-          container = object;
-        }
-      }
-
-      // コンテナが存在し、かつイベントがそのコンテナに関連する場合にコールバックを実行
-      if (this.pluginHelper.isRelated(container, identifier)) {
-        this.ngZone.run(() => callback(container));
-      }
+    const registration: ObserverRegistration = {
+      pluginId,
+      fileNameHint,
+      callback,
+      container: this.pluginHelper.findContainer(pluginId, fileNameHint)
     };
-    
-    // イベントリスナーを登録
-    EventSystem.register(context)
-      .on('UPDATE_GAME_OBJECT', handler)
-      .on('ADD_GAME_OBJECT', handler) // ADD_GAME_OBJECT を追加
-      .on('DELETE_GAME_OBJECT', event => {
-        if (container && container.identifier === event.data.identifier) {
-          // コンテナが削除されたら参照をリセットし、コールバックにnullを渡す
-          container = undefined;
-          this.ngZone.run(() => callback(null));
-        }
-      });
 
-    // 初期状態でコールバックを一度実行
-    if (container) {
-      this.ngZone.run(() => callback(container));
-    } else {
-      // コンテナが見つからない場合、nullでコールバックを呼び、初期状態を通知する
-      this.ngZone.run(() => callback(null));
-    }
-    
-    // 購読を停止するためのメソッドを返す
+    this.registrations.add(registration);
+    this.notify(registration);
+
     return {
       unsubscribe: () => {
-        EventSystem.unregister(context);
+        this.registrations.delete(registration);
+        this.pendingNotifications.delete(registration);
       }
     };
   }

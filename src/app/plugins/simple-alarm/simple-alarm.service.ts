@@ -48,23 +48,23 @@ export class SimpleAlarmService {
   }
 
   initialize(): void {
+    const alarmId = this.alarm.identifier;
+    const chatTabListId = ChatTabList.instance.identifier;
+
     EventSystem.register(this)
       .on('ALARM_START', () => this.startLocalTimer())
       .on('ALARM_STOP', () => this.stopLocalTimer())
-      .on('UPDATE_GAME_OBJECT', event => {
-        // 他のクライアントでアラームが操作された場合、local timerを同期する
-        if (event.data.identifier === this.alarm.identifier) {
-          if (this.alarm.isRunning && !this.timerId) {
-            this.startLocalTimer();
-          } else if (!this.alarm.isRunning && this.timerId) {
-            this.stopLocalTimer();
-          }
+      // アラーム自身の更新のみを購読
+      .on('UPDATE_GAME_OBJECT/identifier/' + alarmId, () => {
+        if (this.alarm.isRunning && !this.timerId) {
+          this.startLocalTimer();
+        } else if (!this.alarm.isRunning && this.timerId) {
+          this.stopLocalTimer();
         }
-
-        // ChatTabListが更新された場合、ターゲットタブを確認する
-        if (event.data.identifier === ChatTabList.instance.identifier) {
-          this.ensureTargetTab();
-        }
+      })
+      // チャットタブリストの更新のみを購読
+      .on('UPDATE_GAME_OBJECT/identifier/' + chatTabListId, () => {
+        this.ensureTargetTab();
       })
       .on('XML_LOADED', () => {
         // ルームデータロード時、ターゲットタブの再確認を行う
@@ -75,7 +75,6 @@ export class SimpleAlarmService {
           this.startLocalTimer();
         }
       });
-      // .on(ChatTabList.UPDATED, ... ) は存在しないイベントのため削除
 
     if (this.isRunning) {
       this.startLocalTimer();
@@ -166,9 +165,19 @@ export class SimpleAlarmService {
     }
     
     // 音を鳴らす (ローカルのみ)
-    const audio = AudioStorage.instance.get(SimpleAlarmService.alarmSoundIdentifier);
-    if (audio && audio.isReady) {
-      AudioPlayer.play(audio, 0.5);
+    const soundId = SimpleAlarmService.alarmSoundIdentifier;
+    console.log(`[SimpleAlarm] Time up! Attempting to play sound: ${soundId}`);
+    
+    const audio = AudioStorage.instance.get(soundId);
+    if (audio) {
+      if (audio.isReady) {
+        AudioPlayer.play(audio, 0.5);
+      } else {
+        console.warn(`[SimpleAlarm] Audio file found but NOT READY: ${soundId}. Trying to play anyway.`);
+        AudioPlayer.play(audio, 0.5); // 準備完了フラグがなくても再生を試みる
+      }
+    } else {
+      console.error(`[SimpleAlarm] Audio file NOT FOUND in AudioStorage: ${soundId}`);
     }
 
     // 設定パネルを閉じる (GMの操作工数削減のため)

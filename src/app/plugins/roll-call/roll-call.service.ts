@@ -43,6 +43,9 @@ export class RollCallService {
     // ターゲットタブの初期化
     this.ensureTargetTab();
 
+    const voteId = this.vote.identifier;
+    const chatTabListId = ChatTabList.instance.identifier;
+
     EventSystem.register(this)
       .on('XML_LOADED', () => {
         this.ensureTargetTab();
@@ -53,20 +56,25 @@ export class RollCallService {
         }
         // 新しいVoteオブジェクトはget vote()で自動生成される
       })
+      // チャットタブリストの更新のみを購読
+      .on('UPDATE_GAME_OBJECT/identifier/' + chatTabListId, () => {
+        this.ensureTargetTab();
+      })
+      // Voteオブジェクト自体の更新を購読
+      .on('UPDATE_GAME_OBJECT/identifier/' + voteId, () => {
+        this.checkAndTogglePanel();
+        if (this.isRunning && this.isOwner) {
+          this.checkAutoClose();
+        }
+      })
+      // VoteEntryの追加（回答）を監視
+      .on('ADD_GAME_OBJECT', event => {
+        if (this.isRunning && this.isOwner && event.data.aliasName === VoteEntry.aliasName) {
+           this.checkAutoClose();
+        }
+      })
+      // 既存のVoteEntryの更新（回答変更）を監視
       .on('UPDATE_GAME_OBJECT', event => {
-        if (event.data.identifier === ChatTabList.instance.identifier) {
-          this.ensureTargetTab();
-        }
-        // Voteの状態監視
-        if (event.data.identifier === this.vote.identifier) {
-          // isRunningの状態変化を検知してパネルを開閉
-          this.checkAndTogglePanel();
-          
-          if (this.isRunning && this.isOwner) {
-             this.checkAutoClose();
-          }
-        }
-        // VoteEntryの更新監視（自動終了用）
         if (this.isRunning && this.isOwner && event.data.aliasName === VoteEntry.aliasName) {
            this.checkAutoClose();
         }

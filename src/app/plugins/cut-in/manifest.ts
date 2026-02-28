@@ -4,10 +4,11 @@ export const MANIFEST: PluginManifest = {
   id: 'cut-in-plugin',
   path: 'cut-in',
   name: 'カットイン',
-  version: '1.2.2',
+  version: '1.3.0',
   description: 'チャットの発言に合わせて画面全体にカットイン画像を演出します。',
   tutorialImage: 'tutorial.png',
   changelog: [
+    { date: '2026/02/28', version: '1.3.0', content: 'プラグインシステムのルール変更による対応。' },
     { date: '2026/01/23', version: '1.2.2', content: '説明動画を追加' },
     { date: '2026/01/22', version: '1.2.1', content: '不具合の修正' },
     { date: '2026/01/22', version: '1.2.0', content: 'YouTube Shorts対応' },

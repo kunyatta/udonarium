@@ -31,6 +31,14 @@ export class DynamicStandSettingComponent implements OnInit, OnDestroy {
     return AudioStorage.instance.audios.filter(audio => !audio.isHidden);
   }
 
+  /**
+   * 指定されたオーディオIDが既にロード済み（AudioStorageに存在）かどうかを判定します。
+   */
+  isAudioLoaded(identifier: string): boolean {
+    if (!identifier) return true;
+    return !!AudioStorage.instance.get(identifier);
+  }
+
   constructor(
     private service: DynamicStandPluginService,
     private emoteManager: EmoteManagerService,

@@ -453,6 +453,7 @@ export class CombatStateService {
     this.turnEngine.start(this.container!);
     // 開始ラウンドを設定
     this.turnEngine.setRound(this.container!, this._preCombatRound$.value);
+    this.updateStateFromContainer();
     this.combatLogService.logCombatStart();
   }
 
@@ -462,6 +463,7 @@ export class CombatStateService {
     this.turnEngine.reset(this.container);
     this.cleanupCharacterData(); // キャラクターデータのクリーンアップ
     this._preCombatRound$.next(1); // 戦闘終了時にプレラウンドをリセット
+    this.updateStateFromContainer();
     this.combatLogService.logCombatEnd();
   }
 
@@ -673,6 +675,7 @@ export class CombatStateService {
   removeParticipant(characterId: string): void {
     if (!this.container) return;
     this.turnEngine.removeParticipant(this.container, characterId);
+    this.updateStateFromContainer();
   }
 
   updateDisplayDataTags(tags: string): void {
@@ -686,11 +689,13 @@ export class CombatStateService {
   toggleHasActed(characterId: string): void {
     if (!this.container) return;
     this.turnEngine.toggleHasActed(this.container, characterId);
+    this.updateStateFromContainer();
   }
 
   setTurnToCharacter(characterId: string): void {
     if (!this.container) return;
     this.turnEngine.setTurnToCharacter(this.container, characterId);
+    this.updateStateFromContainer();
   }
   
   // --- ステータス効果操作 ---
@@ -921,6 +926,7 @@ export class CombatStateService {
     if (!this.container || characterIds.length === 0) return;
     characterIds.forEach(id => this.addParticipant(id));
     this.clearParticipantSelectionToAdd();
+    this.updateStateFromContainer();
   }
 
   applyParameterChange(

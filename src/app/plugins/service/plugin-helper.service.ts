@@ -47,11 +47,12 @@ export class PluginHelperService {
    * @param identifier 判定したいオブジェクトのidentifier
    */
   isRelated(container: PluginDataContainer, identifier: string): boolean {
-    if (!container) return false;
+    if (!container || !identifier) return false;
     if (identifier === container.identifier) return true;
 
     const object = ObjectStore.instance.get(identifier);
     if (object instanceof ObjectNode) {
+      // ObjectNode.contains は子から親へ遡る実装なので効率的
       return container.contains(object);
     }
     return false;

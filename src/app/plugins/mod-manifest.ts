@@ -17,11 +17,12 @@ export const MOD_SYSTEM_MANIFEST = {
   // システムの概要
   description: 'Gemini CLIというAIを使ったコード生成による改造。主だった派生Udonariumを参考にしつつソードワールド2.5用に向けた機能中心に実装。',
   // Mod システム (基盤・サービス) のバージョン
-  version: '0.3.0',
+  version: '0.4.0',
   // 最終更新日 (配布時などのリリース日に相当。手動で更新)
-  updatedAt: '2026-02-23',
+  updatedAt: '2026-02-28',
   // 変更履歴
   changelog: [
+    { date: '2026/02/28', version: '0.4.0', content: 'プラグイン全体の見直しによるパフォーマンスの改善。' },
     { date: '2026/02/23', version: '0.3.0', content: 'チャットメッセージへの送信元キャラクターID (sendFromIdentifier) 付与機能を実装。同名キャラクターや墓場キャラクターとの混同を解消。' },
     { date: '2026/02/23', version: '0.2.4', content: 'キャラクター詳細設定の一括管理システム (CharacterDataExtensionService) の構築。プラグイン間の項目追加競合を解消し、セットアップUIを統合。' },
     { date: '2026/02/22', version: '0.2.3', content: 'チャットアイコンプラグイン対応' },

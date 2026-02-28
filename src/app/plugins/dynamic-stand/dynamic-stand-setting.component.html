@@ -68,6 +68,10 @@
                   <div class="flex-label">効果音 (SE)</div>
                   <select class="udonarium-select" [(ngModel)]="selectedEmote.soundIdentifier" (change)="onEmoteChange()">
                     <option value="">設定なし</option>
+                    <!-- ロード中のIDを一時的に保持するためのダミー選択肢 -->
+                    <option *ngIf="selectedEmote.soundIdentifier && !isAudioLoaded(selectedEmote.soundIdentifier)" [value]="selectedEmote.soundIdentifier" disabled>
+                      (ロード中: {{selectedEmote.soundIdentifier}})
+                    </option>
                     <option *ngFor="let audio of audios" [value]="audio.identifier">{{audio.name}}</option>
                   </select>
                 </div>
