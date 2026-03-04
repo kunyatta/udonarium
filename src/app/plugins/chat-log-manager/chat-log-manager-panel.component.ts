@@ -2,10 +2,10 @@ import { Component, OnInit, OnDestroy, AfterViewInit, ChangeDetectorRef } from '
 import { ChatTab } from '@udonarium/chat-tab';
 import { ChatTabList } from '@udonarium/chat-tab-list';
 import { ChatMessageService } from 'service/chat-message.service';
-import { PeerCursor } from '@udonarium/peer-cursor';
 import { PanelService } from 'service/panel.service';
 import { EventSystem } from '@udonarium/core/system';
-import { ChatLoggerService } from '../service/chat-logger.service'; // ChatLoggerServiceをインポート
+import { ChatLoggerService } from '../service/chat-logger.service';
+import { ChatMessage } from '@udonarium/chat-message';
 
 @Component({
   selector: 'app-chat-log-manager-panel',
@@ -16,7 +16,11 @@ export class ChatLogManagerPanelComponent implements OnInit, OnDestroy, AfterVie
   
   selectedTabIdentifier: string = '';
   allowDeleteLog: boolean = false;
-  chatTabs: ChatTab[] = []; // ゲッターからプロパティに変更
+  chatTabs: ChatTab[] = [];
+  
+  // 新規追加プロパティ
+  selectedMainTab: 'export' | 'manage' = 'export';
+  exportTarget: 'selected' | 'all' = 'selected';
 
   get selectedTab(): ChatTab | undefined {
     return this.chatTabs.find(tab => tab.identifier === this.selectedTabIdentifier);
@@ -26,69 +30,136 @@ export class ChatLogManagerPanelComponent implements OnInit, OnDestroy, AfterVie
     private chatMessageService: ChatMessageService,
     private panelService: PanelService,
     private changeDetectorRef: ChangeDetectorRef,
-    private chatLoggerService: ChatLoggerService // ChatLoggerServiceを注入
+    private chatLoggerService: ChatLoggerService
   ) { }
 
   ngOnInit(): void {
     EventSystem.register(this)
       .on('UPDATE_GAME_OBJECT', event => {
         if (event.data.identifier === ChatTabList.instance.identifier) {
-          this.updateChatTabs(); // 更新
+          this.updateChatTabs();
           this.ensureTabSelection();
         }
       });
-  }
-
-  ngAfterViewInit(): void {
-    setTimeout(() => {
-      this.updateChatTabs(); // 初期化
-      this.ensureTabSelection();
-    });
-  }
-
-  private updateChatTabs(): void {
-    this.chatTabs = ChatTabList.instance.chatTabs;
   }
 
   ngOnDestroy(): void {
     EventSystem.unregister(this);
   }
 
-  // タブ選択の有効性を確認し、無効なら再設定する
-  private ensureTabSelection(): void {
-    if (this.chatTabs.length === 0) {
-      this.selectedTabIdentifier = '';
-      return;
-    }
-
-    // selectedTabIdentifierの確認
-    if (!this.chatTabs.some(tab => tab.identifier === this.selectedTabIdentifier)) {
-      this.selectedTabIdentifier = this.chatTabs[0].identifier;
-    }
+  ngAfterViewInit(): void {
+    setTimeout(() => {
+      this.updateChatTabs();
+      this.ensureTabSelection();
+    });
   }
 
+  private updateChatTabs(): void {
+    this.chatTabs = ChatTabList.instance.chatTabs;
+    this.changeDetectorRef.markForCheck();
+  }
+
+  private ensureTabSelection(): void {
+    if (this.chatTabs.length > 0 && !this.selectedTab) {
+      this.selectedTabIdentifier = this.chatTabs[0].identifier;
+    }
+    this.changeDetectorRef.markForCheck();
+  }
+
+  // タブ切り替え
+  selectMainTab(tab: 'export' | 'manage'): void {
+    this.selectedMainTab = tab;
+  }
+
+  // ログ保存処理
+  saveLog(): void {
+    const tabsToExport = this.exportTarget === 'all' 
+      ? this.chatTabs 
+      : (this.selectedTab ? [this.selectedTab] : []);
+
+    if (tabsToExport.length === 0) return;
+
+    let logText = '';
+    const timestamp = this.getTimestampString();
+    const targetName = this.exportTarget === 'all' ? 'all' : (this.selectedTab?.name || 'chat');
+    
+    tabsToExport.forEach((tab, index) => {
+      if (this.exportTarget === 'all') {
+        logText += `=== ${tab.name} ===\n`;
+      }
+      
+      const messages = tab.chatMessages.filter(msg => msg.isDisplayable);
+      messages.forEach(msg => {
+        logText += this.formatMessage(msg) + '\n';
+      });
+
+      if (this.exportTarget === 'all' && index < tabsToExport.length - 1) {
+        logText += '--------------------\n\n';
+      }
+    });
+
+    const fileName = `chatlog_${targetName}_${timestamp}.txt`;
+    this.downloadFile(logText, fileName);
+
+    // 通知
+    this.chatLoggerService.sendSystemMessage(`チャットログを保存しました: ${fileName}`);
+  }
+
+  private formatMessage(msg: ChatMessage): string {
+    const time = new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    const name = msg.name || (msg.isSystem ? 'system' : 'unknown');
+    return `[${time}] ${name} : ${msg.text}`;
+  }
+
+  private getTimestampString(): string {
+    const now = new Date();
+    const Y = now.getFullYear();
+    const M = ('0' + (now.getMonth() + 1)).slice(-2);
+    const D = ('0' + now.getDate()).slice(-2);
+    const h = ('0' + now.getHours()).slice(-2);
+    const m = ('0' + now.getMinutes()).slice(-2);
+    return `${Y}${M}${D}_${h}${m}`;
+  }
+
+  private downloadFile(content: string, fileName: string): void {
+    const blob = new Blob([content], { type: 'text/plain;charset=utf-8' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = fileName;
+    a.click();
+    window.URL.revokeObjectURL(url);
+  }
+
+  // 既存の消去処理
   deleteLog(): void {
-    if (!this.allowDeleteLog || !this.selectedTab) return;
-    this.clearTabLog(this.selectedTab);
+    const tab = this.selectedTab;
+    if (!tab || !this.allowDeleteLog) return;
+
+    if (!confirm(`「${tab.name}」のログを完全に消去します。よろしいですか？`)) return;
+
+    const messages = [...tab.chatMessages];
+    for (const msg of messages) {
+      msg.destroy();
+    }
+    
+    this.chatLoggerService.sendSystemMessage(`「${tab.name}」のログをクリアしました`, {
+      tabIdentifier: tab.identifier
+    });
   }
 
   deleteAllLogs(): void {
     if (!this.allowDeleteLog) return;
-    for (const tab of this.chatTabs) {
-      this.clearTabLog(tab);
-    }
-  }
 
-  private clearTabLog(tab: ChatTab): void {
-    while (tab.children.length > 0) {
-      tab.children[0].destroy();
+    if (!confirm('全てのタブのチャットログを完全に消去します。よろしいですか？')) return;
+
+    for (const tab of this.chatTabs) {
+      const messages = [...tab.chatMessages];
+      for (const msg of messages) {
+        msg.destroy();
+      }
     }
     
-    // 削除完了メッセージを送信（削除したタブそのものへ）
-    const message = `「${tab.name}」のログをクリアしました`;
-    
-    this.chatLoggerService.sendSystemMessage(message, {
-      tabIdentifier: tab.identifier // 削除したタブそのものへ送信
-    });
+    this.chatLoggerService.sendSystemMessage('全てのログをクリアしました');
   }
 }

@@ -1,29 +1,77 @@
-<div class="panel-layout">
-  <div class="panel-body">
+<div class="udonarium-tab-container">
+  <div class="udonarium-tab-header">
+    <div class="tab-item" [class.active]="selectedMainTab === 'export'" (click)="selectMainTab('export')">ログ出力</div>
+    <div class="tab-item" [class.active]="selectedMainTab === 'manage'" (click)="selectMainTab('manage')">管理</div>
+  </div>
+
+  <div class="udonarium-tab-content">
     
-    <div class="control-group">
-      <label>対象タブ:</label>
-      <select class="udonarium-select" [(ngModel)]="selectedTabIdentifier">
-        <option *ngFor="let tab of chatTabs" [ngValue]="tab.identifier">{{ tab.name }}</option>
-      </select>
+    <!-- ログ出力タブ -->
+    <div *ngIf="selectedMainTab === 'export'">
+      <div class="info-card">
+        <div class="setting-group">
+          <label>出力対象</label>
+          <div class="radio-group">
+            <label class="radio-label">
+              <input type="radio" name="exportTarget" [(ngModel)]="exportTarget" value="selected"> 表示中のタブ ({{ selectedTab?.name || '未選択' }})
+            </label>
+            <label class="radio-label">
+              <input type="radio" name="exportTarget" [(ngModel)]="exportTarget" value="all"> 全てのタブを一括
+            </label>
+          </div>
+        </div>
+
+        <div class="setting-group" *ngIf="exportTarget === 'selected'">
+          <label>表示タブの切り替え</label>
+          <select class="udonarium-select" [(ngModel)]="selectedTabIdentifier">
+            <option *ngFor="let tab of chatTabs" [ngValue]="tab.identifier">{{ tab.name }}</option>
+          </select>
+        </div>
+
+        <div class="button-group">
+          <button class="udonarium-btn primary full-width" (click)="saveLog()" [disabled]="!selectedTab && exportTarget === 'selected'">
+            テキスト形式 (.txt) で保存
+          </button>
+        </div>
+
+        <p class="help-text">
+          ※ チャット欄に表示されている内容がそのままテキストとして保存されます。
+        </p>
+      </div>
     </div>
 
-    <hr class="separator">
+    <!-- 管理タブ -->
+    <div *ngIf="selectedMainTab === 'manage'">
+      <div class="info-card">
+        <div class="setting-group">
+          <label>対象タブの選択</label>
+          <select class="udonarium-select" [(ngModel)]="selectedTabIdentifier">
+            <option *ngFor="let tab of chatTabs" [ngValue]="tab.identifier">{{ tab.name }}</option>
+          </select>
+        </div>
 
-    <div class="control-group">
-      <label class="checkbox-label">
-        <input type="checkbox" [(ngModel)]="allowDeleteLog">
-        ログ消去機能を有効にする
-      </label>
+        <div class="danger-zone">
+          <div class="setting-group">
+            <label class="checkbox-label">
+              <input type="checkbox" [(ngModel)]="allowDeleteLog">
+              ログ消去機能を有効にする
+            </label>
+            <p class="help-text" style="color: var(--color-danger); font-size: 10px;">
+              ※ 注意：この操作は取り消せません。
+            </p>
+          </div>
+
+          <div class="button-group">
+            <button class="udonarium-btn danger full-width" (click)="deleteLog()" [disabled]="!allowDeleteLog || !selectedTab">
+              選択タブのログを消去
+            </button>
+            <button class="udonarium-btn danger full-width" (click)="deleteAllLogs()" [disabled]="!allowDeleteLog">
+              全タブのログを消去
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <div class="button-group">
-      <button class="udonarium-btn danger full-width" (click)="deleteLog()" [disabled]="!allowDeleteLog || !selectedTab">
-        選択タブのログを消去
-      </button>
-      <button class="udonarium-btn danger full-width" (click)="deleteAllLogs()" [disabled]="!allowDeleteLog">
-        全タブのログを消去
-      </button>
-    </div>
   </div>
 </div>

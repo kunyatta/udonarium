@@ -1,50 +1,126 @@
 @import "../plugin-style.css";
 
-/* 固有スタイル */
-
-:host .panel-body {
-  padding: var(--spacing-s); /* 8px */
-  gap: 0;
+/* 共通タブスタイル (Udonarium Mod 標準) */
+.udonarium-tab-container {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
 }
 
-.control-group {
-  margin-bottom: 12px;
+.udonarium-tab-header {
+  display: flex;
+  gap: 2px;
+  padding: 4px 8px 0;
+  border-bottom: 1px solid var(--border-color);
+  background: transparent; /* ガイドラインに従い背景透明 */
+}
+
+.tab-item {
+  padding: 6px 16px;
+  cursor: pointer;
+  font-size: 12px;
+  border: 1px solid transparent;
+  border-bottom: none;
+  border-radius: 4px 4px 0 0;
+  color: var(--text-color-secondary);
+  transition: all 0.2s;
+  user-select: none;
+}
+
+.tab-item:hover {
+  background: rgba(255, 255, 255, 0.3);
+}
+
+.tab-item.active {
+  background: var(--bg-color-card); /* 半透明白 */
+  color: var(--text-color-primary);
+  border-color: var(--border-color);
+  font-weight: bold;
+}
+
+.udonarium-tab-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 12px;
+}
+
+/* フォーム・カードスタイル */
+.info-card {
+  background: var(--bg-color-card);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 16px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+}
+
+.setting-group {
+  margin-bottom: 16px;
+}
+
+.setting-group:last-child {
+  margin-bottom: 0;
 }
 
 label {
   display: block;
-  font-size: 12px;
+  font-size: 11px;
   font-weight: bold;
-  margin-bottom: 4px;
+  margin-bottom: 8px;
   color: var(--text-color-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.separator {
-  border: 0;
-  border-top: 1px solid var(--border-color);
-  margin: 12px 0;
+.udonarium-select, .udonarium-input {
+  width: 100%;
+}
+
+.radio-group {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.radio-label {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text-color-primary);
 }
 
 .checkbox-label {
   display: flex;
   align-items: center;
+  gap: 8px;
   cursor: pointer;
-  user-select: none;
-  font-weight: normal;
+  font-size: 12px;
   color: var(--text-color-primary);
-}
-
-.checkbox-label input {
-  margin-right: 8px;
 }
 
 .button-group {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
   margin-top: 16px;
 }
 
 .full-width {
   width: 100%;
+}
+
+.help-text {
+  font-size: 11px;
+  color: var(--text-color-secondary);
+  margin-top: 8px;
+  line-height: 1.4;
+}
+
+.danger-zone {
+  border-top: 1px solid var(--border-color);
+  margin-top: 16px;
+  padding-top: 16px;
 }
