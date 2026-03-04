@@ -18,7 +18,7 @@ export class ChatLogManagerPlugin implements IPluginWithUI {
   // パネル設定
   readonly component = ChatLogManagerPanelComponent;
   readonly width = 300;
-  readonly height = 290;
+  readonly height = 412;
 
   constructor(
     private uiExtensionService: UIExtensionService,
